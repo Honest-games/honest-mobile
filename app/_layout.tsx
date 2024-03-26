@@ -1,4 +1,3 @@
-import { useColorScheme } from '@/components/default/useColorScheme'
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -6,8 +5,11 @@ import { useFonts } from 'expo-font'
 import { Stack, useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import uuid from 'react-native-uuid'
 import { Provider } from 'react-redux'
-import store from './store'
+import { PersistGate } from 'redux-persist/integration/react'
+import '../constants/i18n/i18n.config'
+import store, { persistor } from '../store/store'
 
 export { ErrorBoundary } from 'expo-router'
 
@@ -22,7 +24,6 @@ export default function RootLayout() {
 	})
 	const [appReady, setAppReady] = useState(false)
 	const [splashAnimationFinished, setSplashAnimationFinished] = useState(false)
-	const colorScheme = useColorScheme()
 	const router = useRouter()
 	// Expo Router uses Error Boundaries to catch errors in the navigation tree.
 
@@ -32,13 +33,27 @@ export default function RootLayout() {
 
 	const generateAndSaveUUID = async () => {
 		try {
-			const uuid = '1212'
+			const id = uuid.v4()
 
-			await AsyncStorage.setItem('user_id', uuid)
+			await AsyncStorage.setItem('user_id', id.toString())
 
-			console.log('UUID успешно сохранен:', uuid)
+			console.log('UUID успешно сохранен:', id)
 		} catch (error) {
 			console.error('Ошибка при сохранении UUID в AsyncStorage:', error)
+		}
+	}
+
+	const getData = async () => {
+		try {
+			const user = await AsyncStorage.getItem('user_id')
+			if (user !== null) {
+				console.log('UUID успешно получен:', user)
+				return user
+			}
+
+			
+		} catch (e) {
+			console.error('Ошибка чтения из AsyncStorage:', e)
 		}
 	}
 
@@ -46,8 +61,12 @@ export default function RootLayout() {
 		if (loaded || error) {
 			// SplashScreen.hideAsync()
 
+			const user = getData()
+			if (!user) {
+				generateAndSaveUUID()
+			}
+
 			setAppReady(true)
-			generateAndSaveUUID()
 		}
 	}, [loaded, error])
 
@@ -71,23 +90,25 @@ export default function RootLayout() {
 
 	return (
 		<Provider store={store}>
-			<GestureHandlerRootView style={{ flex: 1 }}>
-				<BottomSheetModalProvider>
-					{/* <ThemeProvider
+			<PersistGate loading={null} persistor={persistor}>
+				<GestureHandlerRootView style={{ flex: 1 }}>
+					<BottomSheetModalProvider>
+						{/* <ThemeProvider
 						value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
 					> */}
-					<Stack>
-						<Stack.Screen name='(tabs)' options={{ headerShown: false }} />
-						<Stack.Screen
-							name='decks/[id]'
-							options={{
-								headerShown: false
-							}}
-						/>
-					</Stack>
-					{/* </ThemeProvider> */}
-				</BottomSheetModalProvider>
-			</GestureHandlerRootView>
+						<Stack>
+							<Stack.Screen name='(tabs)' options={{ headerShown: false }} />
+							<Stack.Screen
+								name='decks/[id]'
+								options={{
+									headerShown: false
+								}}
+							/>
+						</Stack>
+						{/* </ThemeProvider> */}
+					</BottomSheetModalProvider>
+				</GestureHandlerRootView>
+			</PersistGate>
 		</Provider>
 	)
 }

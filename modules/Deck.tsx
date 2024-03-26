@@ -1,4 +1,3 @@
-import { labels } from '@/constants/data'
 import React, { useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import LikeButton from '../UI/LikeButton'
@@ -17,6 +16,8 @@ export interface DeckProps {
 	onPresent: (id: string) => void
 	onDismiss: () => void
 	onPress?: () => void
+	labelsString: string
+	imageId: string
 }
 
 function Deck({
@@ -25,17 +26,22 @@ function Deck({
 	progress,
 	img,
 	id,
-	onPresent
+	onPresent,
+	labelsString,
+	imageId
 	// isFetching,
 	// isLoading
 }: DeckProps) {
 	const [pressHeart, setPressHeart] = useState(false)
 
+	const labels = labelsString?.split(';')
+	
 	return (
 		<View style={styles.deck} key={id}>
 			<View style={{ flexDirection: 'column', margin: 12, flex: 1 }}>
 				<View
 					style={{
+						position: 'absolute',
 						justifyContent: 'space-between',
 						flexDirection: 'row',
 						width: '100%'
@@ -45,7 +51,7 @@ function Deck({
 
 					<LikeButton pressHeart={pressHeart} setPressHeart={setPressHeart} />
 				</View>
-				<DeckInfo title={title} id={id} />
+				<DeckInfo imageId={imageId} title={title} id={id} />
 
 				<DeckAdditionalButton onPresent={onPresent} id={id} />
 			</View>
@@ -58,6 +64,7 @@ export default Deck
 const styles = StyleSheet.create({
 	deck: {
 		flex: 1,
+		position: 'relative',
 		marginTop: 20,
 		backgroundColor: 'white',
 		borderRadius: 20,

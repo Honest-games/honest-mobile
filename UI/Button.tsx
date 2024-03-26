@@ -1,7 +1,5 @@
 import Colors from '@/constants/Colors'
-import getQuestionLevelAndColor, {
-	IQuestonLevelAndColor
-} from '@/features/converters/button-converters'
+import { getLevelColor } from '@/features/converters/button-converters'
 import React from 'react'
 import { StyleSheet, Text, TouchableOpacity } from 'react-native'
 
@@ -10,13 +8,14 @@ interface IButton {
 	onPress?: () => void
 	size?: string
 	color: string
+	isButtonPressed?: boolean
+	bgColor: string
 }
 
 const Button = (props: IButton) => {
-	const { title, onPress, size } = props
+	const { title, onPress, size, isButtonPressed, bgColor } = props
 
-	const { levelTitle, levelBgColor }: IQuestonLevelAndColor =
-		getQuestionLevelAndColor(title)
+	const levelBgColor = getLevelColor(bgColor)
 
 	const styles = StyleSheet.create({
 		button: {
@@ -35,8 +34,12 @@ const Button = (props: IButton) => {
 	})
 
 	return (
-		<TouchableOpacity onPress={onPress} style={[styles.button]}>
-			<Text style={styles.text}>{levelTitle}</Text>
+		<TouchableOpacity
+			disabled={isButtonPressed}
+			onPress={onPress}
+			style={[styles.button]}
+		>
+			<Text style={styles.text}>{title.toLowerCase()}</Text>
 		</TouchableOpacity>
 	)
 }

@@ -1,177 +1,80 @@
-import { LinearGradient } from 'expo-linear-gradient'
-import React from 'react'
-import { Dimensions, Image, StyleSheet, Text, View } from 'react-native'
-import { Gesture, GestureDetector } from 'react-native-gesture-handler'
+import React, { useCallback } from 'react'
+import { Animated, Dimensions, Text } from 'react-native'
+import TinderLike from './TinderLike'
+const { height, width } = Dimensions.get('window')
+const TinderCard = ({ item, isFirst, swipe, ...rest }: any) => {
+	const rotate = swipe.x.interpolate({
+		inputRange: [-100, 0, 100],
+		outputRange: ['8deg', '0deg', '-8deg']
+	})
+	const likeOpacity = swipe.x.interpolate({
+		inputRange: [10, 100],
+		outputRange: [0, 1],
+		extrapolate: 'clamp'
+	})
 
-import Animated, {
-	SharedValue,
-	interpolate,
-	runOnJS,
-	useAnimatedStyle,
-	useSharedValue,
-	withSpring
-} from 'react-native-reanimated'
+	const rejectOpacity = swipe.x.interpolate({
+		inputRange: [-100, -10],
+		outputRange: [1, 0],
+		extrapolate: 'clamp'
+	})
 
-const screenWidth = Dimensions.get('screen').width
-export const tinderCardWidth = screenWidth * 0.8
-
-type TinderCard = {
-	user: {
-		image: string
-		name: string
-	}
-	numOfCards: number
-	index: number
-	activeIndex: SharedValue<number>
-	onResponse: (a: boolean) => void
-}
-
-const TinderCard = ({
-	user,
-	numOfCards,
-	index,
-	activeIndex,
-	onResponse
-}: TinderCard) => {
-	const translationX = useSharedValue(0)
-
-	const swipeAway = (direction: number) => {
-		'worklet'
-		translationX.value = withSpring(direction * 500, {}, () => {
-			runOnJS(onResponse)(direction > 0)
-		})
-		activeIndex.value = withSpring(index + 1)
-	}
-
-	const animatedCard = useAnimatedStyle(() => ({
-		opacity: interpolate(
-			activeIndex.value,
-			[index - 1, index, index + 1],
-			[1 - 1 / 5, 1, 1]
-		),
-		transform: [
-			{
-				scale: interpolate(
-					activeIndex.value,
-					[index - 1, index, index + 1],
-					[0.95, 1, 1]
-				)
-			},
-			{
-				translateY: interpolate(
-					activeIndex.value,
-					[index - 1, index, index + 1],
-					[-30, 0, 0]
-				)
-			},
-			{
-				translateX: translationX.value
-			},
-			{
-				rotateZ: `${interpolate(
-					translationX.value,
-					[-screenWidth / 2, 0, screenWidth / 2],
-					[-15, 0, 15]
-				)}deg`
-			}
-		]
-	}))
-
-	const gesture = Gesture.Pan()
-		.onChange(event => {
-			translationX.value = event.translationX
-
-			activeIndex.value = interpolate(
-				Math.abs(translationX.value),
-				[0, 500],
-				[index, index + 0.8]
-			)
-			console.log(activeIndex.value)
-		})
-		.onEnd(event => {
-			if (Math.abs(event.velocityX) > 400) {
-				translationX.value = withSpring(Math.sign(event.velocityX) * 500, {
-					velocity: event.velocityX
-				})
-				activeIndex.value = withSpring(index + 1)
-
-				runOnJS(onResponse)(event.velocityX > 0)
-			} else {
-				translationX.value = withSpring(0)
-			}
-		})
-
+	const renderChoice = useCallback(() => {
+		return (
+			<>
+				<Animated.View
+					style={[
+						{ position: 'absolute', top: 100, left: 20 },
+						{ opacity: likeOpacity }
+					]}
+				>
+					<TinderLike type={'Like'} />
+				</Animated.View>
+				<Animated.View
+					style={[
+						{ position: 'absolute', top: 100, right: 20 },
+						{ opacity: rejectOpacity }
+					]}
+				>
+					<TinderLike type={'Nope'} />
+				</Animated.View>
+			</>
+		)
+	}, [])
 	return (
-		<GestureDetector gesture={gesture}>
-			<Animated.View
-				style={[
-					styles.card,
-					animatedCard,
-					{
-						zIndex: numOfCards - index
-					}
-				]}
+		<Animated.View
+			style={[
+				{
+					width: width - 20,
+					height: height - 200,
+					position: 'absolute',
+					backgroundColor: 'black',
+					top: 50,
+					justifyContent: 'center',
+					alignItems: 'center',
+					alignSelf: 'center'
+				},
+				isFirst && {
+					transform: [...swipe.getTranslateTransform(), { rotate: rotate }]
+				}
+			]}
+			{...rest}
+		>
+			{isFirst && renderChoice()}
+
+			<Text
+				style={{
+					position: 'absolute',
+					bottom: 20,
+					left: 30,
+					fontSize: 40,
+					color: '#FFF'
+				}}
 			>
-				<Image
-					style={[StyleSheet.absoluteFillObject, styles.image]}
-					source={{ uri: user.image }}
-				/>
-
-				<LinearGradient
-					colors={['transparent', 'rgba(0,0,0,0.8)']}
-					style={[StyleSheet.absoluteFillObject, styles.overlay]}
-				/>
-
-				<View style={styles.footer}>
-					<Text style={styles.name}>{user.name}</Text>
-				</View>
-			</Animated.View>
-		</GestureDetector>
+				{item.title}
+			</Text>
+		</Animated.View>
 	)
 }
-
-const styles = StyleSheet.create({
-	swipeButton: {
-		position: 'absolute',
-		height: 20,
-		width: 30,
-
-		backgroundColor: 'lightblue',
-		borderRadius: 5
-	},
-	card: {
-		width: tinderCardWidth,
-		aspectRatio: 1 / 1.67,
-		borderRadius: 15,
-		justifyContent: 'flex-end',
-
-		position: 'absolute',
-
-		shadowColor: '#000',
-		shadowOffset: {
-			width: 0,
-			height: 1
-		},
-		shadowOpacity: 0.22,
-		shadowRadius: 2.22,
-
-		elevation: 3
-	},
-	image: {
-		borderRadius: 15
-	},
-	overlay: {
-		top: '50%',
-		borderBottomLeftRadius: 15,
-		borderBottomRightRadius: 15
-	},
-	footer: {
-		padding: 10
-	},
-	name: {
-		fontSize: 24,
-		color: 'white'
-	}
-})
 
 export default TinderCard

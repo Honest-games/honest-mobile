@@ -14,14 +14,13 @@ const Label = ({ levelBgColor, levelTitle }: IQuestonLevelAndColor) => {
 			fontSize: 16,
 			marginLeft: 12,
 			marginRight: 12,
-
 			color: 'white'
 		}
 	})
 
 	return (
 		<View style={styles.label}>
-			<Text style={styles.labelText}>{levelTitle}</Text>
+			<Text style={styles.labelText}>{levelTitle.toLowerCase()}</Text>
 		</View>
 	)
 }

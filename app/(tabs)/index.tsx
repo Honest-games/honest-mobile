@@ -1,13 +1,14 @@
-import SampleOfSwitcher from '@/assets/svg/SampleOfSwitcher'
 import DeckScrollView from '@/components/deck/DeckScrollView'
-import { View } from '@/components/default/Themed'
-import { useDecks } from '@/features/hooks'
+import { getLevelsInfo } from '@/features/converters'
+import { useDeck } from '@/features/hooks'
+import useLanguage from '@/features/hooks/useLanguage'
 import CustomBottomSheetModal from '@/modules/CustomBottomSheetModal'
 import Loader from '@/modules/Loader'
 import SearchBar from '@/UI/SearchBar'
+import Switcher from '@/UI/Switcher'
 import { BottomSheetModal } from '@gorhom/bottom-sheet'
 import React, { useRef } from 'react'
-import { Dimensions, Platform, SafeAreaView, StyleSheet } from 'react-native'
+import { Dimensions, Platform, StyleSheet, View } from 'react-native'
 import Animated, {
 	Extrapolate,
 	interpolate,
@@ -17,9 +18,8 @@ import Animated, {
 	useSharedValue,
 	withTiming
 } from 'react-native-reanimated'
-
+import { SafeAreaView } from 'react-native-safe-area-context'
 const { width } = Dimensions.get('window')
-const { height } = Dimensions.get('window')
 
 const Page = () => {
 	const {
@@ -33,14 +33,14 @@ const Page = () => {
 		isFetchingLevels,
 		selectedDeck,
 		setSelectedDeck,
-		filtedDecks,
+		filteredDecks,
 		onFilteredDecks
-	} = useDecks()
-
+	} = useDeck()
+	const { changeLanguage } = useLanguage()
 	const bottomSheetRef = useRef<BottomSheetModal>(null)
 	const scrollY = useSharedValue(0)
 	const scrollRef = useAnimatedRef<Animated.ScrollView>()
-
+	const levelInfo = getLevelsInfo(levels?.length ?? 0)
 	const scrollToTop = (scrollRef: any, scrollY: any) => {
 		scrollRef.current?.scrollTo({ y: 0, animated: true })
 	}
@@ -58,16 +58,54 @@ const Page = () => {
 	const searchBarStyle = useAnimatedStyle(() => {
 		const searchBarWidth = interpolate(
 			scrollY.value,
+			[20, 70],
+			[width - 148, 48],
+			Extrapolate.CLAMP
+		)
+
+		const shadowOpacity = interpolate(
+			scrollY.value,
 			[0, 100],
-			[width - 144, 48],
+			[0, 0.25],
+			Extrapolate.CLAMP
+		)
+
+		const shadowOffset = interpolate(
+			scrollY.value,
+			[0, 100],
+			[0, 4],
+			Extrapolate.CLAMP
+		)
+
+		return {
+			width: withTiming(searchBarWidth, { duration: 800 }),
+			shadowColor: '#000000',
+			// shadowOffset: withTiming({ width: 0, height: 4 }, { duration: 500 }),
+			shadowRadius: 4,
+			shadowOpacity: withTiming(shadowOpacity, { duration: 1000 }),
+			elevation: 5
+		}
+	})
+	const switcherStyle = useAnimatedStyle(() => {
+		const scrollOffset = interpolate(
+			scrollY.value,
+			[0, 10],
+			[0, 300],
+			Extrapolate.CLAMP
+		)
+
+		const opacity = interpolate(
+			scrollY.value,
+			[0, 20],
+			[1, 0],
 			Extrapolate.CLAMP
 		)
 		return {
-			width: withTiming(searchBarWidth, { duration: 500 })
+			transform: [{ translateX: withTiming(scrollOffset, { duration: 600 }) }],
+			opacity: withTiming(opacity, { duration: 600 })
 		}
 	})
 
-	const handleDismissSheet = () => bottomSheetRef.current?.dismiss()
 	const handleOpenSheet = (id: string) => {
 		bottomSheetRef.current?.present()
 		setDeckId(id)
@@ -75,24 +113,11 @@ const Page = () => {
 
 	return (
 		<SafeAreaView style={styles.container}>
-			<View
-				style={{
-					flex: 1,
-					position: 'absolute',
-					top: 50,
-					left: 20,
-					zIndex: 100,
-					flexDirection: 'row',
-					justifyContent: 'space-between',
-					alignItems: 'center',
-					height: 48,
-					backgroundColor: 'white',
-					borderRadius: 25,
-					paddingHorizontal: 12
-				}}
-			>
-				{/* Вместо SampleOfSwitcher должен быть компонент слайдера языка */}
-				<SampleOfSwitcher />
+			<View style={styles.switcherContainer}>
+				<Switcher
+					switcherStyle={switcherStyle}
+					onLanguageChange={changeLanguage}
+				/>
 			</View>
 
 			<SearchBar
@@ -107,22 +132,21 @@ const Page = () => {
 				<DeckScrollView
 					scrollRef={scrollRef}
 					scrollHandler={scrollHandler}
-					filtedDecks={filtedDecks}
+					filtedDecks={filteredDecks}
 					handleOpenSheet={handleOpenSheet}
 					handleDismissSheet={() => bottomSheetRef.current?.dismiss()}
 					decks={decks}
 				/>
 			)}
 			<CustomBottomSheetModal
+				deckId={deckId}
 				isLoading={isLoadingDecks}
 				error={error}
 				isFetching={isFetchingLevels}
 				deck={selectedDeck}
 				ref={bottomSheetRef}
 				levels={levels}
-				levelInfo={
-					levels?.length ? `there is gonna be ${levels.length} levels` : 'start'
-				}
+				levelInfo={levelInfo}
 			/>
 		</SafeAreaView>
 	)
@@ -133,12 +157,19 @@ export default Page
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
+		paddingBottom: Platform.OS === 'ios' ? -35 : 0,
 		height: '100%',
 		width: '100%'
 	},
-	scrollContainer: {
-		paddingBottom: 80,
-		marginTop: Platform.OS === 'ios' ? 55 : 100,
-		margin: 20
+	switcherContainer: {
+		flex: 1,
+		position: 'absolute',
+		top: 50,
+		left: 20,
+		zIndex: 100,
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'center',
+		borderRadius: 25
 	}
 })

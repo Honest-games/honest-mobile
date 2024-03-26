@@ -1,5 +1,5 @@
 export { useAnimation } from './useAnimations'
+export { default as useDeck } from './useDeck'
 export { default as useDeckId } from './useDeckId'
-export { default as useDecks } from './useDecks'
 export { useLevelQuestions } from './useLevelQuestions'
 export { useUserId } from './useUserId'

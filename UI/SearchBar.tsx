@@ -1,5 +1,7 @@
+import Colors from '@/constants/Colors'
 import { AntDesign } from '@expo/vector-icons'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { StyleSheet, TextInput, TouchableOpacity } from 'react-native'
 import Animated from 'react-native-reanimated'
 
@@ -14,11 +16,13 @@ const SearchBar: React.FC<SearchBarProps> = ({
 	searchBarStyle,
 	onFilteredDecks
 }) => {
+	const { t } = useTranslation()
+
 	return (
 		<Animated.View style={[styles.searchBar, searchBarStyle]}>
 			<TextInput
-				style={{ flex: 1 }}
-				placeholder='search for deck you want'
+				style={{ flex: 1, color: Colors.grey1 }}
+				placeholder={t('searchBarPlaceholder')}
 				onChangeText={onFilteredDecks}
 			/>
 			<TouchableOpacity onPress={scrollToTop}>
@@ -32,7 +36,6 @@ const styles = StyleSheet.create({
 		flex: 1,
 		position: 'absolute',
 		top: 50,
-
 		right: 20,
 		zIndex: 100,
 		flexDirection: 'row',

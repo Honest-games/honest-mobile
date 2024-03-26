@@ -18,7 +18,8 @@ const AnimateSplashScreen = ({ onAnimationFinish }: ISplashScreen) => {
 				style={{ height: height, width: '100%' }}
 				ref={animation}
 				autoPlay
-				source={require('@/assets/images/splash_lottie.json')}
+				// source={require('@/assets/images/Oanimation.json')}
+				source={require('@/assets/images/gachi2.mp4.lottie.json')}
 			/>
 		</View>
 	)

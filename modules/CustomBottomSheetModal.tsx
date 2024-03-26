@@ -1,10 +1,17 @@
 import { LevelInfo } from '@/UI/LevelInfo'
-import DeckLogoModal from '@/assets/svg/DeckLogoModal'
 import Colors from '@/constants/Colors'
+import useFetchDeckSvg from '@/features/hooks/useFetchDeckSvg'
 import { IDeck, ILevelData } from '@/services/types/types'
 import { FontAwesome } from '@expo/vector-icons'
 import { BottomSheetBackdrop, BottomSheetModal } from '@gorhom/bottom-sheet'
-import React, { forwardRef, useCallback, useMemo, useState } from 'react'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import React, {
+	forwardRef,
+	useCallback,
+	useEffect,
+	useMemo,
+	useState
+} from 'react'
 import {
 	Dimensions,
 	StyleSheet,
@@ -13,6 +20,7 @@ import {
 	View,
 	ViewStyle
 } from 'react-native'
+import { SvgXml } from 'react-native-svg'
 import { LevelButtons } from './LevelButtons'
 import Loader from './Loader'
 
@@ -25,12 +33,19 @@ interface CustomBottomSheetModalProps {
 	levelInfo: string
 	isFetching: boolean
 	isLoading: boolean
+	deckId: string
 }
 
 export type Ref = BottomSheetModal
 
 const CustomBottomSheetModal = forwardRef<Ref, CustomBottomSheetModalProps>(
-	({ deck, error, levels, levelInfo, isFetching, isLoading }, ref) => {
+	({ deck, error, levels, levelInfo, isFetching, isLoading, deckId }, ref) => {
+		const {
+			svgData,
+			isLoadingImage,
+			error: errorSvg
+		} = useFetchDeckSvg(deck?.image_id)
+
 		const renderBackdrop = useCallback(
 			(props: any) => (
 				<BottomSheetBackdrop
@@ -41,6 +56,24 @@ const CustomBottomSheetModal = forwardRef<Ref, CustomBottomSheetModalProps>(
 			),
 			[]
 		)
+		const [completedCount, setCompletedCount] = useState<any>(0)
+
+		useEffect(() => {
+			async function fetchData() {
+				try {
+					const storedCompletedCount = await AsyncStorage.getItem(
+						`completedCount_${deckId}`
+					)
+
+					if (storedCompletedCount) {
+						setCompletedCount(parseInt(storedCompletedCount))
+					}
+				} catch (e) {
+					console.error('Ошибка чтения из AsyncStorage:', e)
+				}
+			}
+			fetchData()
+		}, [deck, setCompletedCount, completedCount, ref, deckId])
 
 		const snapPoints = useMemo(() => ['80%'], [])
 
@@ -55,9 +88,13 @@ const CustomBottomSheetModal = forwardRef<Ref, CustomBottomSheetModalProps>(
 				{isFetching || isLoading ? (
 					<Loader />
 				) : (
-					<View style={{ flex: 1, marginBottom: 100, gap: 20 }}>
-						<DeckProgressBar deck={deck} />
-						<DeckInformation deck={deck} />
+					<View style={{ flex: 1, marginBottom: 65, gap: 20 }}>
+						<DeckProgressBar completedCount={completedCount} deck={deck} />
+						<DeckInformation
+							svgIcon={svgData}
+							isLoading={isLoadingImage}
+							deck={deck}
+						/>
 						<LevelInfo levelInfo={levelInfo} />
 						<LevelButtons levels={levels} />
 					</View>
@@ -69,37 +106,51 @@ const CustomBottomSheetModal = forwardRef<Ref, CustomBottomSheetModalProps>(
 
 const DeckInformation = ({
 	deck,
-	style
+	style,
+	svgIcon,
+	isLoading
 }: {
 	deck: IDeck | undefined
 	style?: ViewStyle
+	svgIcon: any
+	isLoading: boolean
 }) => (
 	<View style={[styles.commonInformation, style]}>
-		<DeckLogoModal />
-
-		<Text style={styles.deckTitle}>{deck?.name || 'Название колоды'}</Text>
+		{isLoading ? (
+			<Text>Loading...</Text>
+		) : svgIcon ? (
+			<View>
+				<SvgXml xml={svgIcon} width={121} height={118} />
+			</View>
+		) : (
+			<Text>SVG not available</Text>
+		)}
+		<Text style={styles.deckTitle}>
+			{deck?.name.toLowerCase() || 'Название колоды'}
+		</Text>
 		<Text style={styles.deckDescription}>
-			{deck?.description || 'Описание колоды'}
+			{deck?.description.toLowerCase() || 'описание колоды'}
 		</Text>
 	</View>
 )
 
 const DeckProgressBar = ({
+	completedCount,
 	deck,
 	style
 }: {
 	deck: IDeck | undefined
 	style?: ViewStyle
+	completedCount: number
 }) => {
 	const [pressHeart, setPressHeart] = useState(false)
-
 	return (
 		<View style={[styles.topContent, style]}>
 			<View style={styles.deckProgress}>
 				<View style={styles.progressBar}>
 					<View style={styles.progressColor}></View>
 				</View>
-				<Text style={styles.progressText}>30/100</Text>
+				<Text style={styles.progressText}>{`${completedCount}/100`}</Text>
 			</View>
 			<TouchableOpacity
 				style={styles.likes}
@@ -120,17 +171,6 @@ const DeckProgressBar = ({
 }
 
 const styles = StyleSheet.create({
-	wrapper: {
-		flex: 1,
-		width: width,
-		alignItems: 'center'
-	},
-	questionIcon: {
-		position: 'absolute',
-		right: 12,
-		bottom: 12,
-		zIndex: 1000
-	},
 	topContent: {
 		flexDirection: 'row',
 		justifyContent: 'space-between',
@@ -166,31 +206,21 @@ const styles = StyleSheet.create({
 		backgroundColor: '#F2F2F2',
 		borderRadius: 10
 	},
-	likesText: {
-		color: 'white',
-		marginRight: 5
-	},
+
 	commonInformation: {
 		marginTop: 20,
 		flex: 1,
 		justifyContent: 'center',
 		alignItems: 'center'
 	},
-	img: {
-		height: 180,
-		width: 180,
-		borderRadius: 75
-	},
+
 	deckTitle: {
 		color: Colors.deepGray,
 		fontSize: 20,
 		fontWeight: 'bold',
 		marginTop: 33
 	},
-	deckDescriptionContainer: {
-		marginTop: 10,
-		width: '85%'
-	},
+
 	deckDescription: {
 		width: '90%',
 		color: Colors.grey1,
@@ -199,23 +229,7 @@ const styles = StyleSheet.create({
 		textAlign: 'center',
 		marginTop: 33
 	},
-	levelsInfo: {
-		justifyContent: 'center',
-		alignItems: 'center'
-	},
-	levelsInfoText: {
-		color: Colors.grey1,
-		fontSize: 12,
-		fontWeight: '400'
-	},
-	sectionButtons: {
-		flexDirection: 'column',
-		justifyContent: 'center',
-		alignItems: 'center',
-		gap: 13,
-		marginTop: 30,
-		marginBottom: 30
-	},
+
 	bottomSheetModal: {
 		borderRadius: 32
 	}

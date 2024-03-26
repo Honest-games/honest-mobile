@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from 'react'
 import { useGetDecksQuery, useGetLevelsQuery } from '@/services/api'
 import { IDeck } from '@/services/types/types'
+import { useCallback, useEffect, useState } from 'react'
 
-const useDecks = () => {
+const useDeck = () => {
 	const {
 		data: decks,
 		isLoading: isLoadingDecks,
@@ -13,7 +13,7 @@ const useDecks = () => {
 	const { data: levels, isFetching: isFetchingLevels } =
 		useGetLevelsQuery(deckId)
 	const [selectedDeck, setSelectedDeck] = useState<IDeck>()
-	const [filtedDecks, setFilteredDecks] = useState<any>(decks)
+	const [filteredDecks, setFilteredDecks] = useState<IDeck[] | undefined>(decks)
 
 	useEffect(() => {
 		const findDeck = decks?.find((item: IDeck) => item.id === deckId.toString())
@@ -28,7 +28,7 @@ const useDecks = () => {
 
 	const onFilteredDecks = useCallback(
 		(text: string) => {
-			const result = decks?.filter(item =>
+			const result = decks?.filter((item: IDeck) =>
 				item.name.toLowerCase().includes(text.toLowerCase().trim())
 			)
 			setFilteredDecks(result || decks || [])
@@ -47,9 +47,9 @@ const useDecks = () => {
 		isFetchingLevels,
 		selectedDeck,
 		setSelectedDeck,
-		filtedDecks,
+		filteredDecks,
 		onFilteredDecks
 	}
 }
 
-export default useDecks
+export default useDeck

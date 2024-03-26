@@ -4,15 +4,15 @@ import { StyleSheet, View } from 'react-native'
 import { CustomLabel } from '../../UI/CustomLabel'
 
 interface LabelListProps {
-	labels: { id: number; title: string }[]
+	labels: any
 }
 
 const LabelList: React.FC<LabelListProps> = ({ labels }) => {
 	return (
 		<View style={styles.deckLabels}>
-			{labels.map(label => (
-				<CustomLabel labelColor={getLabelColor(label.title)} key={label.id}>
-					{label.title}
+			{labels.map((label: string, index: number) => (
+				<CustomLabel labelColor={getLabelColor(label)} key={index}>
+					{label}
 				</CustomLabel>
 			))}
 		</View>

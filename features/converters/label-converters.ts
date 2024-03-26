@@ -13,10 +13,13 @@ export function getLabelColor(inputText: string) {
 		case 'good to start':
 			labelColor = Colors.dimBlue
 			break
-		case 'couple':
+		case 'couples':
 			labelColor = Colors.dimOrange
 			break
 		case 'friends':
+			labelColor = Colors.dimBrown
+			break
+		case 'party':
 			labelColor = Colors.dimBrown
 			break
 		default:

@@ -1,0 +1,12 @@
+{
+	"welcome": "Welcome",
+	"message": "Hello, this is a message",
+	"play": "play",
+	"levelInfoThree": "there is gonna be 3 levels",
+	"levelInfoTwo": "there is gonna be 2 levels",
+	"levelInfoOne": "there is gonna be 1 level",
+	"levelInfoEmpty": "Error no level found",
+	"firstCard": "take first card",
+	"chooseLevel": "choose level",
+	"searchBarPlaceholder": "search for deck you want"
+}

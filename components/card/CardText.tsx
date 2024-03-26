@@ -1,13 +1,21 @@
+import Colors from '@/constants/Colors'
 import React from 'react'
-import { StyleSheet } from 'react-native'
-import Animated, { BounceIn } from 'react-native-reanimated'
+import { useTranslation } from 'react-i18next'
+import { StyleSheet, Text, View } from 'react-native'
 interface CardTextProps {
 	text: string
-	levelColor: string | undefined
+	levelColor: string
+	additionalText?: string
 }
 
-const CardText: React.FC<CardTextProps> = ({ text, levelColor }) => {
-	const isFirstCardInDeck = (text: string) => text === 'take first card'
+const CardText: React.FC<CardTextProps> = ({
+	text,
+	levelColor,
+	additionalText
+}) => {
+	const { t } = useTranslation()
+
+	const isFirstCardInDeck = (text: string) => text === 'firstCard'
 
 	const styles = StyleSheet.create({
 		cardText: {
@@ -15,13 +23,21 @@ const CardText: React.FC<CardTextProps> = ({ text, levelColor }) => {
 			fontWeight: 'bold',
 			color: levelColor,
 			textAlign: 'center'
+		},
+		additionalText: {
+			fontSize: 16,
+			textAlign: 'center',
+			color: Colors.grey1
 		}
 	})
 
 	return (
-		<Animated.Text entering={BounceIn} style={styles.cardText}>
-			{text}
-		</Animated.Text>
+		<View style={{ alignItems: 'center', flexDirection: 'column', gap: 22 }}>
+			{additionalText && (
+				<Text style={styles.additionalText}>{t(additionalText)}</Text>
+			)}
+			<Text style={styles.cardText}>{t(text)}</Text>
+		</View>
 	)
 }
 
