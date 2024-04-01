@@ -1,4 +1,5 @@
 import Colors from '@/constants/Colors'
+import useCard from '@/features/hooks/useCard'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
@@ -15,11 +16,11 @@ const CardText: React.FC<CardTextProps> = ({
 }) => {
 	const { t } = useTranslation()
 
-	const isFirstCardInDeck = (text: string) => text === 'firstCard'
+	const { isSpecialCard } = useCard()
 
 	const styles = StyleSheet.create({
 		cardText: {
-			fontSize: isFirstCardInDeck(text) ? 32 : 20,
+			fontSize: isSpecialCard(text) ? 32 : 20,
 			fontWeight: 'bold',
 			color: levelColor,
 			textAlign: 'center'

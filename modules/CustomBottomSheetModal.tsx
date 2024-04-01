@@ -1,6 +1,7 @@
 import { LevelInfo } from '@/UI/LevelInfo'
 import Colors from '@/constants/Colors'
 import useFetchDeckSvg from '@/features/hooks/useFetchDeckSvg'
+import { useDislikeDeckMutation, useLikeDeckMutation } from '@/services/api'
 import { IDeck, ILevelData } from '@/services/types/types'
 import { FontAwesome } from '@expo/vector-icons'
 import { BottomSheetBackdrop, BottomSheetModal } from '@gorhom/bottom-sheet'
@@ -46,6 +47,42 @@ const CustomBottomSheetModal = forwardRef<Ref, CustomBottomSheetModalProps>(
 			error: errorSvg
 		} = useFetchDeckSvg(deck?.image_id)
 
+		const [isLiked, setIsLiked] = useState<boolean>(false)
+		const [userId, setUserId] = useState<any>(null)
+		const [likeDeck] = useLikeDeckMutation()
+		const [dislikeDeck] = useDislikeDeckMutation()
+
+		useEffect(() => {
+			if (deckId) {
+				setIsLiked(false)
+			}
+		}, [deckId])
+		console.log(isLiked)
+		const getUser = async () => {
+			try {
+				const user = await AsyncStorage.getItem('user_id')
+				setUserId(user)
+			} catch (e) {
+				console.log(e)
+			}
+		}
+
+		useEffect(() => {
+			getUser()
+		}, [userId])
+
+		const handleLike = async () => {
+			const newLikeState = !isLiked
+
+			setIsLiked(newLikeState)
+
+			if (newLikeState) {
+				await likeDeck({ deckId, userId })
+			} else {
+				await dislikeDeck({ deckId, userId })
+			}
+		}
+
 		const renderBackdrop = useCallback(
 			(props: any) => (
 				<BottomSheetBackdrop
@@ -89,7 +126,12 @@ const CustomBottomSheetModal = forwardRef<Ref, CustomBottomSheetModalProps>(
 					<Loader />
 				) : (
 					<View style={{ flex: 1, marginBottom: 65, gap: 20 }}>
-						<DeckProgressBar completedCount={completedCount} deck={deck} />
+						<DeckProgressBar
+							handleLike={handleLike}
+							isLiked={isLiked}
+							completedCount={completedCount}
+							deck={deck}
+						/>
 						<DeckInformation
 							svgIcon={svgData}
 							isLoading={isLoadingImage}
@@ -117,7 +159,7 @@ const DeckInformation = ({
 }) => (
 	<View style={[styles.commonInformation, style]}>
 		{isLoading ? (
-			<Text>Loading...</Text>
+			<Loader />
 		) : svgIcon ? (
 			<View>
 				<SvgXml xml={svgIcon} width={121} height={118} />
@@ -137,11 +179,15 @@ const DeckInformation = ({
 const DeckProgressBar = ({
 	completedCount,
 	deck,
-	style
+	style,
+	handleLike,
+	isLiked
 }: {
 	deck: IDeck | undefined
 	style?: ViewStyle
 	completedCount: number
+	handleLike: () => void
+	isLiked: boolean
 }) => {
 	const [pressHeart, setPressHeart] = useState(false)
 	return (
@@ -152,16 +198,13 @@ const DeckProgressBar = ({
 				</View>
 				<Text style={styles.progressText}>{`${completedCount}/100`}</Text>
 			</View>
-			<TouchableOpacity
-				style={styles.likes}
-				onPress={() => setPressHeart(!pressHeart)}
-			>
+			<TouchableOpacity style={styles.likes} onPress={handleLike}>
 				<FontAwesome
 					style={{
 						marginLeft: 10,
 						marginRight: 10
 					}}
-					name={pressHeart ? 'heart' : 'heart-o'}
+					name={isLiked ? 'heart' : 'heart-o'}
 					size={16}
 					color={Colors.orange}
 				/>

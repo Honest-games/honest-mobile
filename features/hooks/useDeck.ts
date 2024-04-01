@@ -1,14 +1,17 @@
 import { useGetDecksQuery, useGetLevelsQuery } from '@/services/api'
 import { IDeck } from '@/services/types/types'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useCallback, useEffect, useState } from 'react'
+import { useAppSelector } from './useRedux'
 
 const useDeck = () => {
+	const language = useAppSelector(state => state.language.language)
 	const {
 		data: decks,
 		isLoading: isLoadingDecks,
 		isFetching: isFetchingDecks,
 		error
-	} = useGetDecksQuery()
+	} = useGetDecksQuery(language)
 	const [deckId, setDeckId] = useState('')
 	const { data: levels, isFetching: isFetchingLevels } =
 		useGetLevelsQuery(deckId)

@@ -8,6 +8,6 @@
 	"levelInfoEmpty": "Ошибка загрузки уровня",
 	"firstCard": "вытяните первую карту",
 	"chooseLevel": "Выберите уровень",
-
-	"searchBarPlaceholder": "найдите нужную вам колоду"
+	"chooseLevelContinue": "Вытяните карту чтобы продолжить",
+	"searchBarPlaceholder": "поиск колоды"
 }

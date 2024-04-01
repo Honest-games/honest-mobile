@@ -2,6 +2,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome'
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useFonts } from 'expo-font'
+import * as Localization from 'expo-localization'
 import { Stack, useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
@@ -25,18 +26,28 @@ export default function RootLayout() {
 	const [appReady, setAppReady] = useState(false)
 	const [splashAnimationFinished, setSplashAnimationFinished] = useState(false)
 	const router = useRouter()
-	// Expo Router uses Error Boundaries to catch errors in the navigation tree.
+	let [locale, setLocale] = useState<string>(
+		Localization.getLocales()[0].languageCode || 'ru'
+	)
 
 	useEffect(() => {
 		if (error) throw error
 	}, [error])
 
+	const saveLanguage = async () => {
+		const deviceLanguage = locale
+		try {
+			await AsyncStorage.setItem('language', deviceLanguage)
+		} catch (e) {
+			console.error('Ошибка при сохранении языка в AsyncStorage:', e)
+		}
+	}
+
 	const generateAndSaveUUID = async () => {
 		try {
 			const id = uuid.v4()
-
 			await AsyncStorage.setItem('user_id', id.toString())
-
+			// await saveLanguage(); // Сохранение языка устройства
 			console.log('UUID успешно сохранен:', id)
 		} catch (error) {
 			console.error('Ошибка при сохранении UUID в AsyncStorage:', error)
@@ -46,12 +57,11 @@ export default function RootLayout() {
 	const getData = async () => {
 		try {
 			const user = await AsyncStorage.getItem('user_id')
-			if (user !== null) {
+			if (!user) {
+				await generateAndSaveUUID() // Генерация и сохранение UUID и языка, если пользователь не найден
+			} else {
 				console.log('UUID успешно получен:', user)
-				return user
 			}
-
-			
 		} catch (e) {
 			console.error('Ошибка чтения из AsyncStorage:', e)
 		}
@@ -62,6 +72,7 @@ export default function RootLayout() {
 			// SplashScreen.hideAsync()
 
 			const user = getData()
+			console.log(user)
 			if (!user) {
 				generateAndSaveUUID()
 			}

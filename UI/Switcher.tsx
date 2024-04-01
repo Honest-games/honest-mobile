@@ -1,7 +1,15 @@
 import Colors from '@/constants/Colors'
+import { useAppDispatch, useAppSelector } from '@/features/hooks/useRedux'
+import { setLanguage } from '@/store/reducer/language-slice'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import React, { useState } from 'react'
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import {
+	Platform,
+	StyleSheet,
+	Text,
+	TouchableOpacity,
+	View
+} from 'react-native'
 import Animated, {
 	useAnimatedStyle,
 	useSharedValue,
@@ -17,8 +25,25 @@ const Switcher: React.FC<SwitcherProps> = ({
 	onLanguageChange,
 	switcherStyle
 }) => {
-	const [isEnglish, setIsEnglish] = useState(true)
-	const translateX = useSharedValue(0)
+	const dispatch = useAppDispatch()
+	const language = useAppSelector(state => state.language.language)
+
+	// Получаем язык из AsyncStorage и устанавливаем его в состояние isEnglish
+	const [isEnglish, setIsEnglish] = useState<boolean>(language === 'en')
+	const translateX = useSharedValue(language === 'en' ? 48 : 0)
+
+	useEffect(() => {
+		const fetchLanguage = async () => {
+			const storedLanguage = await AsyncStorage.getItem('language')
+			if (storedLanguage) {
+				setIsEnglish(storedLanguage === 'en')
+				translateX.value = withTiming(storedLanguage === 'en' ? 48 : 0, {
+					duration: 300
+				})
+			}
+		}
+		fetchLanguage()
+	}, [])
 
 	const animatedStyle = useAnimatedStyle(() => {
 		return {
@@ -27,16 +52,16 @@ const Switcher: React.FC<SwitcherProps> = ({
 	})
 
 	const toggleSwitch = async () => {
-		translateX.value = withTiming(isEnglish ? 48 : 0, { duration: 300 })
-		const newLanguageValue = isEnglish ? 'v2' : 'v1'
-		console.log(newLanguageValue)
+		const newLanguageValue = !isEnglish ? 'en' : 'ru'
 		try {
 			await AsyncStorage.setItem('language', newLanguageValue)
+			dispatch(setLanguage(newLanguageValue))
+			setIsEnglish(!isEnglish)
+			onLanguageChange(newLanguageValue)
+			translateX.value = withTiming(isEnglish ? 0 : 48, { duration: 300 })
 		} catch (e) {
 			console.error('Ошибка при сохранении языка в AsyncStorage:', e)
 		}
-		setIsEnglish(!isEnglish)
-		onLanguageChange(isEnglish ? 'ru' : 'en')
 	}
 
 	const localeRu = 'RU'
@@ -50,7 +75,10 @@ const Switcher: React.FC<SwitcherProps> = ({
 					<Text
 						style={[
 							styles.label,
-							{ color: isEnglish ? 'white' : Colors.grey1, marginLeft: 13 }
+							{
+								color: language !== 'en' ? 'white' : Colors.grey1,
+								marginLeft: Platform.OS === 'ios' ? 13 : 15
+							}
 						]}
 					>
 						{localeRu}
@@ -59,8 +87,8 @@ const Switcher: React.FC<SwitcherProps> = ({
 						style={[
 							styles.label,
 							{
-								color: isEnglish ? Colors.grey1 : 'white',
-								marginRight: 13,
+								color: language !== 'en' ? Colors.grey1 : 'white',
+								marginRight: Platform.OS === 'ios' ? 13 : 15,
 								zIndex: 100000
 							}
 						]}

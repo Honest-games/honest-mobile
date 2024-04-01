@@ -1,5 +1,5 @@
 import Colors from '@/constants/Colors'
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
+import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { Tabs } from 'expo-router'
 import React from 'react'
 
@@ -21,7 +21,7 @@ export default function TabLayout() {
 					)
 				}}
 			/> */}
-			<Tabs.Screen
+			{/* <Tabs.Screen
 				name='two'
 				options={{
 					tabBarLabel: 'Decks',
@@ -30,7 +30,7 @@ export default function TabLayout() {
 						<Ionicons name='heart' size={size} color={color} />
 					)
 				}}
-			/>
+			/> */}
 			<Tabs.Screen
 				name='index'
 				options={{
@@ -41,7 +41,7 @@ export default function TabLayout() {
 					)
 				}}
 			/>
-			<Tabs.Screen
+			{/* <Tabs.Screen
 				name='three'
 				options={{
 					tabBarLabel: 'Decks',
@@ -54,7 +54,7 @@ export default function TabLayout() {
 						/>
 					)
 				}}
-			/>
+			/> */}
 			{/* <Tabs.Screen
 				name='four'
 				options={{

@@ -5,7 +5,7 @@ import {
 	IQuestonLevelAndColor,
 	getLevelColor
 } from '@/features/converters/button-converters'
-import { useDeckId, useDeck } from '@/features/hooks'
+import { useDeck, useDeckId } from '@/features/hooks'
 import useFetchDeckSvg from '@/features/hooks/useFetchDeckSvg'
 import { useAppDispatch } from '@/features/hooks/useRedux'
 import Card from '@/modules/Card'
@@ -134,7 +134,7 @@ const DeckId: React.FC = () => {
 
 					setDisplayedQuestions(
 						filteredQuestions.length > 0
-							? filteredQuestions
+							? [{ text: 'chooseLevelContinue' }, ...filteredQuestions]
 							: [{ text: 'Карты в колоде кончились =(' }]
 					)
 				} else {
@@ -144,10 +144,6 @@ const DeckId: React.FC = () => {
 				// Устанавливаем deletedQuestions из AsyncStorage
 				if (storedDeletedQuestions) {
 					setDeletedQuestions(JSON.parse(storedDeletedQuestions))
-				}
-
-				if (storedButtonState) {
-					setButtonState(JSON.parse(storedButtonState))
 				}
 
 				if (storedCompletedCount) {
@@ -178,12 +174,7 @@ const DeckId: React.FC = () => {
 						JSON.stringify(deletedQuestions)
 					)
 				}
-				if (buttonState) {
-					await AsyncStorage.setItem(
-						`buttonState_${id}`,
-						JSON.stringify(buttonState)
-					)
-				}
+
 				if (countOfCompletedCards > 0) {
 					await AsyncStorage.setItem(
 						`completedCount_${id}`,
@@ -418,12 +409,6 @@ const DeckId: React.FC = () => {
 		buttonName: string,
 		colorButton: string
 	) => {
-		// setCountOfCompletedCards(prev => {
-		// 	const newCount = prev + 1
-		// 	AsyncStorage.setItem(`completedCount_${id}`, newCount.toString()) // Сохраняем обновленное значение
-		// 	return newCount
-		// })
-		// dispatch(incrementDeletedCards())
 		const colorOfLevel = getLevelColor(colorButton)
 
 		setIsFirstCardInDeck(false)
@@ -455,7 +440,6 @@ const DeckId: React.FC = () => {
 			loadQuestionsForLevel(level)
 		}
 	}, [displayedQuestions.length, level])
-
 	if (
 		isLoadingQuestions ||
 		isFetchingQuestions ||
@@ -468,7 +452,6 @@ const DeckId: React.FC = () => {
 	if (isError) {
 		return <Text>Произошла ошибка при загрузке данных</Text>
 	}
-
 	return (
 		<SafeAreaView style={styles.container}>
 			<View style={styles.deck}>
@@ -509,6 +492,7 @@ const DeckId: React.FC = () => {
 												text={question?.text}
 												rotate={rotate}
 												swipe={swipe}
+												questionId={question.id}
 												{...(!isFirstCardInDeck ? { ...dragHanlders } : null)}
 											/>
 										)

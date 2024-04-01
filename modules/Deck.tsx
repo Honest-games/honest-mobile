@@ -1,4 +1,6 @@
-import React, { useState } from 'react'
+import { useDislikeDeckMutation, useLikeDeckMutation } from '@/services/api'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import React, { useEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import LikeButton from '../UI/LikeButton'
 import DeckAdditionalButton from '../components/deck/DeckAdditionalButton'
@@ -32,10 +34,39 @@ function Deck({
 	// isFetching,
 	// isLoading
 }: DeckProps) {
-	const [pressHeart, setPressHeart] = useState(false)
+	const [isLiked, setIsLiked] = useState<boolean | null>(null)
+	const [userId, setUserId] = useState<any>(null)
+	const [likeDeck] = useLikeDeckMutation()
+	const [dislikeDeck] = useDislikeDeckMutation()
+
+	const getUser = async () => {
+		try {
+			const user = await AsyncStorage.getItem('user_id')
+			setUserId(user)
+		} catch (e) {
+			console.log(e)
+		}
+	}
+
+	useEffect(() => {
+		getUser()
+	}, [userId])
+
+	// Функция для обработки нажатия на кнопку
+	const handleLike = async () => {
+		const newLikeState = !isLiked
+
+		setIsLiked(newLikeState)
+
+		if (newLikeState) {
+			await likeDeck({ id, userId })
+		} else {
+			await dislikeDeck({ id, userId })
+		}
+	}
 
 	const labels = labelsString?.split(';')
-	
+
 	return (
 		<View style={styles.deck} key={id}>
 			<View style={{ flexDirection: 'column', margin: 12, flex: 1 }}>
@@ -49,7 +80,7 @@ function Deck({
 				>
 					<LabelList labels={labels} />
 
-					<LikeButton pressHeart={pressHeart} setPressHeart={setPressHeart} />
+					<LikeButton handleLike={handleLike} isLiked={isLiked} />
 				</View>
 				<DeckInfo imageId={imageId} title={title} id={id} />
 

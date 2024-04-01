@@ -15,10 +15,12 @@ import {
 	persistStore
 } from 'redux-persist'
 import cardsOfDeckReducer from './reducer/deck-slice'
+import languageReducer from './reducer/language-slice'
 
 const rootReducer = combineReducers({
 	[api.reducerPath]: api.reducer,
-	cardsOfDeck: cardsOfDeckReducer
+	cardsOfDeck: cardsOfDeckReducer,
+	language: languageReducer
 })
 
 const persistConfig = {

@@ -1,5 +1,6 @@
 import Colors from '@/constants/Colors'
 import useFetchDeckSvg from '@/features/hooks/useFetchDeckSvg'
+import Loader from '@/modules/Loader'
 import { Link } from 'expo-router'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
@@ -19,7 +20,7 @@ const DeckInfo: React.FC<DeckInfoProps> = ({ title, id, imageId }) => {
 	return (
 		<View style={styles.commonInformaion}>
 			{isLoadingImage ? (
-				<Text>Loading...</Text>
+				<Loader />
 			) : svgData ? (
 				<View style={{ position: 'absolute', bottom: 95 }}>
 					<SvgXml xml={svgData} width={83} height={70} />

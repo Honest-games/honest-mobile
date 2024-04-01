@@ -1,7 +1,12 @@
 import CardLikeButton from '@/components/card/CardLikeButton'
 import Colors from '@/constants/Colors'
 import { IQuestonLevelAndColor } from '@/features/converters/button-converters'
-import React, { memo, useState } from 'react'
+import {
+	useDislikeQuestionMutation,
+	useLikeQuestionMutation
+} from '@/services/api'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import React, { memo, useEffect, useState } from 'react'
 import { Animated, Dimensions, StyleSheet, View } from 'react-native'
 import { SharedValue } from 'react-native-reanimated'
 import CardText from '../components/card/CardText'
@@ -29,6 +34,7 @@ interface ICard {
 	swipe?: any
 	rotate?: any
 	isFirst: any
+	questionId: string
 }
 
 const Card = memo((props: ICard) => {
@@ -47,15 +53,45 @@ const Card = memo((props: ICard) => {
 		additionalText,
 		swipe,
 		isFirst,
+		questionId,
 		...rest
 	} = props
+
+	const [isLiked, setIsLiked] = useState<boolean | null>(null)
+	const [userId, setUserId] = useState<any>(null)
+	const [likeDeck] = useLikeQuestionMutation()
+	const [dislikeDeck] = useDislikeQuestionMutation()
+
+	const getUser = async () => {
+		try {
+			const user = await AsyncStorage.getItem('user_id')
+			setUserId(user)
+		} catch (e) {
+			console.log(e)
+		}
+	}
+
+	useEffect(() => {
+		getUser()
+	}, [userId])
+
+	const handleLike = async () => {
+		const newLikeState = !isLiked
+
+		setIsLiked(newLikeState)
+
+		if (newLikeState) {
+			await likeDeck({ questionId, userId })
+		} else {
+			await dislikeDeck({ questionId, userId })
+		}
+	}
 
 	const [press, setPress] = useState(false)
 
 	const levelColor = level ? level?.levelBgColor : Colors.deepBlue
 
 	const isStartedSwipeAnimation = isFirst && !isLastCardInDeck
-
 	const styles = StyleSheet.create({
 		card: {
 			flex: 1,
@@ -87,16 +123,6 @@ const Card = memo((props: ICard) => {
 		inputRange: [-100, 0, 100],
 		outputRange: ['8deg', '0deg', '-8deg']
 	})
-	const likeOpacity = swipe.x.interpolate({
-		inputRange: [10, 100],
-		outputRange: [0, 1],
-		extrapolate: 'clamp'
-	})
-	const rejectOpacity = swipe.x.interpolate({
-		inputRange: [-100, -10],
-		outputRange: [1, 0],
-		extrapolate: 'clamp'
-	})
 
 	return (
 		<Animated.View
@@ -117,7 +143,11 @@ const Card = memo((props: ICard) => {
 							text={text}
 							levelColor={levelColor}
 						/>
-						<CardLikeButton level={level} press={press} setPress={setPress} />
+						<CardLikeButton
+							level={level}
+							handleLike={handleLike}
+							isLiked={isLiked}
+						/>
 						{/* <View>
 							<Text>{index}</Text>
 						</View> */}

@@ -4,25 +4,25 @@ import { FontAwesome } from '@expo/vector-icons'
 import Colors from '@/constants/Colors'
 
 interface LikeButtonProps {
-	pressHeart: boolean
-	setPressHeart: React.Dispatch<React.SetStateAction<boolean>>
+	handleLike: () => void,
+	isLiked: boolean | null
 }
 
 const LikeButton: React.FC<LikeButtonProps> = ({
-	pressHeart,
-	setPressHeart
+	handleLike,
+	isLiked
 }) => {
 	return (
 		<TouchableOpacity
 			style={styles.likes}
-			onPress={() => setPressHeart(!pressHeart)}
+			onPress={handleLike}
 		>
 			<FontAwesome
 				style={{
 					marginLeft: 10,
 					marginRight: 10
 				}}
-				name={pressHeart ? 'heart' : 'heart-o'}
+				name={isLiked ? 'heart' : 'heart-o'}
 				size={16}
 				color={Colors.orange}
 			/>

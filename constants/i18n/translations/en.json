@@ -8,5 +8,6 @@
 	"levelInfoEmpty": "Error no level found",
 	"firstCard": "take first card",
 	"chooseLevel": "choose level",
-	"searchBarPlaceholder": "search for deck you want"
+	"chooseLevelContinue": "Choose a card to continue",
+	"searchBarPlaceholder": "search"
 }
