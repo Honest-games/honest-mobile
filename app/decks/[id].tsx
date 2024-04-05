@@ -146,27 +146,27 @@ const DeckId: React.FC = () => {
 	})
 
 	const [swiped, setSwiped] = useState(false)
-	if(swiped){
-		time2 = useRef(Date.now()).current
-	}
-	getQuestion(time2)
-	useEffect(() => {
-		if(swiped){
-			setSwiped(false)
-		}
-	}, [swiped]);
+	// if(swiped){
+	// 	time2 = useRef(Date.now()).current
+	// }
+	// getQuestion(time2)
+	// useEffect(() => {
+	// 	if(swiped){
+	// 		setSwiped(false)
+	// 	}
+	// }, [swiped]);
 
 	console.log("AAA" + displayedQuestions ? JSON.stringify(displayedQuestions) : displayedQuestions)
 
 	const removeCard = useCallback(() => {
 		console.log("BB" + displayedQuestions)
 		if (displayedQuestions.length > 0) {
-			setDisplayedQuestions(prevState => prevState.slice(1)) // Удаляем первую карточку
-			const time = useRef(Date.now()).current
+			// setDisplayedQuestions(prevState => prevState.slice(1)) // Удаляем первую карточку
+			// const time = useRef(Date.now()).current
 		}
 		swipe.setValue({ x: 0, y: 0 })
 		setSwipeDirection(prevDirection => -prevDirection)
-		setSwiped(true)
+		// setSwiped(true)
 	}, [swipe, displayedQuestions, id])
 
 	const handleSelection = useCallback(
