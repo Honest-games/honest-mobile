@@ -5,14 +5,14 @@ import {
 	IQuestonLevelAndColor,
 	getLevelColor
 } from '@/features/converters/button-converters'
-import {useDeck, useDeckId, useLevelQuestion} from '@/features/hooks'
+import { useDeck, useDeckId } from '@/features/hooks'
 import useFetchDeckSvg from '@/features/hooks/useFetchDeckSvg'
 import { useAppDispatch } from '@/features/hooks/useRedux'
 import Card from '@/modules/Card'
 import { LevelButtons } from '@/modules/LevelButtons'
 import Loader from '@/modules/Loader'
-import {useGetAllQuestionsQuery, useGetLevelsQuery, useGetQuestionQuery} from '@/services/api'
-import { IDeck, ILevelData, IQuestion } from '@/services/types/types'
+import { useGetLevelsQuery, useGetQuestionQuery } from '@/services/api'
+import { IDeck, IQuestion } from '@/services/types/types'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useLocalSearchParams } from 'expo-router'
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
@@ -21,7 +21,6 @@ import {
 	Dimensions,
 	PanResponder,
 	StyleSheet,
-	Text,
 	View
 } from 'react-native'
 import { useSharedValue } from 'react-native-reanimated'
@@ -54,54 +53,82 @@ const DeckId: React.FC = () => {
 	} = useFetchDeckSvg(selectedDeck?.image_id)
 
 	const time = useRef(Date.now()).current
-	const [userId, setUserId] = useState("")
+	const [userId, setUserId] = useState('')
 	useEffect(() => {
-		(async ()=> {
+		;(async () => {
 			const userIdFromAS = await AsyncStorage.getItem('user_id')
-			if(userIdFromAS) setUserId(userIdFromAS)
+			if (userIdFromAS) setUserId(userIdFromAS)
 		})()
-	});
-	const [displayedQuestions, setDisplayedQuestions] = useState<any[]>([])
+	})
+	const [displayedQuestions, setDisplayedQuestions] = useState<any[]>([
+		{ text: 'firstCard' }
+	])
 	const {
 		data: levels,
 		isFetching: isFetchingLevels,
 		isLoading: isLoadingLevels
-	} = useGetLevelsQuery({deckId: id.toString(), time})
+	} = useGetLevelsQuery({ deckId: id.toString(), time })
 	const { goBack } = useDeckId()
 	const [buttonState, setButtonState] = useState<IQuestonLevelAndColor>()
 
 	const [level, setLevel] = useState<string>('')
 	const activeIndex = useSharedValue(0)
 
+	const getQuestion = useCallback(
+		(time: number) => {
+			const {
+				data: question,
+				isFetching: isFetchingQ,
+				isLoading: isLoadingQ
+			} = useGetQuestionQuery({
+				levelId: level,
+				clientId: userId,
+				timestamp: time
+			})
+			console.log(userId, time)
+			console.log('q' + JSON.stringify(question))
+			console.log(JSON.stringify(displayedQuestions))
 
-	const getQuestion = useCallback((time: number)=>{
-		const {
-			data: question,
-			isFetching: isFetchingQ,
-			isLoading: isLoadingQ
-		} = useGetQuestionQuery({levelId: level, clientId: userId, timestamp: time})
-		console.log(userId, time)
-		console.log("q" + JSON.stringify(question))
-		console.log(JSON.stringify(displayedQuestions))
+			// const {
+			// 	data: question2,
+			// 	isFetching: isFetchingQ2,
+			// 	isLoading: isLoadingQ2
+			// } = useGetQuestionQuery({levelId: level, clientId: userId, timestamp: time/2})
+			// console.log(userId, time)
+			// console.log("q" + JSON.stringify(question2))
+			// console.log(JSON.stringify(displayedQuestions))
 
-		// const {
-		// 	data: question2,
-		// 	isFetching: isFetchingQ2,
-		// 	isLoading: isLoadingQ2
-		// } = useGetQuestionQuery({levelId: level, clientId: userId, timestamp: time/2})
-		// console.log(userId, time)
-		// console.log("q" + JSON.stringify(question2))
-		// console.log(JSON.stringify(displayedQuestions))
+			useEffect(() => {
+				// setDisplayedQuestions(prevState => prevState.slice(1))
+				if (question) {
+					const newQuestions = [...displayedQuestions]
+					newQuestions.push(question)
+					setDisplayedQuestions(x => newQuestions)
+				}
+			}, [question])
+		},
+		[displayedQuestions]
+	)
 
-		useEffect(() => {
-			// setDisplayedQuestions(prevState => prevState.slice(1))
-			if(question) {
-				const newQuestions = [...displayedQuestions]
-				newQuestions.push(question)
-				setDisplayedQuestions(x=>newQuestions)
-			}
-		}, [question]);
-	}, [displayedQuestions])
+	const loadQuestions = useCallback(async () => {
+		const questionsToLoad = 3
+		let newQuestions = []
+
+		for (let i = 0; i < questionsToLoad; i++) {
+			const time = Date.now() + i // Уникальная временная метка для каждого запроса
+			const { data: question } = useGetQuestionQuery({
+				levelId: level,
+				clientId: userId,
+				timestamp: time
+			})
+			if (question) newQuestions.push(question)
+		}
+
+		setDisplayedQuestions(currentQuestions => [
+			...currentQuestions,
+			...newQuestions
+		])
+	}, [level, userId])
 
 	getQuestion(time)
 	const [time2, setTime2] = useState(Date.now())
@@ -146,15 +173,16 @@ const DeckId: React.FC = () => {
 	})
 
 	const [swiped, setSwiped] = useState(false)
+
 	useEffect(() => {
-		if(swiped){
+		if (swiped) {
 			setTime2(Date.now())
 			setSwiped(false)
 		}
-	}, [swiped]);
+	}, [swiped])
 
 	const removeCard = useCallback(() => {
-		console.log("BB" + displayedQuestions)
+		console.log('BB' + displayedQuestions)
 		if (displayedQuestions.length > 0) {
 			setDisplayedQuestions(prevState => prevState.slice(1)) // Удаляем первую карточку
 		}
@@ -174,9 +202,7 @@ const DeckId: React.FC = () => {
 		[removeCard]
 	)
 
-	const loadQuestionsForLevel = async (levelId: string) => {
-
-	}
+	const loadQuestionsForLevel = async (levelId: string) => {}
 
 	const backToDecks = () => {
 		goBack()
@@ -215,11 +241,7 @@ const DeckId: React.FC = () => {
 		}
 	}, [isButtonPressed])
 
-	if (
-		isFetchingLevels ||
-		isLoadingLevels ||
-		!displayedQuestions
-	) {
+	if (isFetchingLevels || isLoadingLevels || !displayedQuestions) {
 		return <Loader />
 	}
 
@@ -267,7 +289,7 @@ const DeckId: React.FC = () => {
 												rotate={rotate}
 												swipe={swipe}
 												questionId={question.id}
-												{...({ ...dragHanlders })}
+												{...{ ...dragHanlders }}
 											/>
 										)
 									})
