@@ -27,7 +27,7 @@ import { IDeck, ILevelData, IQuestion } from './types/types'
 
 export const api = createApi({
 	reducerPath: 'api',
-	baseQuery: fetchBaseQuery({ baseUrl: 'http://logotipiwe.ru/haur/api/' }),
+	baseQuery: fetchBaseQuery({ baseUrl: 'https://logotipiwe.ru/haur/api/' }),
 	endpoints: builder => ({
 		getDecks: builder.query<IDeck[], any>({
 			query: (x: { language: string; time: number }) =>

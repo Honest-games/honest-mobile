@@ -7,7 +7,7 @@ import { IDeck } from '../types/types'
 export const apiV2 = createApi({
 	reducerPath: 'api',
 	baseQuery: fetchBaseQuery({
-		baseUrl: 'http://logotipiwe.ru/haur/api/v2/decks?languageCode=en'
+		baseUrl: 'https://logotipiwe.ru/haur/api/v2/decks?languageCode=en'
 	}),
 	endpoints: builder => ({
 		getDecksV2: builder.query<IDeck[], void>({
