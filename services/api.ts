@@ -30,24 +30,28 @@ export const api = createApi({
 	baseQuery: fetchBaseQuery({ baseUrl: 'http://logotipiwe.ru/haur/api/' }),
 	endpoints: builder => ({
 		getDecks: builder.query<IDeck[], any>({
-			query: language => `/v2/decks?languageCode=${language}`
+			query: (x: { language: string; time: number }) =>
+				`/v2/decks?languageCode=${x.language}`
 		}),
-		getLevels: builder.query<ILevelData[], string>({
-			query: deckId => `v1/levels?deckId=${deckId}`
+		getLevels: builder.query<ILevelData[], { deckId: string, time: number }>({
+			query: (x: { deckId: string; time: number }) =>
+				`v1/levels?deckId=${x.deckId}`
 		}),
 		getQuestion: builder.query<
 			IQuestion,
-			{ levelId: string; clientId: string }
+			{ levelId: string; clientId: string; timestamp: number }
 		>({
-			query: ({ levelId, clientId }) =>
+			query: ({ levelId, clientId, timestamp }) =>
 				`v1/question?&levelId=${levelId}&clientId=${clientId}`
 		}),
 		getAllQuestions: builder.query<any, any>({
-			query: deckId => `v1/deck/${deckId}/questions`
+			query: (x: { deckId: string; time: number }) =>
+				`v1/deck/${x.deckId}/questions`
 		}),
 
 		getVectorImage: builder.query<any, any>({
-			query: imageId => `v1/get-vector-image/${imageId}`,
+			query: (x: { imageId: string; time: number }) =>
+				`v1/get-vector-image/${x.imageId}`,
 			transformResponse: (response: Response) => response.text()
 		}),
 		likeDeck: builder.mutation<FetchArgs | any, any>({

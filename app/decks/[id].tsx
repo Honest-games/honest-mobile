@@ -5,7 +5,7 @@ import {
 	IQuestonLevelAndColor,
 	getLevelColor
 } from '@/features/converters/button-converters'
-import { useDeck, useDeckId } from '@/features/hooks'
+import {useDeck, useDeckId, useLevelQuestion} from '@/features/hooks'
 import useFetchDeckSvg from '@/features/hooks/useFetchDeckSvg'
 import { useAppDispatch } from '@/features/hooks/useRedux'
 import Card from '@/modules/Card'
@@ -53,59 +53,40 @@ const DeckId: React.FC = () => {
 		error: errorSvg
 	} = useFetchDeckSvg(selectedDeck?.image_id)
 
-	const {
-		data: questions,
-		isLoading: isLoadingQuestions,
-		isError,
-		isFetching: isFetchingQuestions
-	} = useGetAllQuestionsQuery(id)
+	const time = useRef(Date.now()).current
+	// const {
+	// 	data: questions,
+	// 	isLoading: isLoadingQuestions,
+	// 	isError,
+	// 	isFetching: isFetchingQuestions
+	// } = useGetAllQuestionsQuery({deckId: id, time})
+	const [userId, setUserId] = useState("")
+	useEffect(() => {
+		(async ()=> {
+			const userId = await AsyncStorage.getItem('user_id')
+			if(userId) setUserId(userId)
+		})()
+	});
+	const [displayedQuestions, setDisplayedQuestions] = useState<any[]>([])
+
 	const {
 		data: levels,
 		isFetching: isFetchingLevels,
 		isLoading: isLoadingLevels
-	} = useGetLevelsQuery(id.toString())
+	} = useGetLevelsQuery({deckId: id.toString(), time})
+	// if (
+	// 	isFetchingLevels || isLoadingLevels || !levels || levels.length === 0 || !userId
+	// ) {
+	// 	return <Loader />
+	// }
 	const { goBack } = useDeckId()
 	const [buttonState, setButtonState] = useState<IQuestonLevelAndColor>()
 
 	const [level, setLevel] = useState<string>('')
 	const activeIndex = useSharedValue(0)
 
-	const [questionsByLevel, setQuestionsByLevel] = useState<
-		Record<string, IQuestion[]>
-	>({})
-
-	const [chunkIndexByLevel, setChunkIndexByLevel] = useState<
-		Record<string, number>
-	>({})
-
-	const [chunkIndexByLevelCopy, setChunkIndexByLevelCopy] = useState<
-		Record<string, number>
-	>({})
-
-	const [incrementChunkIndexByLevel, setIncrementChunkIndexByLevel] = useState<
-		Record<string, number>
-	>({})
-
-	const [lastQuestionIndexByLevel, setLastQuestionIndexByLevel] = useState<
-		Record<string, number>
-	>({})
-
-	const [displayedQuestions, setDisplayedQuestions] = useState<any[]>([])
-
-	const [deletedQuestions, setDeletedQuestions] = useState<any[]>([])
-
-	const [countOfCompletedCards, setCountOfCompletedCards] = useState<number>(0)
-	const [isFirstCardInDeck, setIsFirstCardInDeck] = useState(true)
-	const [isLastCardInDeck, setIsLastCardInDeck] = useState(false)
-
-	const [currentIndexByLevel, setCurrentIndexByLevel] = useState<
-		Record<string, number>
-	>({})
-
-	const lastSwipe = useRef(Date.now())
-
 	const levelInfoText = 'chooseLevel'
-	useEffect(() => {
+	 /*useEffect(() => {
 		async function fetchData() {
 			try {
 				const storedQuestions = await AsyncStorage.getItem(
@@ -157,44 +138,9 @@ const DeckId: React.FC = () => {
 		}
 
 		fetchData()
-	}, [id])
+	}, [id])*/
 
-	useEffect(() => {
-		async function saveData() {
-			try {
-				if (displayedQuestions.length > 0) {
-					await AsyncStorage.setItem(
-						`displayedQuestions_${id}`,
-						JSON.stringify(displayedQuestions)
-					)
-				}
-				if (deletedQuestions.length > 0) {
-					await AsyncStorage.setItem(
-						`deletedQuestions_${id}`,
-						JSON.stringify(deletedQuestions)
-					)
-				}
-
-				if (countOfCompletedCards > 0) {
-					await AsyncStorage.setItem(
-						`completedCount_${id}`,
-						countOfCompletedCards.toString()
-					)
-				}
-			} catch (e) {
-				console.error('Ошибка сохранения в AsyncStorage:', e)
-			}
-		}
-		saveData()
-	}, [
-		displayedQuestions,
-		deletedQuestions,
-		buttonState,
-		countOfCompletedCards,
-		id
-	])
-
-	useEffect(() => {
+	/*useEffect(() => {
 		if (questions && levels) {
 			const groupedQuestions = levels.reduce(
 				(acc: Record<string, IQuestion[]>, level: ILevelData) => {
@@ -226,7 +172,12 @@ const DeckId: React.FC = () => {
 				setIncrementChunkIndexByLevel(prev => ({ ...prev, [level.ID]: 0 }))
 			})
 		}
-	}, [questions, levels, deletedQuestions])
+	}, [questions, levels, deletedQuestions])*/
+
+
+
+	// const { question, refetch, isLoading, isError } = useLevelQuestion(level, userId)
+	// console.log(question)
 
 	const [swipeDirection, setSwipeDirection] = useState(-1) //s Начинаем с направления влево (-1)
 	const [isButtonPressed, setIsButtonPressed] = useState(false)
@@ -268,7 +219,7 @@ const DeckId: React.FC = () => {
 		if (displayedQuestions.length > 0) {
 			const removedQuestion = displayedQuestions[0] // Получаем первую карточку
 			setDisplayedQuestions(prevState => prevState.slice(1)) // Удаляем первую карточку
-			setDeletedQuestions(prevDeleted => {
+			/*setDeletedQuestions(prevDeleted => {
 				// Проверяем, содержится ли удаляемый вопрос уже в массиве удаленных вопросов
 				const isAlreadyDeleted = prevDeleted.some(
 					dq => dq.id === removedQuestion.id
@@ -286,7 +237,7 @@ const DeckId: React.FC = () => {
 					return newDeletedQuestions
 				}
 				return prevDeleted
-			})
+			})*/
 		}
 		swipe.setValue({ x: 0, y: 0 })
 		setSwipeDirection(prevDirection => -prevDirection)
@@ -304,13 +255,13 @@ const DeckId: React.FC = () => {
 	)
 
 	const loadQuestionsForLevel = async (levelId: string) => {
-		if (chunkIndexByLevel[levelId] < 0) {
+		/*if (chunkIndexByLevel[levelId] < 0) {
 			setDisplayedQuestions([{ text: 'Карты в колоде кончились =(' }])
-			setIsLastCardInDeck(true)
-		}
+			// setIsLastCardInDeck(true)
+		}*/
 
-		if (!questionsByLevel[levelId] || chunkIndexByLevel[levelId] < 0) {
-			// Перезагрузка вопросов уровня
+		// if (!questionsByLevel[levelId] || chunkIndexByLevel[levelId] < 0) {
+			/*// Перезагрузка вопросов уровня
 			const reloadedQuestions = questions
 				.filter((q: any) => q.level_id === levelId)
 				.filter((q: any) => !deletedQuestions.some(dq => dq.id === q.id))
@@ -324,9 +275,9 @@ const DeckId: React.FC = () => {
 					'Ошибка при удалении deletedQuestions из AsyncStorage:',
 					e
 				)
-			}
+			}*/
 
-			// Обновление состояний для вопросов уровня
+			/*// Обновление состояний для вопросов уровня
 			setQuestionsByLevel(prev => ({ ...prev, [levelId]: reloadedQuestions }))
 			setChunkIndexByLevel(prev => ({
 				...prev,
@@ -340,12 +291,12 @@ const DeckId: React.FC = () => {
 			} else {
 				setDisplayedQuestions(reloadedQuestions.slice(0, CHUNK_SIZE))
 				setIsLastCardInDeck(false)
-			}
+			}*/
 
-			return
-		}
+			// return
+		// }
 
-		const currentIncrementalChunkIndex =
+		/*const currentIncrementalChunkIndex =
 			incrementChunkIndexByLevel[levelId] || 0
 		let newQuestions: any[] = []
 
@@ -360,9 +311,9 @@ const DeckId: React.FC = () => {
 				currentIncrementalChunkIndex,
 				currentIncrementalChunkIndex + CHUNK_SIZE
 			)
-		}
+		}*/
 
-		if (deletedQuestions)
+		/*if (deletedQuestions)
 			setDisplayedQuestions(prev => {
 				const isQuestionsSame = newQuestions?.every(
 					(newQuestion, i) => prev[i] && newQuestion.id === prev[i].id
@@ -373,9 +324,9 @@ const DeckId: React.FC = () => {
 				}
 
 				return [...prev, ...newQuestions]
-			})
+			})*/
 
-		setChunkIndexByLevel(prev => ({
+		/*setChunkIndexByLevel(prev => ({
 			...prev,
 			[levelId]: chunkIndexByLevel[levelId] - CHUNK_SIZE
 		}))
@@ -383,11 +334,11 @@ const DeckId: React.FC = () => {
 		setIncrementChunkIndexByLevel(prev => ({
 			...prev,
 			[levelId]: currentIncrementalChunkIndex + CHUNK_SIZE
-		}))
+		}))*/
 	}
 
 	const backToDecks = () => {
-		// Создаём новый объект для обновленного состояния
+		/*// Создаём новый объект для обновленного состояния
 		const updatedQuestionsByLevel = { ...questionsByLevel }
 
 		// Перебираем каждый уровень и фильтруем вопросы
@@ -400,7 +351,7 @@ const DeckId: React.FC = () => {
 		// Обновляем состояние questionsByLevel
 		setQuestionsByLevel(updatedQuestionsByLevel)
 
-		// Возвращаем пользователя назад
+		// Возвращаем пользователя назад*/
 		goBack()
 	}
 
@@ -411,18 +362,18 @@ const DeckId: React.FC = () => {
 	) => {
 		const colorOfLevel = getLevelColor(colorButton)
 
-		setIsFirstCardInDeck(false)
+		// setIsFirstCardInDeck(false)
 		setButtonState({ levelBgColor: colorOfLevel, levelTitle: buttonName })
 		if (level !== levelId) {
 			setLevel(levelId)
 			setDisplayedQuestions([])
 			loadQuestionsForLevel(levelId)
-			setIsLastCardInDeck(false)
+			// setIsLastCardInDeck(false)
 		}
 		handleSelection(swipeDirection)
 
 		setIsButtonPressed(true)
-		setCountOfCompletedCards(prevCount => prevCount + 1)
+		// setCountOfCompletedCards(prevCount => prevCount + 1)
 	}
 
 	useEffect(() => {
@@ -435,23 +386,23 @@ const DeckId: React.FC = () => {
 		}
 	}, [isButtonPressed])
 
-	useEffect(() => {
+	/*useEffect(() => {
 		if ((displayedQuestions.length < 2 && level) || isLastCardInDeck) {
 			loadQuestionsForLevel(level)
 		}
-	}, [displayedQuestions.length, level])
+	}, [displayedQuestions.length, level])*/
 	if (
-		isLoadingQuestions ||
-		isFetchingQuestions ||
+		// isLoadingQuestions ||
+		// isFetchingQuestions ||
 		isFetchingLevels ||
 		isLoadingLevels
 	) {
 		return <Loader />
 	}
 
-	if (isError) {
-		return <Text>Произошла ошибка при загрузке данных</Text>
-	}
+	// if (isError) {
+	// 	return <SafeAreaView style={styles.container}><Text>Произошла ошибка при загрузке данных</Text></SafeAreaView>
+	// }
 	return (
 		<SafeAreaView style={styles.container}>
 			<View style={styles.deck}>
@@ -480,8 +431,8 @@ const DeckId: React.FC = () => {
 										return (
 											<Card
 												additionalText={question.additional_text}
-												isLastCardInDeck={isLastCardInDeck}
-												isFirstCardInDeck={isFirstCardInDeck}
+												isLastCardInDeck={false}
+												isFirstCardInDeck={false}
 												numOfCards={displayedQuestions?.length || 0}
 												key={`${question.id}-${index}`}
 												index={index}
@@ -493,7 +444,7 @@ const DeckId: React.FC = () => {
 												rotate={rotate}
 												swipe={swipe}
 												questionId={question.id}
-												{...(!isFirstCardInDeck ? { ...dragHanlders } : null)}
+												{...({ ...dragHanlders })}
 											/>
 										)
 									})

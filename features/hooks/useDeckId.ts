@@ -5,7 +5,7 @@ import {
 import { useGetAllQuestionsQuery, useGetLevelsQuery } from '@/services/api'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { useEffect, useState } from 'react'
+import {useEffect, useRef, useState} from 'react'
 import { Dimensions } from 'react-native'
 import {
 	useAnimatedStyle,
@@ -51,8 +51,9 @@ const useDeckId = () => {
 		getUserId()
 	}, [userId])
 
+	const time = useRef(Date.now()).current
 	const { data: levels, isFetching: isFetchingLevels } = useGetLevelsQuery(
-		id.toString()
+		{deckId: id.toString(), time}
 	)
 
 	const {
