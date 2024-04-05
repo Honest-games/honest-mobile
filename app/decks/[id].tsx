@@ -97,14 +97,14 @@ const DeckId: React.FC = () => {
 			// setDisplayedQuestions(prevState => prevState.slice(1))
 			if(question) {
 				const newQuestions = [...displayedQuestions]
-				newQuestions.unshift(question)
+				newQuestions.push(question)
 				setDisplayedQuestions(x=>newQuestions)
 			}
 		}, [question]);
 	}, [displayedQuestions])
 
 	getQuestion(time)
-	let time2 = useRef(Date.now()).current
+	const [time2, setTime2] = useState(Date.now())
 	getQuestion(time2)
 
 	const levelInfoText = 'chooseLevel'
@@ -146,28 +146,22 @@ const DeckId: React.FC = () => {
 	})
 
 	const [swiped, setSwiped] = useState(false)
-	// if(swiped){
-	// 	time2 = useRef(Date.now()).current
-	// }
-	// getQuestion(time2)
-	// useEffect(() => {
-	// 	if(swiped){
-	// 		setSwiped(false)
-	// 	}
-	// }, [swiped]);
-
-	console.log("AAA" + displayedQuestions ? JSON.stringify(displayedQuestions) : displayedQuestions)
+	useEffect(() => {
+		if(swiped){
+			setTime2(Date.now())
+			setSwiped(false)
+		}
+	}, [swiped]);
 
 	const removeCard = useCallback(() => {
 		console.log("BB" + displayedQuestions)
 		if (displayedQuestions.length > 0) {
-			// setDisplayedQuestions(prevState => prevState.slice(1)) // Удаляем первую карточку
-			// const time = useRef(Date.now()).current
+			setDisplayedQuestions(prevState => prevState.slice(1)) // Удаляем первую карточку
 		}
 		swipe.setValue({ x: 0, y: 0 })
 		setSwipeDirection(prevDirection => -prevDirection)
-		// setSwiped(true)
-	}, [swipe, displayedQuestions, id])
+		setSwiped(true)
+	}, [swipe, displayedQuestions, id, getQuestion])
 
 	const handleSelection = useCallback(
 		(direction: any) => {
@@ -204,6 +198,8 @@ const DeckId: React.FC = () => {
 			// setIsLastCardInDeck(false)
 		}
 		handleSelection(swipeDirection)
+		// const time = useRef(Date.now()).current
+		// getQuestion(time)
 
 		setIsButtonPressed(true)
 		// setCountOfCompletedCards(prevCount => prevCount + 1)
