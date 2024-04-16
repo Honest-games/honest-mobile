@@ -17,14 +17,15 @@ const Button = (props: IButton) => {
 
 	const levelBgColor = getLevelColor(bgColor)
 
+	let height = size === 'large' ? 54 : 33;
 	const styles = StyleSheet.create({
 		button: {
 			justifyContent: 'center',
 			alignItems: 'center',
 			color: 'white',
-			borderRadius: 33.5,
+			borderRadius: height/2,
 			backgroundColor: levelBgColor ? levelBgColor : Colors.deepBlue,
-			height: size === 'large' ? 54 : 33,
+			height: height,
 			width: size === 'large' ? '100%' : 196
 		},
 		text: {

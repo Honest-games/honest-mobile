@@ -1,6 +1,7 @@
 import Colors from '@/constants/Colors'
 import { useTranslation } from 'react-i18next'
 import { Dimensions, StyleSheet, Text, View, ViewStyle } from 'react-native'
+import React from "react";
 const { width } = Dimensions.get('window')
 
 export const LevelInfo = ({

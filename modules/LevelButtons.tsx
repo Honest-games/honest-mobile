@@ -1,6 +1,7 @@
 import { Button } from '@/UI'
 import { ILevelData } from '@/services/types/types'
 import { StyleSheet, View } from 'react-native'
+import React from "react";
 
 interface LevelButtonsProps {
 	levels: ILevelData[] | undefined

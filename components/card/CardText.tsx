@@ -16,11 +16,9 @@ const CardText: React.FC<CardTextProps> = ({
 }) => {
 	const { t } = useTranslation()
 
-	const { isSpecialCard } = useCard()
-
 	const styles = StyleSheet.create({
 		cardText: {
-			fontSize: isSpecialCard(text) ? 32 : 20,
+			fontSize: 20,
 			fontWeight: 'bold',
 			color: levelColor,
 			textAlign: 'center'

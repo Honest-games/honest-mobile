@@ -8,7 +8,7 @@ import {
 import { useDeck, useDeckId } from '@/features/hooks'
 import useFetchDeckSvg from '@/features/hooks/useFetchDeckSvg'
 import { useAppDispatch } from '@/features/hooks/useRedux'
-import Card from '@/modules/Card'
+import SwipeableCard from '@/components/SwipableCard'
 import { LevelButtons } from '@/modules/LevelButtons'
 import Loader from '@/modules/Loader'
 import { useGetLevelsQuery, useGetQuestionQuery } from '@/services/api'
@@ -25,10 +25,15 @@ import {
 } from 'react-native'
 import { useSharedValue } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import CardTopContent from "../../components/card/CardTopContent";
+import CardText from "../../components/card/CardText";
+import CardLikeButton from "../../components/card/CardLikeButton";
+import QuestionCard, {TakeFirstCard} from "@/components/QuestionCard";
+import getPanResponser from "@/components/animations";
 
 const { width } = Dimensions.get('window')
 
-const CardMemo = memo(Card)
+const CardMemo = memo(SwipeableCard)
 
 const DeckId: React.FC = () => {
 	const { id } = useLocalSearchParams()
@@ -57,9 +62,8 @@ const DeckId: React.FC = () => {
 			if (userIdFromAS) setUserId(userIdFromAS)
 		})()
 	})
-	const [displayedQuestions, setDisplayedQuestions] = useState<any[]>([
-		{ text: 'firstCard' }
-	])
+	const [isFirstCardTaken, setIsFirstCardTaken] = useState<boolean>(false)
+	const [displayedQuestions, setDisplayedQuestions] = useState<any[]>([])
 	const {
 		data: levels,
 		isFetching: isFetchingLevels,
@@ -69,14 +73,11 @@ const DeckId: React.FC = () => {
 	const [buttonState, setButtonState] = useState<IQuestonLevelAndColor>()
 
 	const [level, setLevel] = useState<string>('')
-	const activeIndex = useSharedValue(0)
 
 	const getQuestion = useCallback(
 		(time: number) => {
 			const {
 				data: question,
-				isFetching: isFetchingQ,
-				isLoading: isLoadingQ
 			} = useGetQuestionQuery({
 				levelId: level,
 				clientId: userId,
@@ -103,37 +104,6 @@ const DeckId: React.FC = () => {
 	const [isButtonPressed, setIsButtonPressed] = useState(false)
 
 	const swipe = useRef(new Animated.ValueXY()).current
-	const rotate = useRef(new Animated.Value(0)).current
-
-	const panResponser = PanResponder.create({
-		onMoveShouldSetPanResponder: () => true,
-		onPanResponderMove: (_, { dx, dy }) => {
-			swipe.setValue({ x: dx, y: dy })
-		},
-
-		onPanResponderRelease: (_, gestureState) => {
-			const { dx, dy, vx, vy } = gestureState
-			let isActionActive = Math.abs(dx) > 150
-			if (isActionActive) {
-				// Определяем, в какую сторону должен улетать элемент
-				const direction = dx < 0 ? -1 : 1
-				const velocityX = Math.max(Math.abs(vx), 1) * direction // Убедимся, что скорость не равна 0
-
-				Animated.timing(swipe, {
-					toValue: { x: velocityX * 500, y: dy }, // используем скорость и направление
-					useNativeDriver: true,
-					duration: Math.abs(velocityX) * 100 // регулируем длительность анимации на основе скорости
-				}).start(removeCard)
-			} else {
-				// Если свайп не достиг активационной точки, плавно возвращаем карточку на место
-				Animated.spring(swipe, {
-					toValue: { x: 0, y: 0 },
-					useNativeDriver: true,
-					friction: 5 // Можно отрегулировать фрикцию для более плавного возврата
-				}).start()
-			}
-		}
-	})
 
 	const [swiped, setSwiped] = useState(false)
 
@@ -144,15 +114,17 @@ const DeckId: React.FC = () => {
 		}
 	}, [swiped])
 
-	const removeCard = useCallback(() => {
-		console.log('BB' + displayedQuestions)
+	const moveToNextCard = useCallback(() => {
 		if (displayedQuestions.length > 0) {
 			setDisplayedQuestions(prevState => prevState.slice(1)) // Удаляем первую карточку
 		}
 		swipe.setValue({ x: 0, y: 0 })
 		setSwipeDirection(prevDirection => -prevDirection)
 		setSwiped(true)
+		setIsFirstCardTaken(true)
 	}, [swipe, displayedQuestions, id, getQuestion])
+
+	const panResponser = getPanResponser(swipe, moveToNextCard)
 
 	const handleSelection = useCallback(
 		(direction: any) => {
@@ -160,16 +132,10 @@ const DeckId: React.FC = () => {
 				toValue: { x: direction * 500, y: 0 },
 				useNativeDriver: true,
 				duration: 500
-			}).start(removeCard)
+			}).start(moveToNextCard)
 		},
-		[removeCard]
+		[moveToNextCard]
 	)
-
-	const loadQuestionsForLevel = async (levelId: string) => {}
-
-	const backToDecks = () => {
-		goBack()
-	}
 
 	const onButtonPress = (
 		levelId: string,
@@ -177,21 +143,14 @@ const DeckId: React.FC = () => {
 		colorButton: string
 	) => {
 		const colorOfLevel = getLevelColor(colorButton)
-
-		// setIsFirstCardInDeck(false)
 		setButtonState({ levelBgColor: colorOfLevel, levelTitle: buttonName })
 		if (level !== levelId) {
 			setLevel(levelId)
 			setDisplayedQuestions([])
-			loadQuestionsForLevel(levelId)
-			// setIsLastCardInDeck(false)
 		}
 		handleSelection(swipeDirection)
-		// const time = useRef(Date.now()).current
-		// getQuestion(time)
 
 		setIsButtonPressed(true)
-		// setCountOfCompletedCards(prevCount => prevCount + 1)
 	}
 
 	useEffect(() => {
@@ -204,7 +163,7 @@ const DeckId: React.FC = () => {
 		}
 	}, [isButtonPressed])
 
-	if (isFetchingLevels || isLoadingLevels || !displayedQuestions) {
+	if (isFetchingLevels || isLoadingLevels) {
 		return <Loader />
 	}
 
@@ -217,7 +176,7 @@ const DeckId: React.FC = () => {
 							svgData={svgData}
 							isLoadingImage={isLoadingImage}
 							selectedDeck={selectedDeck}
-							goBack={backToDecks}
+							goBack={goBack}
 						/>
 
 						<View
@@ -227,33 +186,23 @@ const DeckId: React.FC = () => {
 								marginTop: 12
 							}}
 						>
-							{displayedQuestions.length > 0 &&
+							{isFirstCardTaken ? displayedQuestions.length > 0 &&
 								displayedQuestions
 									.map((question: IQuestion, index: number) => {
 										let isFirst = index === 0
-										let dragHanlders = isFirst ? panResponser.panHandlers : {}
-
+										let dragHandlers = isFirst ? panResponser.panHandlers : {}
 										return (
-											<Card
-												additionalText={question.additional_text}
-												isLastCardInDeck={false}
-												isFirstCardInDeck={false}
-												numOfCards={displayedQuestions?.length || 0}
+											<SwipeableCard
 												key={`${question.id}-${index}`}
-												index={index}
-												activeIndex={activeIndex}
-												level={buttonState}
-												isFirst={isFirst}
-												color={Colors.beige}
-												text={question?.text}
-												rotate={rotate}
 												swipe={swipe}
-												questionId={question.id}
-												{...{ ...dragHanlders }}
-											/>
+												isFirst={isFirst}
+												{...{ ...dragHandlers }}
+											>
+												<QuestionCard buttonState={buttonState} question={question}/>
+											</SwipeableCard>
 										)
 									})
-									.reverse()}
+									.reverse() : <TakeFirstCard/>}
 						</View>
 						<View style={{ marginBottom: 12 }}>
 							<LevelInfo levelInfo={levelInfoText} />
@@ -293,5 +242,21 @@ const styles = StyleSheet.create({
 		marginTop: 20,
 		backgroundColor: 'white',
 		borderRadius: 33
+	},
+	questionCardWrapper: {
+		flex: 1,
+		margin: 16,
+		zIndex: 1,
+		flexDirection: 'column',
+		justifyContent: 'space-between',
+		alignItems: 'center'
+	},
+	additionalText: {
+		position: 'absolute',
+		fontSize: 16,
+		textAlign: 'center',
+		top: 0,
+		left: 0,
+		color: Colors.grey1
 	}
 })
