@@ -30,10 +30,8 @@ const { width } = Dimensions.get('window')
 
 const CardMemo = memo(Card)
 
-const CHUNK_SIZE = 2
 const DeckId: React.FC = () => {
 	const { id } = useLocalSearchParams()
-	const dispatch = useAppDispatch()
 
 	const { decks, isLoadingDecks } = useDeck()
 
@@ -54,8 +52,7 @@ const DeckId: React.FC = () => {
 
 	const time = useRef(Date.now()).current
 	const [userId, setUserId] = useState('')
-	useEffect(() => {
-		;(async () => {
+	useEffect(() => {(async () => {
 			const userIdFromAS = await AsyncStorage.getItem('user_id')
 			if (userIdFromAS) setUserId(userIdFromAS)
 		})()
@@ -85,21 +82,7 @@ const DeckId: React.FC = () => {
 				clientId: userId,
 				timestamp: time
 			})
-			console.log(userId, time)
-			console.log('q' + JSON.stringify(question))
-			console.log(JSON.stringify(displayedQuestions))
-
-			// const {
-			// 	data: question2,
-			// 	isFetching: isFetchingQ2,
-			// 	isLoading: isLoadingQ2
-			// } = useGetQuestionQuery({levelId: level, clientId: userId, timestamp: time/2})
-			// console.log(userId, time)
-			// console.log("q" + JSON.stringify(question2))
-			// console.log(JSON.stringify(displayedQuestions))
-
 			useEffect(() => {
-				// setDisplayedQuestions(prevState => prevState.slice(1))
 				if (question) {
 					const newQuestions = [...displayedQuestions]
 					newQuestions.push(question)
@@ -109,26 +92,6 @@ const DeckId: React.FC = () => {
 		},
 		[displayedQuestions]
 	)
-
-	const loadQuestions = useCallback(async () => {
-		const questionsToLoad = 3
-		let newQuestions = []
-
-		for (let i = 0; i < questionsToLoad; i++) {
-			const time = Date.now() + i // Уникальная временная метка для каждого запроса
-			const { data: question } = useGetQuestionQuery({
-				levelId: level,
-				clientId: userId,
-				timestamp: time
-			})
-			if (question) newQuestions.push(question)
-		}
-
-		setDisplayedQuestions(currentQuestions => [
-			...currentQuestions,
-			...newQuestions
-		])
-	}, [level, userId])
 
 	getQuestion(time)
 	const [time2, setTime2] = useState(Date.now())
@@ -245,9 +208,6 @@ const DeckId: React.FC = () => {
 		return <Loader />
 	}
 
-	// if (isError) {
-	// 	return <SafeAreaView style={styles.container}><Text>Произошла ошибка при загрузке данных</Text></SafeAreaView>
-	// }
 	return (
 		<SafeAreaView style={styles.container}>
 			<View style={styles.deck}>

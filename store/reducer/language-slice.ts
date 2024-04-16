@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  language: 'en', // Начальное состояние
+  language: 'en',
 };
 
 export const languageSlice = createSlice({
@@ -14,8 +14,6 @@ export const languageSlice = createSlice({
   },
 });
 
-// Экспортируем экшены
 export const { setLanguage } = languageSlice.actions;
 
-// Экспортируем редьюсер
 export default languageSlice.reducer;

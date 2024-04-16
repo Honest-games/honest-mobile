@@ -3,6 +3,7 @@ import Screen1 from '@/assets/svg/Screen1'
 import Colors from '@/constants/Colors'
 import React, { useEffect, useState } from 'react'
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native'
+import {useTranslation} from "react-i18next";
 
 const HeartAnimation = () => {
 	const [animation] = useState(new Animated.Value(1))
@@ -29,6 +30,8 @@ const HeartAnimation = () => {
 	const heartStyle = {
 		transform: [{ scale: animation }]
 	}
+
+	const {t} = useTranslation()
 
 	return (
 		<View style={styles.container}>
@@ -59,7 +62,7 @@ const HeartAnimation = () => {
 						textAlign: 'center'
 					}}
 				>
-					скоро тут будет личный кабинет!
+					{t('lkSoon')}
 				</Text>
 				<Text
 					style={{
@@ -72,8 +75,7 @@ const HeartAnimation = () => {
 						top: 180
 					}}
 				>
-					можно будет зарегестрироваться чтобы сохранить прогресс и настраивать
-					всякие настройки, которые мы добавим
+					{t('lkSoonDesc')}
 				</Text>
 			</View>
 		</View>

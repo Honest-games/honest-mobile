@@ -9,5 +9,9 @@
 	"firstCard": "take first card",
 	"chooseLevel": "choose level",
 	"chooseLevelContinue": "Choose a card to continue",
-	"searchBarPlaceholder": "search"
+	"searchBarPlaceholder": "search",
+	"favoritesSoon": "The Favorites will be available soon!",
+	"favoritesSoonDesc": "You will be able to add entire decks and individual cards with questions!",
+	"lkSoon": "Personal account will be available here soon!",
+	"lkSoonDesc": "You will be able to save progress and navigate to settings"
 }

@@ -2,6 +2,7 @@ import Screen2 from '@/assets/svg/Screen2'
 import Colors from '@/constants/Colors'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Animated, PanResponder, StyleSheet, Text, View } from 'react-native'
+import {useTranslation} from "react-i18next";
 
 const TinderSwipeDemo = () => {
 	const [data, setData] = useState([
@@ -104,6 +105,7 @@ const TinderSwipeDemo = () => {
 		},
 		[removeCard]
 	)
+	const { t } = useTranslation()
 
 	return (
 		<View style={styles.container}>
@@ -134,7 +136,7 @@ const TinderSwipeDemo = () => {
 						textAlign: 'center'
 					}}
 				>
-					скоро тут будет избранное!{' '}
+					{t('favoritesSoon')}
 				</Text>
 				<Text
 					style={{
@@ -147,7 +149,7 @@ const TinderSwipeDemo = () => {
 						top: 180
 					}}
 				>
-					можно будет добавлять целые колоды и отдельные карточки с вопросами
+					{t('favoritesSoonDesc')}
 				</Text>
 			</View>
 		</View>

@@ -57,13 +57,15 @@ export const DeckTopContent: React.FC<TopContentProps> = ({
 						<SvgXml xml={svgData} width={24} height={24} />
 					</View>
 				) : (
-					<Text>SVG not available</Text>
+					<Text>x</Text>
 				)}
 			</View>
-			<Text style={styles.text}>{selectedDeck?.name.toLowerCase()}</Text>
-			<TouchableOpacity onPress={goBack}>
-				<AntDesign name='close' size={30} color={Colors.primary} />
-			</TouchableOpacity>
+			{!isLoadingImage && <>
+				<Text style={styles.text}>{selectedDeck?.name.toLowerCase()}</Text>
+				<TouchableOpacity onPress={goBack}>
+					<AntDesign name='close' size={30} color={Colors.primary} />
+				</TouchableOpacity>
+			</>}
 		</View>
 	)
 }
