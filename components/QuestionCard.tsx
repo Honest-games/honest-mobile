@@ -3,10 +3,11 @@ import CardText from "./card/CardText";
 import Colors from "@/constants/Colors";
 import CardLikeButton from "./card/CardLikeButton";
 import {StyleSheet, Text, View} from "react-native";
-import React from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {IQuestonLevelAndColor} from "@/features/converters/button-converters";
 import {IQuestion} from "@/services/types/types";
 import {useTranslation} from "react-i18next";
+import {useGetQuestionQuery} from "@/services/api";
 
 interface QuestionCardProps {
     buttonState?: IQuestonLevelAndColor
@@ -16,6 +17,31 @@ interface QuestionCardProps {
 const QuestionCard = (props: QuestionCardProps)=>{
     const { buttonState, question } = props
     const {t} = useTranslation()
+
+    /*const getQuestion = useCallback(
+        (time: number) => {
+            const {
+                data: question,
+            } = useGetQuestionQuery({
+                levelId: level,
+                clientId: userId,
+                timestamp: time
+            })
+            useEffect(() => {
+                if (question) {
+                    const newQuestions = [...displayedQuestions]
+                    newQuestions.push(question)
+                    setDisplayedQuestions(x => newQuestions)
+                }
+            }, [question])
+        },
+        [displayedQuestions]
+    )
+    getQuestion(time2)
+    const [time2, setTime2] = useState(Date.now())*/
+
+
+
     return <View style={styles.questionCardWrapper}>
         {(
             <>

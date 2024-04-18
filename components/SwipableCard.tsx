@@ -17,7 +17,6 @@ const { height } = Dimensions.get('screen')
 const screenWidth = Dimensions.get('screen').width
 export const tinderCardWidth = screenWidth * 0.8
 interface ICard {
-	isFirst: boolean
 	swipe?: any
 	children: React.ReactNode
 }
@@ -25,7 +24,6 @@ interface ICard {
 const SwipableCard = memo((props: ICard) => {
 	const {
 		swipe,
-		isFirst,
 		children,
 		...rest
 	} = props
@@ -44,7 +42,7 @@ const SwipableCard = memo((props: ICard) => {
 		outputRange: ['8deg', '0deg', '-8deg']
 	})
 
-	const allowSwipe = isFirst
+	const allowSwipe = true
 	return (
 		<Animated.View
 			style={[

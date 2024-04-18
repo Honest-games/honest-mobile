@@ -11,8 +11,8 @@ import { useAppDispatch } from '@/features/hooks/useRedux'
 import SwipeableCard from '@/components/SwipableCard'
 import { LevelButtons } from '@/modules/LevelButtons'
 import Loader from '@/modules/Loader'
-import { useGetLevelsQuery, useGetQuestionQuery } from '@/services/api'
-import { IDeck, IQuestion } from '@/services/types/types'
+import {useGetDecksQuery, useGetLevelsQuery, useGetQuestionQuery} from '@/services/api'
+import {IDeck, ILevelData, IQuestion} from '@/services/types/types'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useLocalSearchParams } from 'expo-router'
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
@@ -21,7 +21,8 @@ import {
 	Dimensions,
 	PanResponder,
 	StyleSheet,
-	View
+	View,
+	Text
 } from 'react-native'
 import { useSharedValue } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -30,78 +31,234 @@ import CardText from "../../components/card/CardText";
 import CardLikeButton from "../../components/card/CardLikeButton";
 import QuestionCard, {TakeFirstCard} from "@/components/QuestionCard";
 import getPanResponser from "@/components/animations";
+import DeckWithLevels from "@/components/DeckWithLevels";
 
 const { width } = Dimensions.get('window')
 
 const CardMemo = memo(SwipeableCard)
 
-const DeckId: React.FC = () => {
-	const { id } = useLocalSearchParams()
+interface DisplayedQuestionData {
+	id: number
+	level: ILevelData
+}
 
-	const { decks, isLoadingDecks } = useDeck()
+interface DeckIdProps {
+
+}
+
+const DeckId: React.FC = ({
+
+}: DeckIdProps) => {
+	const { id: deckId } = useLocalSearchParams()
+
+	const { decks } = useDeck()
 
 	const [selectedDeck, setSelectedDeck] = useState<IDeck>()
 
 	useEffect(() => {
-		const findDeck = decks?.find((item: IDeck) => item.id === id.toString())
-		if (findDeck) {
-			setSelectedDeck(findDeck)
+		if (decks) {
+			const finded = decks.find(d => d.id === deckId)
+			if (finded) {
+				setSelectedDeck(finded)
+			} else throw new Error('deck not found')
 		}
-	}, [id, decks])
+	}, [decks])
 
-	const {
-		svgData,
-		isLoadingImage,
-		error: errorSvg
-	} = useFetchDeckSvg(selectedDeck?.image_id)
-
-	const time = useRef(Date.now()).current
-	const [userId, setUserId] = useState('')
-	useEffect(() => {(async () => {
+	const [userId, setUserId] = useState<string>()
+	useEffect(() => {
+		;(async () => {
 			const userIdFromAS = await AsyncStorage.getItem('user_id')
 			if (userIdFromAS) setUserId(userIdFromAS)
 		})()
 	})
-	const [isFirstCardTaken, setIsFirstCardTaken] = useState<boolean>(false)
-	const [displayedQuestions, setDisplayedQuestions] = useState<any[]>([])
+
+	/*	const [selectedDeck, setSelectedDeck] = useState<IDeck>()
+
+        useEffect(() => {
+            const findDeck = decks?.find((item: IDeck) => item.id === id.toString())
+            if (findDeck) {
+                setSelectedDeck(findDeck)
+            }
+        }, [id, decks])
+
+        const {
+            svgData,
+            isLoadingImage,
+            error: errorSvg
+        } = useFetchDeckSvg(selectedDeck?.image_id)
+
+        const time = useRef(Date.now()).current
+        const [userId, setUserId] = useState('')
+        useEffect(() => {(async () => {
+                const userIdFromAS = await AsyncStorage.getItem('user_id')
+                if (userIdFromAS) setUserId(userIdFromAS)
+            })()
+        })
+        const [isFirstCardTaken, setIsFirstCardTaken] = useState<boolean>(false)
+        const [displayedQuestions, setDisplayedQuestions] = useState<DisplayedQuestionData[]>([])
+        const {
+            data: levels,
+            isFetching: isFetchingLevels,
+            isLoading: isLoadingLevels
+        } = useGetLevelsQuery({ deckId: id.toString(), time })
+        const { goBack } = useDeckId()
+        const [buttonState, setButtonState] = useState<IQuestonLevelAndColor>()
+
+        const [level, setLevel] = useState<string>('')
+
+
+        const levelInfoText = 'chooseLevel'
+
+        const [swipeDirection, setSwipeDirection] = useState(-1) //s Начинаем с направления влево (-1)
+        const [isButtonPressed, setIsButtonPressed] = useState(false)
+
+        const swipe = useRef(new Animated.ValueXY()).current
+
+        const [swiped, setSwiped] = useState(false)
+
+        useEffect(() => {
+            if (swiped) {
+                setSwiped(false)
+            }
+        }, [swiped])
+
+        const moveToNextCard = useCallback(() => {
+            /!*if (displayedQuestions.length > 0) {
+                // setDisplayedQuestions(prevState => prevState.slice(1)) // Удаляем первую карточку
+                setDisplayedQuestions(prevState => {
+                    let last = prevState[prevState.length - 1];
+                    return [last, {id: last.id+1, level: levels!.find(x=>x.ID===level)!}]
+                })
+            } else {
+                setDisplayedQuestions([{id: 1, level: }])
+            }*!/
+            if (displayedQuestions.length > 0) {
+                setDisplayedQuestions(prevState => prevState.slice(1)) // Удаляем первую карточку
+            }
+            swipe.setValue({ x: 0, y: 0 })
+            setSwipeDirection(prevDirection => -prevDirection)
+            setSwiped(true)
+            setIsFirstCardTaken(true)
+        }, [swipe, displayedQuestions, id])
+
+        const panResponser = getPanResponser(swipe, moveToNextCard)
+
+        const handleSelection = useCallback(
+            (direction: any) => {
+                Animated.timing(swipe, {
+                    toValue: { x: direction * 500, y: 0 },
+                    useNativeDriver: true,
+                    duration: 500
+                }).start(moveToNextCard)
+            },
+            [moveToNextCard]
+        )
+
+        const onButtonPress = (
+            levelId: string,
+            buttonName: string,
+            colorButton: string
+        ) => {
+            const colorOfLevel = getLevelColor(colorButton)
+            setButtonState({ levelBgColor: colorOfLevel, levelTitle: buttonName })
+            if (level !== levelId) {
+                setLevel(levelId)
+                setDisplayedQuestions([])
+            }
+            handleSelection(swipeDirection)
+
+            setIsButtonPressed(true)
+        }
+
+        useEffect(() => {
+            if (isButtonPressed) {
+                const timer = setTimeout(() => {
+                    setIsButtonPressed(false)
+                }, 500)
+
+                return () => clearTimeout(timer)
+            }
+        }, [isButtonPressed])*/
+
+	// if (isFetchingLevels || isLoadingLevels) {
+	if (!selectedDeck || !userId) return <Loader />
+	return <OpenedDeck deck={selectedDeck} userId={userId} />
+}
+
+const OpenedDeck = ({deck, userId}: { deck: IDeck, userId: string })=>{
+	const time = useRef(Date.now()).current
 	const {
 		data: levels,
 		isFetching: isFetchingLevels,
 		isLoading: isLoadingLevels
-	} = useGetLevelsQuery({ deckId: id.toString(), time })
+	} = useGetLevelsQuery({deckId: deck.id, time})
+	if(!levels) return <Loader/>
+	return <OpenedDeckWithLevels deck={deck} levels={levels} userId={userId}/>
+}
+const OpenedDeckWithLevels = ({
+	deck: selectedDeck, levels
+}: {deck: IDeck, levels: ILevelData[], userId: string})=>{
+	const [selectedLevel, setSelectedLevel] = useState<ILevelData>()
+	const [displayDataStack, setDisplayDataStack] =
+		useState<DisplayedQuestionData[]>([])
 	const { goBack } = useDeckId()
+	const onButtonPress = (level: ILevelData)=>{
+		setSelectedLevel(level)
+		if(!displayDataStack.length) {
+			displayDataStack.push({id: 1, level}, {id: 2, level})
+		} else {
+			const last = displayDataStack[displayDataStack.length - 1]
+			displayDataStack.push({id: last.id+1, level})
+		}
+	}
+	return (
+		<SafeAreaView style={styles.container}>
+			<View style={styles.deck}>
+				<View style={styles.wrapper}>
+					<View style={{ flex: 1, justifyContent: 'space-between' }}>
+						<DeckTopContent selectedDeck={selectedDeck} goBack={goBack}/>
+						<View style={{
+								flex: 1,
+								marginBottom: 12,
+								marginTop: 12
+							}}>
+							<CardsStack displayDataStack={displayDataStack}/>
+						</View>
+						<View style={{ marginBottom: 12 }}>
+							<LevelInfo levelInfo={'chooseLevel'} />
+						</View>
+
+						<LevelButtons
+							levels={levels}
+							onButtonPress={onButtonPress}
+							size='large'
+						/>
+					</View>
+				</View>
+			</View>
+		</SafeAreaView>
+	)
+}
+
+interface DisplayedQuestionData{
+	id: number,
+	level: ILevelData
+}
+
+const CardsStack = ({
+	displayDataStack
+}:{displayDataStack: DisplayedQuestionData[]})=>{
+
+	/*---------------------------------------------------------------*/
+	const time = useRef(Date.now()).current
+
+	const [isFirstCardTaken, setIsFirstCardTaken] = useState<boolean>(false)
+	const [displayedQuestions, setDisplayedQuestions] = useState<DisplayedQuestionData[]>([])
 	const [buttonState, setButtonState] = useState<IQuestonLevelAndColor>()
 
 	const [level, setLevel] = useState<string>('')
 
-	const getQuestion = useCallback(
-		(time: number) => {
-			const {
-				data: question,
-			} = useGetQuestionQuery({
-				levelId: level,
-				clientId: userId,
-				timestamp: time
-			})
-			useEffect(() => {
-				if (question) {
-					const newQuestions = [...displayedQuestions]
-					newQuestions.push(question)
-					setDisplayedQuestions(x => newQuestions)
-				}
-			}, [question])
-		},
-		[displayedQuestions]
-	)
-
-	getQuestion(time)
-	const [time2, setTime2] = useState(Date.now())
-	getQuestion(time2)
-
-	const levelInfoText = 'chooseLevel'
-
 	const [swipeDirection, setSwipeDirection] = useState(-1) //s Начинаем с направления влево (-1)
-	const [isButtonPressed, setIsButtonPressed] = useState(false)
 
 	const swipe = useRef(new Animated.ValueXY()).current
 
@@ -109,12 +266,19 @@ const DeckId: React.FC = () => {
 
 	useEffect(() => {
 		if (swiped) {
-			setTime2(Date.now())
 			setSwiped(false)
 		}
 	}, [swiped])
 
 	const moveToNextCard = useCallback(() => {
+		/*if (displayedQuestions.length > 0) {
+		// setDisplayedQuestions(prevState => prevState.slice(1)) // Удаляем первую карточку
+		setDisplayedQuestions(prevState => {
+			let last = prevState[prevState.length - 1];
+			return [last, {id: last.id+1, level: levels!.find(x=>x.ID===level)!}]
+		})
+	} else {
+		setDisplayedQuestions([{id: 1, level: }])*/
 		if (displayedQuestions.length > 0) {
 			setDisplayedQuestions(prevState => prevState.slice(1)) // Удаляем первую карточку
 		}
@@ -122,7 +286,7 @@ const DeckId: React.FC = () => {
 		setSwipeDirection(prevDirection => -prevDirection)
 		setSwiped(true)
 		setIsFirstCardTaken(true)
-	}, [swipe, displayedQuestions, id, getQuestion])
+	}, [swipe, displayedQuestions])
 
 	const panResponser = getPanResponser(swipe, moveToNextCard)
 
@@ -137,37 +301,58 @@ const DeckId: React.FC = () => {
 		[moveToNextCard]
 	)
 
-	const onButtonPress = (
-		levelId: string,
-		buttonName: string,
-		colorButton: string
-	) => {
-		const colorOfLevel = getLevelColor(colorButton)
-		setButtonState({ levelBgColor: colorOfLevel, levelTitle: buttonName })
-		if (level !== levelId) {
-			setLevel(levelId)
+	const onButtonPress = (pressedLevel: ILevelData) => {
+		const colorOfLevel = getLevelColor(pressedLevel.ColorButton)
+		setButtonState({ levelBgColor: colorOfLevel, levelTitle: pressedLevel.Name })
+		if (level !== pressedLevel.ID) {
+			setLevel(pressedLevel.ID)
 			setDisplayedQuestions([])
 		}
 		handleSelection(swipeDirection)
-
-		setIsButtonPressed(true)
 	}
+	/*---------------------------------------------------------------*/
 
-	useEffect(() => {
-		if (isButtonPressed) {
-			const timer = setTimeout(() => {
-				setIsButtonPressed(false)
-			}, 500)
+	if(!displayDataStack.length) return <TakeFirstCard/>
+	return displayDataStack.map(displayData=>{
+		return (
+			<SwipeableCard
+				key={`${displayData.id}`}
+				swipe={swipe}
+				{...{ ...panResponser.panHandlers }}
+			>
+				<QuestionCard buttonState={buttonState} question={
+					{ id: 'lol', text: 'someText', level_id: displayData.level.ID, additional_text: "You're awesome!" }
+				} />
+			</SwipeableCard>
+		)
+	})
+	// return (
+			{/*{isFirstCardTaken ? displayedQuestions.length > 0 &&
+				displayedQuestions
+					.map((question: DisplayedQuestionData, index: number) => {
+						let isFirst = index === 0
+						let dragHandlers = isFirst ? panResponser.panHandlers : {}
+						return (
+							<SwipeableCard
+								key={`${question.id}-${index}`}
+								swipe={swipe}
+								isFirst={isFirst}
+								{...{ ...dragHandlers }}
+							>
+								<View><Text>{question.level.Name}</Text></View>
+								<QuestionCard buttonState={buttonState} question={question}/>
+							</SwipeableCard>
+						)
+					})
+					.reverse() : <TakeFirstCard/>}*/}
+	// )
+}
 
-			return () => clearTimeout(timer)
-		}
-	}, [isButtonPressed])
+	// }
 
-	if (isFetchingLevels || isLoadingLevels) {
-		return <Loader />
-	}
+	// return <DeckWithLevels deck={} />
 
-	return (
+/*	return (
 		<SafeAreaView style={styles.container}>
 			<View style={styles.deck}>
 				<View style={styles.wrapper}>
@@ -218,8 +403,7 @@ const DeckId: React.FC = () => {
 				</View>
 			</View>
 		</SafeAreaView>
-	)
-}
+	)*/
 
 export default React.memo(DeckId)
 
@@ -243,20 +427,4 @@ const styles = StyleSheet.create({
 		backgroundColor: 'white',
 		borderRadius: 33
 	},
-	questionCardWrapper: {
-		flex: 1,
-		margin: 16,
-		zIndex: 1,
-		flexDirection: 'column',
-		justifyContent: 'space-between',
-		alignItems: 'center'
-	},
-	additionalText: {
-		position: 'absolute',
-		fontSize: 16,
-		textAlign: 'center',
-		top: 0,
-		left: 0,
-		color: Colors.grey1
-	}
 })

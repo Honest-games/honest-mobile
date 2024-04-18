@@ -1,165 +1,137 @@
-import Screen2 from '@/assets/svg/Screen2'
-import Colors from '@/constants/Colors'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Animated, PanResponder, StyleSheet, Text, View } from 'react-native'
-import {useTranslation} from "react-i18next";
+import { Animated, PanResponder, StyleSheet, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
+import { TouchableOpacity, Text } from 'react-native'
+import {setState} from "jest-circus";
+import {useGetDecksQuery, useGetLevelsQuery, useGetQuestionQuery} from "@/services/api";
+import {IDeck, ILevelData, IQuestion} from "@/services/types/types";
+import {useDeck} from "@/features/hooks";
+import {useAppSelector} from "@/features/hooks/useRedux";
 
 const TinderSwipeDemo = () => {
-	const [data, setData] = useState([
-		{ image: 'https://example.com/image1.jpg', id: 1, title: 'Character 1' },
-		{ image: 'https://example.com/image2.jpg', id: 2, title: 'Character 2' },
-		{ image: 'https://example.com/image3.jpg', id: 3, title: 'Character 3' },
-		{ image: 'https://example.com/image4.jpg', id: 4, title: 'Character 4' },
-		{ image: 'https://example.com/image5.jpg', id: 5, title: 'Character 5' },
-		{ image: 'https://example.com/image6.jpg', id: 6, title: 'Character 6' },
-		{ image: 'https://example.com/image7.jpg', id: 7, title: 'Character 7' },
-		{ image: 'https://example.com/image8.jpg', id: 8, title: 'Character 8' }
-	])
-	useEffect(() => {
-		if (!data.length) {
-			setData([
-				{
-					image: 'https://example.com/image1.jpg',
-					id: 1,
-					title: 'Character 1'
-				},
-				{
-					image: 'https://example.com/image2.jpg',
-					id: 2,
-					title: 'Character 2'
-				},
-				{
-					image: 'https://example.com/image3.jpg',
-					id: 3,
-					title: 'Character 3'
-				},
-				{
-					image: 'https://example.com/image4.jpg',
-					id: 4,
-					title: 'Character 4'
-				},
-				{
-					image: 'https://example.com/image5.jpg',
-					id: 5,
-					title: 'Character 5'
-				},
-				{
-					image: 'https://example.com/image6.jpg',
-					id: 6,
-					title: 'Character 6'
-				},
-				{
-					image: 'https://example.com/image7.jpg',
-					id: 7,
-					title: 'Character 7'
-				},
-				{ image: 'https://example.com/image8.jpg', id: 8, title: 'Character 8' }
-			])
-		}
-	}, [data])
-	const [swipeDirection, setSwipeDirection] = useState(-1) // Начинаем с направления влево (-1)
-
-	const swipe = useRef(new Animated.ValueXY()).current
-	const rotate = useRef(new Animated.Value(0)).current
-
-	const panResponser = PanResponder.create({
-		onMoveShouldSetPanResponder: () => true,
-		onPanResponderMove: (_, { dx, dy }) => {
-			console.log('dx:' + dx + ' dy:' + dy)
-			swipe.setValue({ x: dx, y: dy })
-		},
-
-		onPanResponderRelease: (_, { dx, dy }) => {
-			console.log('released:' + 'dx:' + dx + ' dy:' + dy)
-			let direction = Math.sign(dx)
-			let isActionActive = Math.abs(dx) > 200
-			if (isActionActive) {
-				Animated.timing(swipe, {
-					toValue: { x: 500 * dx, y: dy },
-					useNativeDriver: true,
-					duration: 500
-				}).start(removeCard)
-			} else {
-				Animated.spring(swipe, {
-					toValue: { x: 0, y: 0 },
-					useNativeDriver: true,
-					friction: 5
-				}).start()
-			}
-		}
-	})
-	const removeCard = useCallback(() => {
-		setData(prevState => prevState.slice(1))
-		swipe.setValue({ x: 0, y: 0 })
-		// Переключаем направление для следующего свайпа
-		setSwipeDirection(prevDirection => -prevDirection)
-	}, [swipe])
-
-	const handleSelection = useCallback(
-		(direction: any) => {
-			Animated.timing(swipe, {
-				toValue: { x: direction * 500, y: 0 },
-				useNativeDriver: true,
-				duration: 500
-			}).start(removeCard)
-		},
-		[removeCard]
-	)
 	const { t } = useTranslation()
+    const [selectedDeck, setSelectedDeck] = useState<IDeck>()
+    const [savedDecks, setSavedDecks] = useState<IDeck[]>([])
+    const [currentLevel, setCurrentLevel] = useState<ILevelData>()
+    const [loadedQuestions, setLoadedQuestions] = useState<any[]>([])
 
+    const timestampRef = useRef(Date.now()).current;
+    const {
+        data: decks,
+        isLoading: isLoadingDecks,
+        isFetching: isFetchingDecks,
+        error
+    } = useGetDecksQuery({ language: "RU", timestampRef })
+
+    useEffect(() => {
+        if(decks){
+            setSavedDecks(decks)
+        }
+    }, [decks]);
+
+    const onDeckSelect = (deck: IDeck)=>{
+        setSelectedDeck(deck)
+    }
+
+    const onSelectLevel = (l: ILevelData)=>{
+		if(!loadedQuestions.length) {
+			setLoadedQuestions(prevState => {
+				return [{i: 0, level: l}, {i: 1, level: l}]
+			})
+		} else {
+			setLoadedQuestions(prevState => {
+				let last = loadedQuestions[1];
+				return [last, {level: l, i: last.i+1}]
+			})
+		}
+		setCurrentLevel(l)
+    }
+
+    console.log("ren")
 	return (
 		<View style={styles.container}>
-			<View
-				style={{
-					justifyContent: 'center',
-					alignItems: 'center',
-					flexDirection: 'column',
-					backgroundColor: 'white',
-					width: 273,
-					height: 254,
-					borderRadius: 20,
-					position: 'relative'
-				}}
-			>
-				{/* <Image source={require('@/assets/svg/')} style={heartStyle} /> */}
-				<View style={{ position: 'absolute', top: 42 }}>
-					<Screen2 />
-				</View>
-
-				<Text
-					style={{
-						width: '80%',
-						fontWeight: 'bold',
-						fontSize: 20,
-						position: 'absolute',
-						top: 120,
-						textAlign: 'center'
-					}}
-				>
-					{t('favoritesSoon')}
-				</Text>
-				<Text
-					style={{
-						width: '80%',
-						fontWeight: 'bold',
-						fontSize: 12,
-						color: Colors.grey1,
-						textAlign: 'center',
-						position: 'absolute',
-						top: 180
-					}}
-				>
-					{t('favoritesSoonDesc')}
-				</Text>
-			</View>
+            <Text>{selectedDeck?.name}</Text>
+            <Text>{currentLevel?.Name}</Text>
+            {loadedQuestions.map(obj=><QuestionCard key={obj.i} level={obj.level} i={obj.i}/>)}
+            {selectedDeck &&
+                <LevelsSelect deck={selectedDeck} setCurrLevel={onSelectLevel}/>}
+            <View style={{height: 20}}/>
+            {savedDecks.map(deck=>{
+                return <Button key={deck.id} onPress={onDeckSelect.bind(null, deck)} title={deck.name}/>
+            })}
 		</View>
 	)
 }
+
+const QuestionCard = ({
+    level, i
+}: {level: ILevelData, i: number}) => {
+	const [loadedQuestion, setLoadedQuestion] = useState<IQuestion>()
+	const timestampRef = useRef(Date.now()).current;
+	const { data: question, isFetching: isFetchingQuestion } =
+		useGetQuestionQuery({ levelId: level.ID, clientId: "1", timestamp: timestampRef })
+
+    useEffect(() => {
+		console.log("question", question)
+		if(question){
+			setLoadedQuestion(question)
+		}
+    }, [question]);
+
+    if (question){
+        return <View><Text style={{color: "red"}}>{i} {question.text}</Text></View>
+    } else return <View><Text>{i} q of {level ? level.Name : level}</Text></View>
+}
+
+const LevelsSelect = ({
+    deck, setCurrLevel
+}: {
+    deck: IDeck, setCurrLevel: (l: ILevelData)=>void
+})=>{
+    const timestampRef = useRef(Date.now()).current;
+    const { data: levels, isFetching: isFetchingLevels } =
+        useGetLevelsQuery({deckId: deck.id, time: timestampRef})
+    console.log("levels", levels)
+
+    return (<>
+        {levels &&<View>
+            {levels.map(level => (
+                <Button key={level.ID} onPress={setCurrLevel.bind(null, level)} title={level.Name}/>
+            ))}
+        </View>}
+    </>)
+}
+
+const Button = (props: {onPress: ()=>void, title: string})=>{
+    return (
+        <TouchableOpacity
+            onPress={props.onPress}
+            style={styles.appButtonContainer}
+        >
+            <Text style={styles.appButtonText}>{props.title}</Text>
+        </TouchableOpacity>
+    )
+}
+
 const styles = StyleSheet.create({
+	appButtonContainer: {
+		elevation: 8,
+		backgroundColor: '#009688',
+		borderRadius: 10,
+		paddingVertical: 10,
+		paddingHorizontal: 12
+	},
+	appButtonText: {
+		fontSize: 18,
+		color: '#fff',
+		fontWeight: 'bold',
+		alignSelf: 'center',
+		textTransform: 'uppercase'
+	},
 	container: {
 		flex: 1,
 		justifyContent: 'center',
 		alignItems: 'center'
 	}
 })
-export default TinderSwipeDemo
+export default React.memo(TinderSwipeDemo)

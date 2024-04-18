@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import {useCallback, useEffect, useRef, useState} from 'react'
 import { useAppSelector } from './useRedux'
 
-const useDeck = () => {
+const useDeck = () => { //TODO refactor
 	const language = useAppSelector(state => state.language.language)
 	const timestampRef = useRef(Date.now()).current;
 	const {

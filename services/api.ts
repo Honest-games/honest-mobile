@@ -42,7 +42,7 @@ export const api = createApi({
 			{ levelId: string; clientId: string; timestamp: number }
 		>({
 			query: ({ levelId, clientId, timestamp }) =>
-				`v1/question?&levelId=${levelId}&clientId=${clientId}`
+				`v1/question?&levelId=${levelId}&clientId=${clientId}&time=${timestamp}`
 		}),
 		getAllQuestions: builder.query<any, any>({
 			query: (x: { deckId: string; time: number }) =>

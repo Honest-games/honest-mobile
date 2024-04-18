@@ -5,7 +5,7 @@ import React from "react";
 
 interface LevelButtonsProps {
 	levels: ILevelData[] | undefined
-	onButtonPress?: (levelId: string, buttonName: string, colorButton: string) => void
+	onButtonPress?: (level: ILevelData) => void
 	size?: 'large' | 'small'
 	isButtonPressed?: boolean
 }
@@ -25,21 +25,19 @@ export const LevelButtons: React.FC<LevelButtonsProps> = ({
 		}
 	})
 
-	
-
 	return (
 		<View style={styles.sectionButtons}>
 			{levels &&
-				levels.map(button => (
+				levels.map(level => (
 					<Button
 						isButtonPressed={isButtonPressed}
-						key={button.ID}
-						title={button.Name}
+						key={level.ID}
+						title={level.Name}
 						onPress={
-							onButtonPress && (() => onButtonPress(button.ID, button.Name, button.ColorButton))
+							onButtonPress && (() => onButtonPress(level))
 						}
 						color={'#919F67'}
-						bgColor={button.ColorButton}
+						bgColor={level.ColorButton}
 						size={size}
 					/>
 				))}
