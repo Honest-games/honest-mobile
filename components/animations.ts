@@ -1,7 +1,7 @@
 import {Animated, PanResponder} from "react-native";
 
 
-const getPanResponser = (swipe: Animated.ValueXY, onAnimationStart: ()=>void)=> PanResponder.create({
+const getPanResponder = (swipe: Animated.ValueXY, onAnimationEnd: ()=>void)=> PanResponder.create({
     onMoveShouldSetPanResponder: () => true,
     onPanResponderMove: (_, { dx, dy }) => {
         swipe.setValue({ x: dx, y: dy })
@@ -19,7 +19,7 @@ const getPanResponser = (swipe: Animated.ValueXY, onAnimationStart: ()=>void)=> 
                 toValue: { x: velocityX * 500, y: dy }, // используем скорость и направление
                 useNativeDriver: true,
                 duration: Math.abs(velocityX) * 100 // регулируем длительность анимации на основе скорости
-            }).start(onAnimationStart)
+            }).start(onAnimationEnd)
         } else {
             // Если свайп не достиг активационной точки, плавно возвращаем карточку на место
             Animated.spring(swipe, {
@@ -31,4 +31,4 @@ const getPanResponser = (swipe: Animated.ValueXY, onAnimationStart: ()=>void)=> 
     }
 })
 
-export default getPanResponser;
+export default getPanResponder;

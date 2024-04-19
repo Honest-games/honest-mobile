@@ -4,18 +4,18 @@ import Colors from "@/constants/Colors";
 import CardLikeButton from "./card/CardLikeButton";
 import {StyleSheet, Text, View} from "react-native";
 import React, {useCallback, useEffect, useState} from "react";
-import {IQuestonLevelAndColor} from "@/features/converters/button-converters";
-import {IQuestion} from "@/services/types/types";
+import {getLevelColor, IQuestonLevelAndColor} from "@/features/converters/button-converters";
+import {ILevelData, IQuestion} from "@/services/types/types";
 import {useTranslation} from "react-i18next";
 import {useGetQuestionQuery} from "@/services/api";
 
 interface QuestionCardProps {
-    buttonState?: IQuestonLevelAndColor
+    level: ILevelData
     question: IQuestion
 }
 
 const QuestionCard = (props: QuestionCardProps)=>{
-    const { buttonState, question } = props
+    const { level, question } = props
     const {t} = useTranslation()
 
     /*const getQuestion = useCallback(
@@ -41,21 +41,21 @@ const QuestionCard = (props: QuestionCardProps)=>{
     const [time2, setTime2] = useState(Date.now())*/
 
 
-
+    const color = getLevelColor(level.ColorButton)
     return <View style={styles.questionCardWrapper}>
         {(
             <>
-                <CardTopContent level={buttonState} />
+                <CardTopContent level={level} />
                 <View style={{ alignItems: 'center', flexDirection: 'column', gap: 22 }}>
                     {question.additional_text && (
-                        <Text style={styles.additionalText}>{t(question.additional_text)}</Text>
+                        <Text style={styles.additionalText}>{question.additional_text}</Text>
                     )}
-                    <Text style={{...styles.cardText, color: buttonState ? buttonState?.levelBgColor : Colors.deepBlue}}>
-                        {t(question?.text)}</Text>
+                    <Text style={{...styles.cardText, color: color}}>
+                        {question?.text}</Text>
                 </View>
                 <CardLikeButton
-                    level={buttonState}
-                    handleLike={()=>{}}
+                    color={color}
+                    handleLike={()=>{}} //TODO !!!!!!
                     isLiked={false}
                 />
             </>

@@ -12,11 +12,13 @@ import { SharedValue } from 'react-native-reanimated'
 import CardText from './card/CardText'
 import CardTopContent from './card/CardTopContent'
 import Loader from '../modules/Loader'
+import {all} from "deepmerge";
 
 const { height } = Dimensions.get('screen')
 const screenWidth = Dimensions.get('screen').width
 export const tinderCardWidth = screenWidth * 0.8
 interface ICard {
+	allowDrag: boolean
 	swipe?: any
 	children: React.ReactNode
 }
@@ -24,6 +26,7 @@ interface ICard {
 const SwipableCard = memo((props: ICard) => {
 	const {
 		swipe,
+		allowDrag,
 		children,
 		...rest
 	} = props
@@ -42,12 +45,11 @@ const SwipableCard = memo((props: ICard) => {
 		outputRange: ['8deg', '0deg', '-8deg']
 	})
 
-	const allowSwipe = true
 	return (
 		<Animated.View
 			style={[
 				styles.card,
-				allowSwipe && {
+				allowDrag && {
 					transform: [...swipe.getTranslateTransform(), { rotate: rotate }]
 				}
 			]}

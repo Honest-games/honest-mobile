@@ -1,10 +1,11 @@
 import Label from '@/UI/Label'
-import { IQuestonLevelAndColor } from '@/features/converters/button-converters'
+import {getLevelColor, IQuestonLevelAndColor} from '@/features/converters/button-converters'
 import React from 'react'
 import { StyleSheet, View } from 'react-native'
+import {ILevelData} from "@/services/types/types";
 
 interface ITopContent {
-	level?: IQuestonLevelAndColor
+	level: ILevelData
 }
 
 const CardTopContent = ({ level }: ITopContent) => {
@@ -13,8 +14,8 @@ const CardTopContent = ({ level }: ITopContent) => {
 			{!level ? null : (
 				<View style={{ flexDirection: 'row', justifyContent: 'flex-start' }}>
 					<Label
-						levelBgColor={level.levelBgColor}
-						levelTitle={level.levelTitle}
+						levelBgColor={getLevelColor(level.ColorButton)}
+						levelTitle={level.Name}
 					/>
 				</View>
 			)}
