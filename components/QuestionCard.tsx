@@ -11,29 +11,16 @@ import {
 import { ILevelData, IQuestion } from '@/services/types/types'
 import { useTranslation } from 'react-i18next'
 import { useGetQuestionQuery } from '@/services/api'
-import {DisplayedQuestionData} from "@/app/decks";
+import { DisplayedCardItem } from '@/app/decks/[id]'
 
 interface QuestionCardProps {
-	userId: string
-	displayData: DisplayedQuestionData
+	displayData: DisplayedCardItem
+	question?: IQuestion
 }
 
 const QuestionCard = (props: QuestionCardProps) => {
-	const { displayData, userId } = props
+	const { displayData, question } = props
 	const { t } = useTranslation()
-	const [time] = useState(Date.now())
-	const [question, setQuestion] = useState<IQuestion>()
-
-	const { data: fetchedQuestion } = useGetQuestionQuery({
-		levelId: displayData.level.ID,
-		clientId: userId,
-		timestamp: time
-	})
-	useEffect(() => {
-		if (fetchedQuestion) {
-			setQuestion(fetchedQuestion)
-		}
-	}, [fetchedQuestion])
 
 	const color = getLevelColor(displayData.level.ColorButton)
 	return (
@@ -41,14 +28,23 @@ const QuestionCard = (props: QuestionCardProps) => {
 			{
 				<>
 					<CardTopContent level={displayData.level} />
-					<View style={{ alignItems: 'center', flexDirection: 'column', gap: 22 }}>
-						{question
-							? <>
-								{question.additional_text && (<Text style={styles.additionalText}>{question.additional_text}</Text>)}
-								<Text style={{ ...styles.cardText, color: color }}>{question?.text}</Text>
+					<View
+						style={{ alignItems: 'center', flexDirection: 'column', gap: 22 }}
+					>
+						{question ? (
+							<>
+								{question.additional_text && (
+									<Text style={styles.additionalText}>
+										{question.additional_text}
+									</Text>
+								)}
+								<Text style={{ ...styles.cardText, color: color }}>
+									{question?.text}
+								</Text>
 							</>
-							: <Text>Loading...</Text>
-						}
+						) : (
+							<Text>Loading...</Text>
+						)}
 					</View>
 					<CardLikeButton
 						color={color}
@@ -62,6 +58,24 @@ const QuestionCard = (props: QuestionCardProps) => {
 }
 
 export default QuestionCard
+
+interface BlurredQuestionCardProps {
+	displayData?: DisplayedCardItem
+}
+
+export const BlurredQuestionCard = ({
+	displayData
+}: BlurredQuestionCardProps) => {
+	return (
+		<View
+			style={{ ...styles.questionCardWrapper, ...styles.takeFirstCardWrapper }}
+		>
+			<Text style={{ ...styles.cardText, ...styles.takeFirstCardText }}>
+				Loading...
+			</Text>
+		</View>
+	)
+}
 
 export const TakeFirstCard = () => {
 	const { t } = useTranslation()

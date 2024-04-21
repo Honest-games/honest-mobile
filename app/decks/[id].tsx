@@ -15,7 +15,7 @@ import {useGetDecksQuery, useGetLevelsQuery, useGetQuestionQuery} from '@/servic
 import {IDeck, ILevelData, IQuestion} from '@/services/types/types'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useLocalSearchParams } from 'expo-router'
-import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
+import React, {memo, ReactNode, useCallback, useEffect, useRef, useState} from 'react'
 import {
 	Animated,
 	Dimensions,
@@ -29,7 +29,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import CardTopContent from "../../components/card/CardTopContent";
 import CardText from "../../components/card/CardText";
 import CardLikeButton from "../../components/card/CardLikeButton";
-import QuestionCard, {TakeFirstCard} from "@/components/QuestionCard";
+import QuestionCard, {BlurredQuestionCard, TakeFirstCard} from "@/components/QuestionCard";
 import getPanResponder from "@/components/animations";
 import DeckWithLevels from "@/components/DeckWithLevels";
 
@@ -37,18 +37,24 @@ const { width } = Dimensions.get('window')
 
 const CardMemo = memo(SwipeableCard)
 
-interface DisplayedQuestionData {
+export class DisplayedCardItem {
 	id: number
 	level: ILevelData
+	shouldLoadQuestion: boolean
+
+	static _currentDisplayDataIndex = 0
+	static create(level: ILevelData, shouldLoadQuestion?: boolean){
+		return new DisplayedCardItem(level, shouldLoadQuestion)
+	}
+
+	constructor(level: ILevelData, shouldLoadQuestion?: boolean) {
+		this.id = DisplayedCardItem._currentDisplayDataIndex++
+		this.level = level
+		this.shouldLoadQuestion = !!shouldLoadQuestion
+	}
 }
 
-interface DeckIdProps {
-
-}
-
-const DeckId: React.FC = ({
-
-}: DeckIdProps) => {
+const DeckId: React.FC = () => {
 	const { id: deckId } = useLocalSearchParams()
 
 	const { decks } = useDeck()
@@ -90,30 +96,44 @@ const OpenedDeckWithLevels = ({
 }: {deck: IDeck, levels: ILevelData[], userId: string})=>{
 	const [selectedLevel, setSelectedLevel] = useState<ILevelData>()
 	const [displayDataStack, setDisplayDataStack] =
-		useState<DisplayedQuestionData[]>([])
+		useState<DisplayedCardItem[]>([])
 	const { goBack } = useDeckId()
 
 	const moveToNextCard = (level: ILevelData) => {
 		if (displayDataStack.length > 0) {
 			setDisplayDataStack(prevState => {
-				let last = prevState[prevState.length - 1];
-				return [last, {id: last.id+1, level: level}]
+				let second = prevState[1];
+				second.shouldLoadQuestion = true
+				return [second, DisplayedCardItem.create(level)]
 			})
-		} else {
-			setDisplayDataStack([{id: 1, level}, {id: 2, level}])
 		}
 	}
 
 	const onButtonPress = (level: ILevelData)=>{
-		startSwipeAnimation(moveToNextCard.bind(null, level))
-		setSelectedLevel(level)
+		if(!selectedLevel){
+			setDisplayDataStack([DisplayedCardItem.create(level, true), DisplayedCardItem.create(level)])
+			setSelectedLevel(level)
+		} else {
+			if (selectedLevel.ID === level.ID) {
+				//start loading question for second card while first is preparing to be discarded later
+				setDisplayDataStack(prev => {
+					const second = prev[1];
+					if (second) second.shouldLoadQuestion = true
+					return [...prev]
+				})
+			} else {
+				setDisplayDataStack(prev => [prev[0], DisplayedCardItem.create(level, true)])
+				setSelectedLevel(level)
+			}
+			triggerSwipeAnimation(moveToNextCard.bind(null, level))
+		}
 	}
 
 	/*ANIMATION*/
 	const swipe = useRef(new Animated.ValueXY()).current
 	const [swipeDirection, setSwipeDirection] = useState(-1) //s Начинаем с направления влево (-1)
 
-	const startSwipeAnimation = (
+	const triggerSwipeAnimation = (
 		onEnd: () => void
 	) => {
 		Animated.timing(swipe, {
@@ -133,26 +153,31 @@ const OpenedDeckWithLevels = ({
 	const [func, setFunc] = useState()
 
 	console.log(displayDataStack.map(d=>d.id))
-	return ( //TODO block buttons when animation
+	return (
+		//TODO block buttons when animation
 		<SafeAreaView style={styles.container}>
 			<View style={styles.deck}>
 				<View style={styles.wrapper}>
 					<View style={{ flex: 1, justifyContent: 'space-between' }}>
-						<DeckTopContent selectedDeck={selectedDeck} goBack={goBack}/>
-						<View style={{
+						<DeckTopContent selectedDeck={selectedDeck} goBack={goBack} />
+						<View
+							style={{
 								flex: 1,
 								marginBottom: 12,
 								marginTop: 12
-							}}>
-							{displayDataStack.length && selectedLevel
-								? <CardsStack
+							}}
+						>
+							{displayDataStack.length && selectedLevel ? (
+								<CardsStack
 									userId={userId}
 									displayDataStack={displayDataStack}
 									swipe={swipe}
-									onAnimationEnd={onAnimationEnd.bind(null, moveToNextCard.bind(null, selectedLevel))}
+									onAnimationEnd={onAnimationEnd.bind(null,
+										moveToNextCard.bind(null, selectedLevel)
+									)}
 									selectedLevel={selectedLevel}
 								/>
-								: <TakeFirstCard/>}
+							) : <TakeFirstCard/>}
 						</View>
 						<View style={{ marginBottom: 12 }}>
 							<LevelInfo levelInfo={'chooseLevel'} />
@@ -170,6 +195,31 @@ const OpenedDeckWithLevels = ({
 	)
 }
 
+function WithLoadingQuestion({
+	displayData,
+	userId,
+	children
+}: {
+	displayData: DisplayedCardItem,
+	userId: string
+	children: (question?: IQuestion) => ReactNode
+}) {
+	const [time] = useState(Date.now())
+	const [question, setQuestion] = useState<IQuestion>()
+
+	const { data: fetchedQuestion } = useGetQuestionQuery({
+		levelId: displayData.level.ID,
+		clientId: userId,
+		timestamp: time
+	})
+	useEffect(() => {
+		if (fetchedQuestion) {
+			setQuestion(fetchedQuestion)
+		}
+	}, [fetchedQuestion])
+	return children(question);
+}
+
 const CardsStack = ({
 	displayDataStack,
 	swipe,
@@ -177,7 +227,7 @@ const CardsStack = ({
 	selectedLevel,
 	userId
 }:{
-	displayDataStack: DisplayedQuestionData[],
+	displayDataStack: DisplayedCardItem[],
 	swipe: Animated.ValueXY,
 	onAnimationEnd: ()=>void,
 	selectedLevel: ILevelData,
@@ -195,7 +245,15 @@ const CardsStack = ({
 				allowDrag={isFirst}
 				{...{ ...actualHandlers }}
 			>
-				<QuestionCard userId={userId} displayData={displayData} />
+				{!displayData.shouldLoadQuestion
+					//Если вопрос не надо грузить - показываем карточку без него - она с блюром
+					? <QuestionCard displayData={displayData}/>
+					//А если надо - оборачиваем в функцию которая грузит этот вопрос и отдаёт карточке уже точно загруженный
+					: <WithLoadingQuestion displayData={displayData} userId={userId}>
+						{/*здесь в качестве children используется функция. Компонент WithLoadingQuestion сам даёт в неё переменную question*/}
+						{question => <QuestionCard displayData={displayData} question={question} /> }
+					</WithLoadingQuestion>
+				}
 			</SwipeableCard>
 		)
 	}).reverse()
