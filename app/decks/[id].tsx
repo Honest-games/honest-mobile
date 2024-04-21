@@ -1,17 +1,10 @@
 import { LevelInfo } from '@/UI/LevelInfo'
 import { DeckTopContent } from '@/components/deck'
-import Colors from '@/constants/Colors'
-import {
-	IQuestonLevelAndColor,
-	getLevelColor
-} from '@/features/converters/button-converters'
 import { useDeck, useDeckId } from '@/features/hooks'
-import useFetchDeckSvg from '@/features/hooks/useFetchDeckSvg'
-import { useAppDispatch } from '@/features/hooks/useRedux'
 import SwipeableCard from '@/components/SwipableCard'
 import { LevelButtons } from '@/modules/LevelButtons'
 import Loader from '@/modules/Loader'
-import {useGetDecksQuery, useGetLevelsQuery, useGetQuestionQuery} from '@/services/api'
+import {useGetLevelsQuery, useGetQuestionQuery} from '@/services/api'
 import {IDeck, ILevelData, IQuestion} from '@/services/types/types'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useLocalSearchParams } from 'expo-router'
@@ -19,19 +12,12 @@ import React, {memo, ReactNode, useCallback, useEffect, useRef, useState} from '
 import {
 	Animated,
 	Dimensions,
-	PanResponder,
 	StyleSheet,
 	View,
-	Text, PanResponderInstance
 } from 'react-native'
-import { useSharedValue } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import CardTopContent from "../../components/card/CardTopContent";
-import CardText from "../../components/card/CardText";
-import CardLikeButton from "../../components/card/CardLikeButton";
 import QuestionCard, {BlurredQuestionCard, TakeFirstCard} from "@/components/QuestionCard";
 import getPanResponder from "@/components/animations";
-import DeckWithLevels from "@/components/DeckWithLevels";
 
 const { width } = Dimensions.get('window')
 
@@ -43,6 +29,7 @@ export class DisplayedCardItem {
 	shouldLoadQuestion: boolean
 
 	static _currentDisplayDataIndex = 0
+
 	static create(level: ILevelData, shouldLoadQuestion?: boolean){
 		return new DisplayedCardItem(level, shouldLoadQuestion)
 	}
@@ -83,13 +70,12 @@ const DeckId: React.FC = () => {
 
 const OpenedDeck = ({deck, userId}: { deck: IDeck, userId: string })=>{
 	const time = useRef(Date.now()).current
-	const {
-		data: levels,
-		isFetching: isFetchingLevels,
-		isLoading: isLoadingLevels
-	} = useGetLevelsQuery({deckId: deck.id, time})
-	if(!levels) return <Loader/>
-	return <OpenedDeckWithLevels deck={deck} levels={levels} userId={userId}/>
+	const {data: levels} = useGetLevelsQuery({deckId: deck.id, time})
+	if(!levels) {
+		return <Loader/>
+	} else {
+		return <OpenedDeckWithLevels deck={deck} levels={levels} userId={userId}/>
+	}
 }
 const OpenedDeckWithLevels = ({
 	deck: selectedDeck, levels, userId
@@ -101,6 +87,7 @@ const OpenedDeckWithLevels = ({
 
 	const moveToNextCard = (level: ILevelData) => {
 		if (displayDataStack.length > 0) {
+			//discard first item; put second as first and make it load question; add new item
 			setDisplayDataStack(prevState => {
 				let second = prevState[1];
 				second.shouldLoadQuestion = true
@@ -122,6 +109,7 @@ const OpenedDeckWithLevels = ({
 					return [...prev]
 				})
 			} else {
+				//replace second item with having needed level and loading its question
 				setDisplayDataStack(prev => [prev[0], DisplayedCardItem.create(level, true)])
 				setSelectedLevel(level)
 			}
@@ -150,7 +138,6 @@ const OpenedDeckWithLevels = ({
 		action()
 	}
 	/*END ANIMATION*/
-	const [func, setFunc] = useState()
 
 	console.log(displayDataStack.map(d=>d.id))
 	return (
