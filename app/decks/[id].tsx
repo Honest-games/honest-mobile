@@ -71,116 +71,6 @@ const DeckId: React.FC = ({
 			if (userIdFromAS) setUserId(userIdFromAS)
 		})()
 	})
-
-	/*	const [selectedDeck, setSelectedDeck] = useState<IDeck>()
-
-        useEffect(() => {
-            const findDeck = decks?.find((item: IDeck) => item.id === id.toString())
-            if (findDeck) {
-                setSelectedDeck(findDeck)
-            }
-        }, [id, decks])
-
-        const {
-            svgData,
-            isLoadingImage,
-            error: errorSvg
-        } = useFetchDeckSvg(selectedDeck?.image_id)
-
-        const time = useRef(Date.now()).current
-        const [userId, setUserId] = useState('')
-        useEffect(() => {(async () => {
-                const userIdFromAS = await AsyncStorage.getItem('user_id')
-                if (userIdFromAS) setUserId(userIdFromAS)
-            })()
-        })
-        const [isFirstCardTaken, setIsFirstCardTaken] = useState<boolean>(false)
-        const [displayedQuestions, setDisplayedQuestions] = useState<DisplayedQuestionData[]>([])
-        const {
-            data: levels,
-            isFetching: isFetchingLevels,
-            isLoading: isLoadingLevels
-        } = useGetLevelsQuery({ deckId: id.toString(), time })
-        const { goBack } = useDeckId()
-        const [buttonState, setButtonState] = useState<IQuestonLevelAndColor>()
-
-        const [level, setLevel] = useState<string>('')
-
-
-        const levelInfoText = 'chooseLevel'
-
-        const [swipeDirection, setSwipeDirection] = useState(-1) //s Начинаем с направления влево (-1)
-        const [isButtonPressed, setIsButtonPressed] = useState(false)
-
-        const swipe = useRef(new Animated.ValueXY()).current
-
-        const [swiped, setSwiped] = useState(false)
-
-        useEffect(() => {
-            if (swiped) {
-                setSwiped(false)
-            }
-        }, [swiped])
-
-        const moveToNextCard = useCallback(() => {
-            /!*if (displayedQuestions.length > 0) {
-                // setDisplayedQuestions(prevState => prevState.slice(1)) // Удаляем первую карточку
-                setDisplayedQuestions(prevState => {
-                    let last = prevState[prevState.length - 1];
-                    return [last, {id: last.id+1, level: levels!.find(x=>x.ID===level)!}]
-                })
-            } else {
-                setDisplayedQuestions([{id: 1, level: }])
-            }*!/
-            if (displayedQuestions.length > 0) {
-                setDisplayedQuestions(prevState => prevState.slice(1)) // Удаляем первую карточку
-            }
-            swipe.setValue({ x: 0, y: 0 })
-            setSwipeDirection(prevDirection => -prevDirection)
-            setSwiped(true)
-            setIsFirstCardTaken(true)
-        }, [swipe, displayedQuestions, id])
-
-        const panResponser = getPanResponser(swipe, moveToNextCard)
-
-        const handleSelection = useCallback(
-            (direction: any) => {
-                Animated.timing(swipe, {
-                    toValue: { x: direction * 500, y: 0 },
-                    useNativeDriver: true,
-                    duration: 500
-                }).start(moveToNextCard)
-            },
-            [moveToNextCard]
-        )
-
-        const onButtonPress = (
-            levelId: string,
-            buttonName: string,
-            colorButton: string
-        ) => {
-            const colorOfLevel = getLevelColor(colorButton)
-            setButtonState({ levelBgColor: colorOfLevel, levelTitle: buttonName })
-            if (level !== levelId) {
-                setLevel(levelId)
-                setDisplayedQuestions([])
-            }
-            handleSelection(swipeDirection)
-
-            setIsButtonPressed(true)
-        }
-
-        useEffect(() => {
-            if (isButtonPressed) {
-                const timer = setTimeout(() => {
-                    setIsButtonPressed(false)
-                }, 500)
-
-                return () => clearTimeout(timer)
-            }
-        }, [isButtonPressed])*/
-
-	// if (isFetchingLevels || isLoadingLevels) {
 	if (!selectedDeck || !userId) return <Loader />
 	return <OpenedDeck deck={selectedDeck} userId={userId} />
 }
@@ -196,38 +86,13 @@ const OpenedDeck = ({deck, userId}: { deck: IDeck, userId: string })=>{
 	return <OpenedDeckWithLevels deck={deck} levels={levels} userId={userId}/>
 }
 const OpenedDeckWithLevels = ({
-	deck: selectedDeck, levels
+	deck: selectedDeck, levels, userId
 }: {deck: IDeck, levels: ILevelData[], userId: string})=>{
 	const [selectedLevel, setSelectedLevel] = useState<ILevelData>()
 	const [displayDataStack, setDisplayDataStack] =
 		useState<DisplayedQuestionData[]>([])
 	const { goBack } = useDeckId()
 
-	/*ANIMATION*/
-	// const [swiped, setSwiped] = useState(false)
-	const swipe = useRef(new Animated.ValueXY()).current
-	const [swipeDirection, setSwipeDirection] = useState(-1) //s Начинаем с направления влево (-1)
-
-	const startSwipeAnimation = (
-		direction: any,
-		onEnd: () => void
-	) => {
-		console.log('start anim')
-		Animated.timing(swipe, {
-			toValue: { x: direction * 500, y: 0 },
-			useNativeDriver: true,
-			duration: 500
-		}).start(()=>{
-			console.log('end anum')
-			onAnimationEnd(onEnd)
-		})
-	}
-	const onAnimationEnd = (action: ()=>void)=>{
-		swipe.setValue({x: 0, y: 0})
-		setSwipeDirection(prevDirection => -prevDirection)
-		action()
-	}
-	/*END ANIMATION*/
 	const moveToNextCard = (level: ILevelData) => {
 		if (displayDataStack.length > 0) {
 			setDisplayDataStack(prevState => {
@@ -240,9 +105,33 @@ const OpenedDeckWithLevels = ({
 	}
 
 	const onButtonPress = (level: ILevelData)=>{
+		startSwipeAnimation(moveToNextCard.bind(null, level))
 		setSelectedLevel(level)
-		startSwipeAnimation(swipeDirection, moveToNextCard.bind(null, level))
 	}
+
+	/*ANIMATION*/
+	const swipe = useRef(new Animated.ValueXY()).current
+	const [swipeDirection, setSwipeDirection] = useState(-1) //s Начинаем с направления влево (-1)
+
+	const startSwipeAnimation = (
+		onEnd: () => void
+	) => {
+		Animated.timing(swipe, {
+			toValue: { x: swipeDirection * 500, y: 0 },
+			useNativeDriver: true,
+			duration: 500
+		}).start(()=>{
+			onAnimationEnd(onEnd)
+		})
+	}
+	const onAnimationEnd = (action: ()=>void)=>{
+		swipe.setValue({x: 0, y: 0})
+		setSwipeDirection(prevDirection => -prevDirection)
+		action()
+	}
+	/*END ANIMATION*/
+	const [func, setFunc] = useState()
+
 	console.log(displayDataStack.map(d=>d.id))
 	return ( //TODO block buttons when animation
 		<SafeAreaView style={styles.container}>
@@ -257,10 +146,10 @@ const OpenedDeckWithLevels = ({
 							}}>
 							{displayDataStack.length && selectedLevel
 								? <CardsStack
+									userId={userId}
 									displayDataStack={displayDataStack}
 									swipe={swipe}
-									onAnimationEnd={onAnimationEnd}
-									moveToNextCard={moveToNextCard}
+									onAnimationEnd={onAnimationEnd.bind(null, moveToNextCard.bind(null, selectedLevel))}
 									selectedLevel={selectedLevel}
 								/>
 								: <TakeFirstCard/>}
@@ -281,26 +170,20 @@ const OpenedDeckWithLevels = ({
 	)
 }
 
-interface DisplayedQuestionData{
-	id: number,
-	level: ILevelData
-}
-
 const CardsStack = ({
 	displayDataStack,
 	swipe,
 	onAnimationEnd,
 	selectedLevel,
-	moveToNextCard
+	userId
 }:{
 	displayDataStack: DisplayedQuestionData[],
 	swipe: Animated.ValueXY,
-	onAnimationEnd: (action: ()=>void)=>void,
+	onAnimationEnd: ()=>void,
 	selectedLevel: ILevelData,
-	moveToNextCard: (level: ILevelData)=>void
+	userId: string
 })=>{
-	let args = moveToNextCard.bind(null, selectedLevel);
-	const panResponder = selectedLevel && getPanResponder(swipe, onAnimationEnd.bind(null, args))
+	const panResponder = selectedLevel && getPanResponder(swipe, onAnimationEnd)
 	return displayDataStack.map((displayData, i)=>{
 		const isFirst = i === 0
 		const actualHandlers = (/*isFirst &&*/ panResponder) ? panResponder.panHandlers : {}
@@ -312,70 +195,11 @@ const CardsStack = ({
 				allowDrag={isFirst}
 				{...{ ...actualHandlers }}
 			>
-				<QuestionCard level={displayData.level} question={
-					{ id: 'lol', text: 'someText'+displayData.id, level_id: displayData.level.ID, additional_text: "You're awesome!" }
-				} />
+				<QuestionCard userId={userId} displayData={displayData} />
 			</SwipeableCard>
 		)
 	}).reverse()
 }
-
-	// }
-
-	// return <DeckWithLevels deck={} />
-
-/*	return (
-		<SafeAreaView style={styles.container}>
-			<View style={styles.deck}>
-				<View style={styles.wrapper}>
-					<View style={{ flex: 1, justifyContent: 'space-between' }}>
-						<DeckTopContent
-							svgData={svgData}
-							isLoadingImage={isLoadingImage}
-							selectedDeck={selectedDeck}
-							goBack={goBack}
-						/>
-
-						<View
-							style={{
-								flex: 1,
-								marginBottom: 12,
-								marginTop: 12
-							}}
-						>
-							{isFirstCardTaken ? displayedQuestions.length > 0 &&
-								displayedQuestions
-									.map((question: IQuestion, index: number) => {
-										let isFirst = index === 0
-										let dragHandlers = isFirst ? panResponser.panHandlers : {}
-										return (
-											<SwipeableCard
-												key={`${question.id}-${index}`}
-												swipe={swipe}
-												isFirst={isFirst}
-												{...{ ...dragHandlers }}
-											>
-												<QuestionCard buttonState={buttonState} question={question}/>
-											</SwipeableCard>
-										)
-									})
-									.reverse() : <TakeFirstCard/>}
-						</View>
-						<View style={{ marginBottom: 12 }}>
-							<LevelInfo levelInfo={levelInfoText} />
-						</View>
-
-						<LevelButtons
-							isButtonPressed={isButtonPressed}
-							levels={levels || []}
-							onButtonPress={onButtonPress}
-							size='large'
-						/>
-					</View>
-				</View>
-			</View>
-		</SafeAreaView>
-	)*/
 
 export default React.memo(DeckId)
 
