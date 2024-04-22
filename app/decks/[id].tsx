@@ -80,9 +80,31 @@ const OpenedDeck = ({deck, userId}: { deck: IDeck, userId: string })=>{
 const OpenedDeckWithLevels = ({
 	deck: selectedDeck, levels, userId
 }: {deck: IDeck, levels: ILevelData[], userId: string})=>{
+	/*ANIMATION*/
+	const swipe = useRef(new Animated.ValueXY()).current
+	const [swipeDirection, setSwipeDirection] = useState(-1) //s Начинаем с направления влево (-1)
+	const [isAnimationGoing, setIsAnimationGoing] = useState<boolean>(false)
+
+	const triggerSwipeAnimation = (onEnd: () => void) => {
+		Animated.timing(swipe, {
+			toValue: { x: swipeDirection * 500, y: 0 },
+			useNativeDriver: true,
+			duration: 500
+		}).start(()=>{
+			onAnimationEnd(onEnd)
+		})
+		setIsAnimationGoing(true)
+	}
+	const onAnimationEnd = (action: ()=>void)=>{
+		swipe.setValue({x: 0, y: 0})
+		setSwipeDirection(prevDirection => -prevDirection)
+		setIsAnimationGoing(false)
+		action()
+	}
+	/*END ANIMATION*/
+
 	const [selectedLevel, setSelectedLevel] = useState<ILevelData>()
-	const [displayDataStack, setDisplayDataStack] =
-		useState<DisplayedCardItem[]>([])
+	const [displayDataStack, setDisplayDataStack] = useState<DisplayedCardItem[]>([])
 	const { goBack } = useDeckId()
 
 	const moveToNextCard = (level: ILevelData) => {
@@ -97,6 +119,9 @@ const OpenedDeckWithLevels = ({
 	}
 
 	const onButtonPress = (level: ILevelData)=>{
+		if(isAnimationGoing){
+			return
+		}
 		if(!selectedLevel){
 			setDisplayDataStack([DisplayedCardItem.create(level, true), DisplayedCardItem.create(level)])
 			setSelectedLevel(level)
@@ -117,31 +142,8 @@ const OpenedDeckWithLevels = ({
 		}
 	}
 
-	/*ANIMATION*/
-	const swipe = useRef(new Animated.ValueXY()).current
-	const [swipeDirection, setSwipeDirection] = useState(-1) //s Начинаем с направления влево (-1)
-
-	const triggerSwipeAnimation = (
-		onEnd: () => void
-	) => {
-		Animated.timing(swipe, {
-			toValue: { x: swipeDirection * 500, y: 0 },
-			useNativeDriver: true,
-			duration: 500
-		}).start(()=>{
-			onAnimationEnd(onEnd)
-		})
-	}
-	const onAnimationEnd = (action: ()=>void)=>{
-		swipe.setValue({x: 0, y: 0})
-		setSwipeDirection(prevDirection => -prevDirection)
-		action()
-	}
-	/*END ANIMATION*/
-
 	console.log(displayDataStack.map(d=>d.id))
 	return (
-		//TODO block buttons when animation
 		<SafeAreaView style={styles.container}>
 			<View style={styles.deck}>
 				<View style={styles.wrapper}>
