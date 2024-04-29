@@ -1,50 +1,33 @@
 // store.ts
 import { api } from '@/services/api'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
 import { setupListeners } from '@reduxjs/toolkit/query'
+import { enableMapSet } from 'immer'
 import { useDispatch } from 'react-redux'
-import {
-	FLUSH,
-	PAUSE,
-	PERSIST,
-	PURGE,
-	REGISTER,
-	REHYDRATE,
-	persistReducer,
-	persistStore
-} from 'redux-persist'
+import deckLikeReducer from './reducer/deck-likes-slice'
 import cardsOfDeckReducer from './reducer/deck-slice'
 import languageReducer from './reducer/language-slice'
+import questionLikeReducer from './reducer/question-like-slice'
 
 const rootReducer = combineReducers({
 	[api.reducerPath]: api.reducer,
 	cardsOfDeck: cardsOfDeckReducer,
-	language: languageReducer
+	language: languageReducer,
+	decksLikes: deckLikeReducer,
+	questionsLikes: questionLikeReducer
 })
 
-const persistConfig = {
-	key: 'root',
-	storage: AsyncStorage
-}
-
-const persistedReducer = persistReducer(persistConfig, rootReducer)
+enableMapSet()
 
 const store = configureStore({
-	reducer: persistedReducer,
+	reducer: rootReducer,
 	middleware: getDefaultMiddleware =>
 		getDefaultMiddleware({
 			immutableCheck: false,
-			serializableCheck: {
-				ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER]
-			}
+			serializableCheck: false
 		}).concat(api.middleware)
 })
 setupListeners(store.dispatch)
-
-setupListeners(store.dispatch)
-
-export const persistor = persistStore(store)
 
 export type RootState = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch

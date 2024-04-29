@@ -2,12 +2,18 @@ import DeckScrollView from '@/components/deck/DeckScrollView'
 import { getLevelsInfo } from '@/features/converters'
 import { useDeck } from '@/features/hooks'
 import useLanguage from '@/features/hooks/useLanguage'
+import { useAppDispatch } from '@/features/hooks/useRedux'
 import CustomBottomSheetModal from '@/modules/CustomBottomSheetModal'
 import Loader from '@/modules/Loader'
+import { useGetAllLikesQuery } from '@/services/api'
+import { IDeck } from '@/services/types/types'
+import { setDecksLikesSet } from '@/store/reducer/deck-likes-slice'
+
 import SearchBar from '@/UI/SearchBar'
 import Switcher from '@/UI/Switcher'
 import { BottomSheetModal } from '@gorhom/bottom-sheet'
-import React, { useRef } from 'react'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import React, { useEffect, useRef, useState } from 'react'
 import { Dimensions, Platform, StyleSheet, View } from 'react-native'
 import Animated, {
 	Extrapolate,
@@ -36,11 +42,16 @@ const Page = () => {
 		filteredDecks,
 		onFilteredDecks
 	} = useDeck()
+	const dispatch = useAppDispatch()
+	const [userId, setUserId] = useState<any>(null)
 	const { changeLanguage } = useLanguage()
 	const bottomSheetRef = useRef<BottomSheetModal>(null)
 	const scrollY = useSharedValue(0)
 	const scrollRef = useAnimatedRef<Animated.ScrollView>()
 	const levelInfo = getLevelsInfo(levels?.length ?? 0)
+
+	const { data: likes, isFetching: isFetchingLikes } =
+		useGetAllLikesQuery(userId)
 	const scrollToTop = (scrollRef: any, scrollY: any) => {
 		scrollRef.current?.scrollTo({ y: 0, animated: true })
 	}
@@ -58,7 +69,7 @@ const Page = () => {
 	const searchBarStyle = useAnimatedStyle(() => {
 		const searchBarWidth = interpolate(
 			scrollY.value,
-			[20, 70],
+			[0, 20],
 			[width - 148, 48],
 			Extrapolate.CLAMP
 		)
@@ -90,13 +101,13 @@ const Page = () => {
 		const scrollOffset = interpolate(
 			scrollY.value,
 			[0, 10],
-			[0, 300],
+			[0, 150],
 			Extrapolate.CLAMP
 		)
 
 		const opacity = interpolate(
 			scrollY.value,
-			[0, 20],
+			[0, 10],
 			[1, 0],
 			Extrapolate.CLAMP
 		)
@@ -110,6 +121,22 @@ const Page = () => {
 		bottomSheetRef.current?.present()
 		setDeckId(id)
 	}
+
+	useEffect(() => {
+		if (likes && likes.decks) {
+			dispatch(setDecksLikesSet(likes.decks.map((deck: IDeck) => deck.id)))
+		}
+	}, [likes])
+
+	useEffect(() => {
+		const getUserId = async () => {
+			const user_id = await AsyncStorage.getItem('user_id')
+			if (userId !== user_id) {
+				setUserId(user_id)
+			}
+		}
+		getUserId()
+	}, [userId])
 
 	return (
 		<SafeAreaView style={styles.container}>

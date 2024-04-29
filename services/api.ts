@@ -1,6 +1,5 @@
 // api.ts
 import {
-	BaseQueryApi,
 	FetchArgs,
 	createApi,
 	fetchBaseQuery
@@ -28,12 +27,14 @@ import { IDeck, ILevelData, IQuestion } from './types/types'
 export const api = createApi({
 	reducerPath: 'api',
 	baseQuery: fetchBaseQuery({ baseUrl: 'https://logotipiwe.ru/haur/api/' }),
+	tagTypes: ['Decks', 'Levels', 'Question'],
 	endpoints: builder => ({
 		getDecks: builder.query<IDeck[], any>({
 			query: (x: { language: string; time: number }) =>
-				`/v2/decks?languageCode=${x.language}`
+				`/v2/decks?languageCode=${x.language}`,
+			providesTags: _ => ['Decks']
 		}),
-		getLevels: builder.query<ILevelData[], { deckId: string, time: number }>({
+		getLevels: builder.query<ILevelData[], { deckId: string; time: number }>({
 			query: (x: { deckId: string; time: number }) =>
 				`v1/levels?deckId=${x.deckId}`
 		}),
@@ -53,6 +54,9 @@ export const api = createApi({
 			query: (x: { imageId: string; time: number }) =>
 				`v1/get-vector-image/${x.imageId}`,
 			transformResponse: (response: Response) => response.text()
+		}),
+		getAllLikes: builder.query<any, any>({
+			query: userId => `v1/user/${userId}/likes?userId=${userId}`
 		}),
 		likeDeck: builder.mutation<FetchArgs | any, any>({
 			query: ({ deckId, userId }) => {
@@ -100,7 +104,8 @@ export const {
 	useGetAllQuestionsQuery,
 	useGetVectorImageQuery,
 	useLikeDeckMutation,
-	useDislikeDeckMutation, 
+	useDislikeDeckMutation,
 	useLikeQuestionMutation,
-	useDislikeQuestionMutation
+	useDislikeQuestionMutation,
+	useGetAllLikesQuery
 } = api

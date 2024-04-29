@@ -1,28 +1,22 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
-import React from 'react'
-import { FontAwesome } from '@expo/vector-icons'
 import Colors from '@/constants/Colors'
+import { FontAwesome } from '@expo/vector-icons'
+import React from 'react'
+import { StyleSheet, TouchableOpacity } from 'react-native'
 
 interface LikeButtonProps {
-	handleLike: () => void,
-	isLiked: boolean | null
+	handleLike: () => void
+	isLiked: () => boolean
 }
 
-const LikeButton: React.FC<LikeButtonProps> = ({
-	handleLike,
-	isLiked
-}) => {
+const LikeButton: React.FC<LikeButtonProps> = ({ handleLike, isLiked }) => {
 	return (
-		<TouchableOpacity
-			style={styles.likes}
-			onPress={handleLike}
-		>
+		<TouchableOpacity style={styles.likes} onPress={handleLike}>
 			<FontAwesome
 				style={{
 					marginLeft: 10,
 					marginRight: 10
 				}}
-				name={isLiked ? 'heart' : 'heart-o'}
+				name={isLiked() ? 'heart' : 'heart-o'}
 				size={16}
 				color={Colors.orange}
 			/>

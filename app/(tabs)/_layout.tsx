@@ -6,21 +6,12 @@ import React from 'react'
 export default function TabLayout() {
 	return (
 		<Tabs
+			initialRouteName='index'
 			screenOptions={{
 				tabBarActiveTintColor: Colors.deepGray,
 				tabBarShowLabel: false
 			}}
 		>
-			{/* <Tabs.Screen
-				name='two'
-				options={{
-					tabBarLabel: 'Decks',
-					headerShown: false,
-					tabBarIcon: ({ size, color }) => (
-						<Ionicons name='heart' size={size} color={color} />
-					)
-				}}
-			/> */}
 			<Tabs.Screen
 				name='two'
 				options={{

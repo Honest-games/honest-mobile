@@ -1,3 +1,4 @@
+import { AnimateSplashScreen } from '@/components/screens'
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -8,9 +9,8 @@ import React, { useEffect, useState } from 'react'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import uuid from 'react-native-uuid'
 import { Provider } from 'react-redux'
-import { PersistGate } from 'redux-persist/integration/react'
 import '../constants/i18n/i18n.config'
-import store, { persistor } from '../store/store'
+import store from '../store/store'
 
 export { ErrorBoundary } from 'expo-router'
 
@@ -87,39 +87,37 @@ export default function RootLayout() {
 
 	const showAnimatedSplash = !appReady || !splashAnimationFinished
 
-	// if (showAnimatedSplash) {
-	// 	return (
-	// 		<AnimateSplashScreen
-	// 			onAnimationFinish={isCancelled => {
-	// 				if (!isCancelled) {
-	// 					setSplashAnimationFinished(true)
-	// 				}
-	// 			}}
-	// 		/>
-	// 	)
-	// }
+	if (showAnimatedSplash) {
+		return (
+			<AnimateSplashScreen
+				onAnimationFinish={isCancelled => {
+					if (!isCancelled) {
+						setSplashAnimationFinished(true)
+					}
+				}}
+			/>
+		)
+	}
 
 	return (
 		<Provider store={store}>
-			<PersistGate loading={null} persistor={persistor}>
-				<GestureHandlerRootView style={{ flex: 1 }}>
-					<BottomSheetModalProvider>
-						{/* <ThemeProvider
+			<GestureHandlerRootView style={{ flex: 1 }}>
+				<BottomSheetModalProvider>
+					{/* <ThemeProvider
 						value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
 					> */}
-						<Stack>
-							<Stack.Screen name='(tabs)' options={{ headerShown: false }} />
-							<Stack.Screen
-								name='decks/[id]'
-								options={{
-									headerShown: false
-								}}
-							/>
-						</Stack>
-						{/* </ThemeProvider> */}
-					</BottomSheetModalProvider>
-				</GestureHandlerRootView>
-			</PersistGate>
+					<Stack>
+						<Stack.Screen name='(tabs)' options={{ headerShown: false }} />
+						<Stack.Screen
+							name='decks/[id]'
+							options={{
+								headerShown: false
+							}}
+						/>
+					</Stack>
+					{/* </ThemeProvider> */}
+				</BottomSheetModalProvider>
+			</GestureHandlerRootView>
 		</Provider>
 	)
 }

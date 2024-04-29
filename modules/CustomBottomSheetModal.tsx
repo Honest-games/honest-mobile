@@ -1,8 +1,10 @@
 import { LevelInfo } from '@/UI/LevelInfo'
 import Colors from '@/constants/Colors'
 import useFetchDeckSvg from '@/features/hooks/useFetchDeckSvg'
+import { useAppDispatch, useAppSelector } from '@/features/hooks/useRedux'
 import { useDislikeDeckMutation, useLikeDeckMutation } from '@/services/api'
 import { IDeck, ILevelData } from '@/services/types/types'
+import { addDeckId, removeDeckId } from '@/store/reducer/deck-likes-slice'
 import { FontAwesome } from '@expo/vector-icons'
 import { BottomSheetBackdrop, BottomSheetModal } from '@gorhom/bottom-sheet'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -46,40 +48,39 @@ const CustomBottomSheetModal = forwardRef<Ref, CustomBottomSheetModalProps>(
 			isLoadingImage,
 			error: errorSvg
 		} = useFetchDeckSvg(deck?.image_id)
-
-		const [isLiked, setIsLiked] = useState<boolean>(false)
+		const dispatch = useAppDispatch()
+		const decksLikesSet = useAppSelector(state => state.decksLikes.decksLikesSet)
 		const [userId, setUserId] = useState<any>(null)
 		const [likeDeck] = useLikeDeckMutation()
 		const [dislikeDeck] = useDislikeDeckMutation()
 
-		useEffect(() => {
-			if (deckId) {
-				setIsLiked(false)
-			}
-		}, [deckId])
-		console.log(isLiked)
-		const getUser = async () => {
-			try {
-				const user = await AsyncStorage.getItem('user_id')
-				setUserId(user)
-			} catch (e) {
-				console.log(e)
-			}
+		const isLiked = () => {
+			return decksLikesSet.has(deckId)
 		}
 
 		useEffect(() => {
+			const getUser = async () => {
+				try {
+					const user = await AsyncStorage.getItem('user_id')
+					setUserId(user)
+				} catch (e) {
+					console.log(e)
+				}
+			}
 			getUser()
 		}, [userId])
 
 		const handleLike = async () => {
-			const newLikeState = !isLiked
-
-			setIsLiked(newLikeState)
-
-			if (newLikeState) {
-				await likeDeck({ deckId, userId })
-			} else {
-				await dislikeDeck({ deckId, userId })
+			try {
+				if (decksLikesSet.has(deckId)) {
+					await dislikeDeck({ deckId: deckId, userId })
+					dispatch(removeDeckId(deckId))
+				} else {
+					await likeDeck({ deckId: deckId, userId })
+					dispatch(addDeckId(deckId))
+				}
+			} catch (e) {
+				console.error('Error:', e)
 			}
 		}
 
@@ -113,7 +114,7 @@ const CustomBottomSheetModal = forwardRef<Ref, CustomBottomSheetModalProps>(
 		}, [deck, setCompletedCount, completedCount, ref, deckId])
 
 		const snapPoints = useMemo(() => ['80%'], [])
-
+		const cardsCount = deck?.cardsCount
 		return (
 			<BottomSheetModal
 				ref={ref}
@@ -127,6 +128,7 @@ const CustomBottomSheetModal = forwardRef<Ref, CustomBottomSheetModalProps>(
 				) : (
 					<View style={{ flex: 1, marginBottom: 65, gap: 20 }}>
 						<DeckProgressBar
+							cardsCount={cardsCount}
 							handleLike={handleLike}
 							isLiked={isLiked}
 							completedCount={completedCount}
@@ -181,13 +183,15 @@ const DeckProgressBar = ({
 	deck,
 	style,
 	handleLike,
-	isLiked
+	isLiked,
+	cardsCount
 }: {
 	deck: IDeck | undefined
 	style?: ViewStyle
 	completedCount: number
 	handleLike: () => void
-	isLiked: boolean
+	isLiked: () => boolean
+	cardsCount: number | undefined
 }) => {
 	const [pressHeart, setPressHeart] = useState(false)
 	return (
@@ -196,7 +200,9 @@ const DeckProgressBar = ({
 				<View style={styles.progressBar}>
 					<View style={styles.progressColor}></View>
 				</View>
-				<Text style={styles.progressText}>{`${completedCount}/100`}</Text>
+				<Text
+					style={styles.progressText}
+				>{`${completedCount}/${cardsCount}`}</Text>
 			</View>
 			<TouchableOpacity style={styles.likes} onPress={handleLike}>
 				<FontAwesome
@@ -204,7 +210,7 @@ const DeckProgressBar = ({
 						marginLeft: 10,
 						marginRight: 10
 					}}
-					name={isLiked ? 'heart' : 'heart-o'}
+					name={isLiked() ? 'heart' : 'heart-o'}
 					size={16}
 					color={Colors.orange}
 				/>

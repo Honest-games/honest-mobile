@@ -34,7 +34,7 @@ const Switcher: React.FC<SwitcherProps> = ({
 
 	useEffect(() => {
 		const fetchLanguage = async () => {
-			const storedLanguage = await AsyncStorage.getItem('language')
+			const storedLanguage = 'en'
 			if (storedLanguage) {
 				setIsEnglish(storedLanguage === 'en')
 				translateX.value = withTiming(storedLanguage === 'en' ? 48 : 0, {

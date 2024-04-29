@@ -6,13 +6,14 @@ export interface IDeck {
   description: string;
   labels: string;
   image_id: string;
+	cardsCount: number;
 }
 
 export interface IQuestion {
 	id: string
 	level_id: string
 	text: string
-	additional_text: string
+	additional_text?: string
 }
 
 export interface ILevelData {
