@@ -11,7 +11,7 @@ const { height } = Dimensions.get('screen')
 const AnimateSplashScreen = ({ onAnimationFinish }: ISplashScreen) => {
 	const animation = useRef<LottieView>(null)
 	return (
-		<View style={{ height: height }}>
+		<View style={{ height: height, backgroundColor: '#f3f3f3' }}>
 			<LottieView
 				loop={false}
 				onAnimationFinish={onAnimationFinish}
@@ -19,7 +19,7 @@ const AnimateSplashScreen = ({ onAnimationFinish }: ISplashScreen) => {
 				ref={animation}
 				autoPlay
 				// source={require('@/assets/images/Oanimation.json')}
-				source={require('@/assets/images/gachi2.mp4.lottie.json')}
+				source={require('@/assets/images/animation.json')}
 			/>
 		</View>
 	)

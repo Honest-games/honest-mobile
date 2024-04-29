@@ -1,4 +1,6 @@
+import { useAppDispatch, useAppSelector } from '@/features/hooks/useRedux'
 import { useDislikeDeckMutation, useLikeDeckMutation } from '@/services/api'
+import { addDeckId, removeDeckId } from '@/store/reducer/deck-likes-slice'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import React, { useEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
@@ -31,37 +33,40 @@ function Deck({
 	onPresent,
 	labelsString,
 	imageId
-	// isFetching,
-	// isLoading
 }: DeckProps) {
-	const [isLiked, setIsLiked] = useState<boolean | null>(null)
+	const dispatch = useAppDispatch()
+	const decksLikesSet = useAppSelector(state => state.decksLikes.decksLikesSet)
 	const [userId, setUserId] = useState<any>(null)
 	const [likeDeck] = useLikeDeckMutation()
 	const [dislikeDeck] = useDislikeDeckMutation()
 
-	const getUser = async () => {
-		try {
-			const user = await AsyncStorage.getItem('user_id')
-			setUserId(user)
-		} catch (e) {
-			console.log(e)
-		}
+	const isLiked = () => {
+		return decksLikesSet.has(id)
 	}
 
 	useEffect(() => {
+		const getUser = async () => {
+			try {
+				const user = await AsyncStorage.getItem('user_id')
+				setUserId(user)
+			} catch (e) {
+				console.log(e)
+			}
+		}
 		getUser()
 	}, [userId])
 
-	// Функция для обработки нажатия на кнопку
 	const handleLike = async () => {
-		const newLikeState = !isLiked
-
-		setIsLiked(newLikeState)
-
-		if (newLikeState) {
-			await likeDeck({ id, userId })
-		} else {
-			await dislikeDeck({ id, userId })
+		try {
+			if (decksLikesSet.has(id)) {
+				await dislikeDeck({ deckId: id, userId })
+				dispatch(removeDeckId(id))
+			} else {
+				await likeDeck({ deckId: id, userId })
+				dispatch(addDeckId(id))
+			}
+		} catch (e) {
+			console.error('Error:', e)
 		}
 	}
 
@@ -72,7 +77,6 @@ function Deck({
 			<View style={{ flexDirection: 'column', margin: 12, flex: 1 }}>
 				<View
 					style={{
-						position: 'absolute',
 						justifyContent: 'space-between',
 						flexDirection: 'row',
 						width: '100%'

@@ -1,58 +1,107 @@
-import CardTopContent from './card/CardTopContent'
-import CardText from './card/CardText'
-import Colors from '@/constants/Colors'
-import CardLikeButton from './card/CardLikeButton'
-import { StyleSheet, Text, View } from 'react-native'
-import React, { useCallback, useEffect, useState } from 'react'
-import {
-	getLevelColor,
-	IQuestonLevelAndColor
-} from '@/features/converters/button-converters'
-import { ILevelData, IQuestion } from '@/services/types/types'
-import { useTranslation } from 'react-i18next'
-import { useGetQuestionQuery } from '@/services/api'
 import { DisplayedCardItem } from '@/app/decks/[id]'
+import Colors from '@/constants/Colors'
+import { getLevelColor } from '@/features/converters/button-converters'
+import { useAppDispatch, useAppSelector } from '@/features/hooks/useRedux'
+import {
+	useDislikeQuestionMutation,
+	useLikeQuestionMutation
+} from '@/services/api'
+import { IQuestion } from '@/services/types/types'
+import {
+	addQuestionId,
+	removeQuestionId
+} from '@/store/reducer/question-like-slice'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { StyleSheet, Text, View } from 'react-native'
+import CardLikeButton from './card/CardLikeButton'
+import CardTopContent from './card/CardTopContent'
 
 interface QuestionCardProps {
 	displayData: DisplayedCardItem
 	question?: IQuestion
+	isFetchingQuestion?: boolean
+	questionId?: string
 }
 
 const QuestionCard = (props: QuestionCardProps) => {
-	const { displayData, question } = props
-	const { t } = useTranslation()
+	const { displayData, question, isFetchingQuestion, questionId } = props
+	const dispatch = useAppDispatch()
+	const questionsLikesSet: Set<any> = useAppSelector(
+		state => state.questionsLikes.questionsLikesSet
+	)
+
+	const [like, setLike] = useState<boolean>(false)
+
+	useEffect(() => {
+		if (
+			!isFetchingQuestion &&
+			questionId &&
+			questionsLikesSet &&
+			typeof questionsLikesSet.has === 'function'
+		) {
+			setLike(!!questionsLikesSet.has(questionId))
+		}
+	}, [isFetchingQuestion, questionId, questionsLikesSet])
+	const [userId, setUserId] = useState<any>(null)
+	const [likeQuestion] = useLikeQuestionMutation()
+	const [dislikeQuestion] = useDislikeQuestionMutation()
+
+	useEffect(() => {
+		const getUser = async () => {
+			try {
+				const user = await AsyncStorage.getItem('user_id')
+				if (user !== userId) {
+					setUserId(user)
+				}
+			} catch (e) {
+				console.error('Error fetching user ID:', e)
+			}
+		}
+		getUser()
+	}, [userId])
+
+	const handleLike = async () => {
+		try {
+			if (questionsLikesSet && questionsLikesSet instanceof Set && questionId) {
+				if (questionsLikesSet.has(questionId)) {
+					await dislikeQuestion({ questionId, userId })
+					dispatch(removeQuestionId(questionId))
+				} else {
+					await likeQuestion({ questionId, userId })
+					dispatch(addQuestionId(questionId))
+				}
+			} else {
+				console.error(
+					'questionsLikesSet is not a valid Set instance or questionId is undefined'
+				)
+			}
+		} catch (e) {
+			console.error('Error handling like:', e)
+		}
+	}
 
 	const color = getLevelColor(displayData.level.ColorButton)
+
 	return (
 		<View style={styles.questionCardWrapper}>
-			{
-				<>
-					<CardTopContent level={displayData.level} />
-					<View
-						style={{ alignItems: 'center', flexDirection: 'column', gap: 22 }}
-					>
-						{question ? (
-							<>
-								{question.additional_text && (
-									<Text style={styles.additionalText}>
-										{question.additional_text}
-									</Text>
-								)}
-								<Text style={{ ...styles.cardText, color: color }}>
-									{question?.text}
-								</Text>
-							</>
-						) : (
-							<Text>Loading...</Text>
+			<CardTopContent level={displayData.level} />
+			<View style={{ alignItems: 'center', flexDirection: 'column', gap: 22 }}>
+				{question ? (
+					<>
+						{question.additional_text && (
+							<Text style={styles.additionalText}>
+								{question.additional_text}
+							</Text>
 						)}
-					</View>
-					<CardLikeButton
-						color={color}
-						handleLike={() => {}} //TODO !!!!!!
-						isLiked={false}
-					/>
-				</>
-			}
+						<Text style={{ ...styles.cardText, color }}>{question.text}</Text>
+					</>
+				) : (
+					<Text>Loading...</Text>
+				)}
+			</View>
+			<CardLikeButton color={color} handleLike={handleLike} isLiked={like} />
 		</View>
 	)
 }

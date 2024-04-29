@@ -1,20 +1,15 @@
-import {getLevelColor, IQuestonLevelAndColor} from '@/features/converters/button-converters'
+import { getLevelColor } from '@/features/converters/button-converters'
 import { AntDesign } from '@expo/vector-icons'
 import React from 'react'
 import { TouchableOpacity, View } from 'react-native'
-import { Colors } from 'react-native/Libraries/NewAppScreen'
 
 interface ICustomView {
 	color: string
 	handleLike: () => void
-	isLiked: boolean | null
+	isLiked: boolean
 }
 
-const CardLikeButton = ({
-	color,
-	handleLike,
-	isLiked
-}: ICustomView) => {
+const CardLikeButton = ({ color, handleLike, isLiked }: ICustomView) => {
 	return (
 		<View style={{ width: '100%' }}>
 			<View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>

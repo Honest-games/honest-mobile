@@ -1,11 +1,10 @@
-import DeckLogo from '@/assets/svg/DeckLogo'
 import Screen1 from '@/assets/svg/Screen1'
 import Colors from '@/constants/Colors'
 import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native'
-import {useTranslation} from "react-i18next";
 
-const HeartAnimation = () => {
+const PersonScreen = () => {
 	const [animation] = useState(new Animated.Value(1))
 
 	useEffect(() => {
@@ -31,7 +30,7 @@ const HeartAnimation = () => {
 		transform: [{ scale: animation }]
 	}
 
-	const {t} = useTranslation()
+	const { t } = useTranslation()
 
 	return (
 		<View style={styles.container}>
@@ -48,8 +47,8 @@ const HeartAnimation = () => {
 				}}
 			>
 				{/* <Image source={require('@/assets/svg/')} style={heartStyle} /> */}
-				<View style={{ position: 'absolute', top: 42 }}>
-					<Screen1/>
+				<View style={{ position: 'absolute', top: 32 }}>
+					<Screen1 />
 				</View>
 
 				<Text
@@ -72,7 +71,7 @@ const HeartAnimation = () => {
 						color: Colors.grey1,
 						textAlign: 'center',
 						position: 'absolute',
-						top: 180
+						top: 205
 					}}
 				>
 					{t('lkSoonDesc')}
@@ -90,4 +89,4 @@ const styles = StyleSheet.create({
 	}
 })
 
-export default HeartAnimation
+export default PersonScreen

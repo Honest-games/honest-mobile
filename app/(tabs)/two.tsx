@@ -1,137 +1,92 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Animated, PanResponder, StyleSheet, View } from 'react-native'
+import Screen2 from '@/assets/svg/Screen2'
+import Colors from '@/constants/Colors'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { TouchableOpacity, Text } from 'react-native'
-import {setState} from "jest-circus";
-import {useGetDecksQuery, useGetLevelsQuery, useGetQuestionQuery} from "@/services/api";
-import {IDeck, ILevelData, IQuestion} from "@/services/types/types";
-import {useDeck} from "@/features/hooks";
-import {useAppSelector} from "@/features/hooks/useRedux";
+import { Animated, Easing, StyleSheet, Text, View } from 'react-native'
 
-const TinderSwipeDemo = () => {
+const LikesScreen = () => {
+	const [animation] = useState(new Animated.Value(1))
+
+	useEffect(() => {
+		Animated.loop(
+			Animated.sequence([
+				Animated.timing(animation, {
+					toValue: 1.2,
+					duration: 500,
+					easing: Easing.linear,
+					useNativeDriver: true
+				}),
+				Animated.timing(animation, {
+					toValue: 1,
+					duration: 500,
+					easing: Easing.linear,
+					useNativeDriver: true
+				})
+			])
+		).start()
+	}, [animation])
+
+	const heartStyle = {
+		transform: [{ scale: animation }]
+	}
+
 	const { t } = useTranslation()
-    const [selectedDeck, setSelectedDeck] = useState<IDeck>()
-    const [savedDecks, setSavedDecks] = useState<IDeck[]>([])
-    const [currentLevel, setCurrentLevel] = useState<ILevelData>()
-    const [loadedQuestions, setLoadedQuestions] = useState<any[]>([])
 
-    const timestampRef = useRef(Date.now()).current;
-    const {
-        data: decks,
-        isLoading: isLoadingDecks,
-        isFetching: isFetchingDecks,
-        error
-    } = useGetDecksQuery({ language: "RU", timestampRef })
-
-    useEffect(() => {
-        if(decks){
-            setSavedDecks(decks)
-        }
-    }, [decks]);
-
-    const onDeckSelect = (deck: IDeck)=>{
-        setSelectedDeck(deck)
-    }
-
-    const onSelectLevel = (l: ILevelData)=>{
-		if(!loadedQuestions.length) {
-			setLoadedQuestions(prevState => {
-				return [{i: 0, level: l}, {i: 1, level: l}]
-			})
-		} else {
-			setLoadedQuestions(prevState => {
-				let last = loadedQuestions[1];
-				return [last, {level: l, i: last.i+1}]
-			})
-		}
-		setCurrentLevel(l)
-    }
-
-    console.log("ren")
 	return (
 		<View style={styles.container}>
-            <Text>{selectedDeck?.name}</Text>
-            <Text>{currentLevel?.Name}</Text>
-            {loadedQuestions.map(obj=><QuestionCard key={obj.i} level={obj.level} i={obj.i}/>)}
-            {selectedDeck &&
-                <LevelsSelect deck={selectedDeck} setCurrLevel={onSelectLevel}/>}
-            <View style={{height: 20}}/>
-            {savedDecks.map(deck=>{
-                return <Button key={deck.id} onPress={onDeckSelect.bind(null, deck)} title={deck.name}/>
-            })}
+			<View
+				style={{
+					justifyContent: 'center',
+					alignItems: 'center',
+					flexDirection: 'column',
+					backgroundColor: 'white',
+					width: 273,
+					height: 254,
+					borderRadius: 20,
+					position: 'relative'
+				}}
+			>
+				{/* <Image source={require('@/assets/svg/')} style={heartStyle} /> */}
+				<View style={{ position: 'absolute', top: 32 }}>
+					<Screen2 />
+				</View>
+
+				<Text
+					style={{
+						width: '80%',
+						fontWeight: 'bold',
+						fontSize: 20,
+						position: 'absolute',
+						top: 125,
+						textAlign: 'center'
+					}}
+				>
+					{t('favoritesSoon')}
+				</Text>
+				<Text
+					style={{
+						width: '80%',
+						fontWeight: 'bold',
+						fontSize: 12,
+						color: Colors.grey1,
+						textAlign: 'center',
+						position: 'absolute',
+						top: 190
+					}}
+				>
+					{t('favoritesSoonDesc')}
+				</Text>
+			</View>
 		</View>
 	)
 }
 
-const QuestionCard = ({
-    level, i
-}: {level: ILevelData, i: number}) => {
-	const [loadedQuestion, setLoadedQuestion] = useState<IQuestion>()
-	const timestampRef = useRef(Date.now()).current;
-	const { data: question, isFetching: isFetchingQuestion } =
-		useGetQuestionQuery({ levelId: level.ID, clientId: "1", timestamp: timestampRef })
-
-    useEffect(() => {
-		console.log("question", question)
-		if(question){
-			setLoadedQuestion(question)
-		}
-    }, [question]);
-
-    if (question){
-        return <View><Text style={{color: "red"}}>{i} {question.text}</Text></View>
-    } else return <View><Text>{i} q of {level ? level.Name : level}</Text></View>
-}
-
-const LevelsSelect = ({
-    deck, setCurrLevel
-}: {
-    deck: IDeck, setCurrLevel: (l: ILevelData)=>void
-})=>{
-    const timestampRef = useRef(Date.now()).current;
-    const { data: levels, isFetching: isFetchingLevels } =
-        useGetLevelsQuery({deckId: deck.id, time: timestampRef})
-    console.log("levels", levels)
-
-    return (<>
-        {levels &&<View>
-            {levels.map(level => (
-                <Button key={level.ID} onPress={setCurrLevel.bind(null, level)} title={level.Name}/>
-            ))}
-        </View>}
-    </>)
-}
-
-const Button = (props: {onPress: ()=>void, title: string})=>{
-    return (
-        <TouchableOpacity
-            onPress={props.onPress}
-            style={styles.appButtonContainer}
-        >
-            <Text style={styles.appButtonText}>{props.title}</Text>
-        </TouchableOpacity>
-    )
-}
-
 const styles = StyleSheet.create({
-	appButtonContainer: {
-		elevation: 8,
-		backgroundColor: '#009688',
-		borderRadius: 10,
-		paddingVertical: 10,
-		paddingHorizontal: 12
-	},
-	appButtonText: {
-		fontSize: 18,
-		color: '#fff',
-		fontWeight: 'bold',
-		alignSelf: 'center',
-		textTransform: 'uppercase'
-	},
 	container: {
 		flex: 1,
 		justifyContent: 'center',
 		alignItems: 'center'
 	}
 })
-export default React.memo(TinderSwipeDemo)
+
+export default LikesScreen
