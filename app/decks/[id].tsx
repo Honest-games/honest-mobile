@@ -252,14 +252,14 @@ const CardsStack = ({
 				>
 					{!displayData.shouldLoadQuestion ? (
 						//Если вопрос не надо грузить - показываем карточку без него - она с блюром
-						<QuestionCard displayData={displayData} userId={userId} />
+						<QuestionCard displayData={displayData} />
 					) : (
 						//А если надо - оборачиваем в функцию которая грузит этот вопрос и отдаёт карточке уже точно загруженный
 						<WithLoadingQuestion displayData={displayData} userId={userId}>
 							{/*здесь в качестве children используется функция. Компонент WithLoadingQuestion сам даёт в неё переменную question*/}
 							{(question, isFetchingQuestion, questionId) => (
 								<QuestionCard
-									userId={userId}
+									questionId={questionId}
 									displayData={displayData}
 									question={question}
 									isFetchingQuestion={isFetchingQuestion}

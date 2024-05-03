@@ -22,11 +22,65 @@ interface QuestionCardProps {
 	displayData: DisplayedCardItem
 	question?: IQuestion
 	isFetchingQuestion?: boolean
-	userId: string
+	questionId?: string
 }
 
 const QuestionCard = (props: QuestionCardProps) => {
-	const { displayData, question, isFetchingQuestion, } = props
+	const { displayData, question, isFetchingQuestion, questionId } = props
+	const dispatch = useAppDispatch()
+	const questionsLikesSet: Set<any> = useAppSelector(
+		state => state.questionsLikes.questionsLikesSet
+	)
+
+	const [like, setLike] = useState<boolean>(false)
+
+	useEffect(() => {
+		if (
+			!isFetchingQuestion &&
+			questionId &&
+			questionsLikesSet &&
+			typeof questionsLikesSet.has === 'function'
+		) {
+			setLike(!!questionsLikesSet.has(questionId))
+		}
+	}, [isFetchingQuestion, questionId, questionsLikesSet])
+	const [userId, setUserId] = useState<any>(null)
+	const [likeQuestion] = useLikeQuestionMutation()
+	const [dislikeQuestion] = useDislikeQuestionMutation()
+
+	useEffect(() => {
+		const getUser = async () => {
+			try {
+				const user = await AsyncStorage.getItem('user_id')
+				if (user !== userId) {
+					setUserId(user)
+				}
+			} catch (e) {
+				console.error('Error fetching user ID:', e)
+			}
+		}
+		getUser()
+	}, [userId])
+
+	const handleLike = async () => {
+		try {
+			if (questionsLikesSet && questionsLikesSet instanceof Set && questionId) {
+				if (questionsLikesSet.has(questionId)) {
+					await dislikeQuestion({ questionId, userId })
+					dispatch(removeQuestionId(questionId))
+				} else {
+					await likeQuestion({ questionId, userId })
+					dispatch(addQuestionId(questionId))
+				}
+			} else {
+				console.error(
+					'questionsLikesSet is not a valid Set instance or questionId is undefined'
+				)
+			}
+		} catch (e) {
+			console.error('Error handling like:', e)
+		}
+	}
 
 	const color = getLevelColor(displayData.level.ColorButton)
 
@@ -47,7 +101,7 @@ const QuestionCard = (props: QuestionCardProps) => {
 					<Text>Loading...</Text>
 				)}
 			</View>
-			<CardLikeButton color={color} />
+			<CardLikeButton color={color} handleLike={handleLike} isLiked={like} />
 		</View>
 	)
 }
