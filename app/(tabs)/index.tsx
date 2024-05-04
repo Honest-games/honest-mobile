@@ -27,6 +27,16 @@ import Animated, {
 import { SafeAreaView } from 'react-native-safe-area-context'
 const { width } = Dimensions.get('window')
 
+interface DeckLike{
+	id: string
+	deckId: string
+}
+
+interface QuestionLike{
+	id: string
+	questionId: string
+}
+
 const Page = () => {
 	const {
 		decks,
@@ -54,7 +64,7 @@ const Page = () => {
 		useGetAllLikesQuery(userId)
 	useEffect(() => {
 		if (likes && likes.decks) {
-			dispatch(setDecksLikesSet(likes.decks.map((deck: IDeck) => deck.id)))
+			dispatch(setDecksLikesSet(likes.decks.map((like: DeckLike) => like.deckId)))
 		}
 	}, [likes])
 

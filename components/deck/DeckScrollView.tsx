@@ -32,6 +32,7 @@ const DeckScrollView: React.FC<DeckScrollViewProps> = ({
 				decks &&
 				filtedDecks.map((deck: IDeck) => (
 					<DeckItem
+						key={deck.id}
 						deck={deck}
 						onPresent={handleOpenSheet}
 						onDismiss={handleDismissSheet}
