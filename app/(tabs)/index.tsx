@@ -25,6 +25,7 @@ import Animated, {
 	withTiming
 } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import {setQuestionsLikesSet} from "@/store/reducer/question-like-slice";
 const { width } = Dimensions.get('window')
 
 interface DeckLike{
@@ -63,8 +64,9 @@ const Page = () => {
 	const { data: likes, isFetching: isFetchingLikes } =
 		useGetAllLikesQuery(userId)
 	useEffect(() => {
-		if (likes && likes.decks) {
-			dispatch(setDecksLikesSet(likes.decks.map((like: DeckLike) => like.deckId)))
+		if (likes) {
+			if(likes.decks) dispatch(setDecksLikesSet(likes.decks))
+			if(likes.questions) dispatch(setQuestionsLikesSet(likes.questions))
 		}
 	}, [likes])
 

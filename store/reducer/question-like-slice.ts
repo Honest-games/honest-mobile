@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+import {QuestionLike} from "@/services/types/types";
 
 interface QuestionsLikesState {
   questionsLikesSet: Set<string>;
@@ -19,7 +20,7 @@ const questionsLikesSlice = createSlice({
       state.questionsLikesSet.delete(action.payload);
     },
     setQuestionsLikesSet: (state, action) => {
-      state.questionsLikesSet = new Set(action.payload);
+      state.questionsLikesSet = new Set(action.payload.map((like: QuestionLike)=>like.questionId));
     },
   },
 });
