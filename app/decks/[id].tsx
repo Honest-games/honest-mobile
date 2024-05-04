@@ -79,7 +79,7 @@ const OpenedDeckWithLevels = ({
 	levels: ILevelData[]
 	userId: string
 }) => {
-	const isSingleLevel = levels.length === 1
+	const isSeveralLevels = levels.length > 1
 	const [selectedLevel, setSelectedLevel] = useState<ILevelData>()
 	const [displayDataStack, setDisplayDataStack] = useState<DisplayedCardItem[]>(
 		[]
@@ -92,7 +92,7 @@ const OpenedDeckWithLevels = ({
 			setDisplayDataStack(prevState => {
 				let second = prevState[1]
 				second.shouldLoadQuestion = true
-				return [second, DisplayedCardItem.create(level, false, isSingleLevel)]
+				return [second, DisplayedCardItem.create(level, false, isSeveralLevels)]
 			})
 		}
 	}
@@ -100,8 +100,8 @@ const OpenedDeckWithLevels = ({
 	const onButtonPress = (level: ILevelData) => {
 		if (!selectedLevel) {
 			setDisplayDataStack([
-				DisplayedCardItem.create(level, true),
-				DisplayedCardItem.create(level, false, isSingleLevel)
+				DisplayedCardItem.create(level, true, isSeveralLevels),
+				DisplayedCardItem.create(level, false, isSeveralLevels)
 			])
 			setSelectedLevel(level)
 		} else {
@@ -116,7 +116,7 @@ const OpenedDeckWithLevels = ({
 				//replace second item with having needed level and loading its question
 				setDisplayDataStack(prev => [
 					prev[0],
-					DisplayedCardItem.create(level, true, isSingleLevel)
+					DisplayedCardItem.create(level, true, isSeveralLevels)
 				])
 				setSelectedLevel(level)
 			}

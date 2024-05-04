@@ -73,7 +73,7 @@ const QuestionCard = (props: QuestionCardProps) => {
 
 	return (
 		<View style={styles.questionCardWrapper}>
-			{!displayData.shouldShowLevelOnCard && <CardTopContent level={displayData.level} />}
+			{displayData.shouldShowLevelOnCard && <CardTopContent level={displayData.level} />}
 			<View style={styles.cardTextsWrapper}>
 				{question ? (
 					<>
