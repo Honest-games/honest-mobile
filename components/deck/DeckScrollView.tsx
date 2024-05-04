@@ -2,7 +2,7 @@ import { IDeck } from '@/services/types/types'
 import React from 'react'
 import { Platform, StyleSheet } from 'react-native'
 import Animated, { ScrollHandlerProcessed } from 'react-native-reanimated'
-import Deck from '../../modules/Deck'
+import DeckItem from '../../modules/DeckItem'
 
 interface DeckScrollViewProps {
 	scrollRef: any
@@ -31,12 +31,8 @@ const DeckScrollView: React.FC<DeckScrollViewProps> = ({
 			{filtedDecks &&
 				decks &&
 				filtedDecks.map((deck: IDeck) => (
-					<Deck
-						imageId={deck.image_id}
-						labelsString={deck.labels}
-						key={deck.id}
-						title={deck.name}
-						id={deck.id}
+					<DeckItem
+						deck={deck}
 						onPresent={handleOpenSheet}
 						onDismiss={handleDismissSheet}
 					/>

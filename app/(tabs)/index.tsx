@@ -50,8 +50,14 @@ const Page = () => {
 	const scrollRef = useAnimatedRef<Animated.ScrollView>()
 	const levelInfo = getLevelsInfo(levels?.length ?? 0)
 
-	const { data: likes } =
+	const { data: likes, isFetching: isFetchingLikes } =
 		useGetAllLikesQuery(userId)
+	useEffect(() => {
+		if (likes && likes.decks) {
+			dispatch(setDecksLikesSet(likes.decks.map((deck: IDeck) => deck.id)))
+		}
+	}, [likes])
+
 	const scrollToTop = (scrollRef: any, scrollY: any) => {
 		scrollRef.current?.scrollTo({ y: 0, animated: true })
 	}
@@ -122,12 +128,6 @@ const Page = () => {
 		setDeckId(id)
 	}
 
-	useEffect(() => {
-		if (likes && likes.decks) {
-			dispatch(setDecksLikesSet(likes.decks.map((deck: IDeck) => deck.id)))
-		}
-	}, [likes])
-
 	return (
 		<SafeAreaView style={styles.container}>
 			<View style={styles.switcherContainer}>
@@ -143,7 +143,7 @@ const Page = () => {
 				scrollToTop={handleScrollToTop}
 			/>
 
-			{isLoadingDecks || isFetchingDecks ? (
+			{isLoadingDecks || isFetchingDecks || isFetchingLikes ? (
 				<Loader />
 			) : (
 				<DeckScrollView

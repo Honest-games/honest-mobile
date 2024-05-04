@@ -4,65 +4,29 @@ import { addDeckId, removeDeckId } from '@/store/reducer/deck-likes-slice'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import React, { useEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
-import LikeButton from '../UI/LikeButton'
+import DeckLikeButton from '../UI/DeckLikeButton'
 import DeckAdditionalButton from '../components/deck/DeckAdditionalButton'
 import DeckInfo from '../components/deck/DeckInfo'
 import LabelList from '../components/deck/DeckLabelList'
 import {useUserId} from "@/features/hooks";
+import {IDeck} from "@/services/types/types";
 
 export interface DeckProps {
-	title?: string
-	likes?: number
-	progress?: number
-	img?: any
-	id?: any
-	// isLoading: boolean
-	// isFetching: boolean
+	deck: IDeck
 	onPresent: (id: string) => void
 	onDismiss: () => void
 	onPress?: () => void
-	labelsString: string
-	imageId: string
 }
 
-function Deck({
-	title,
-	likes,
-	progress,
-	img,
-	id,
+function DeckItem({
+	deck,
 	onPresent,
-	labelsString,
-	imageId
 }: DeckProps) {
-	const dispatch = useAppDispatch()
-	const decksLikesSet = useAppSelector(state => state.decksLikes.decksLikesSet)
-	const userId = useUserId()
-	const [likeDeck] = useLikeDeckMutation()
-	const [dislikeDeck] = useDislikeDeckMutation()
 
-	const isLiked = () => {
-		return decksLikesSet.has(id)
-	}
-
-	const handleLike = async () => {
-		try {
-			if (decksLikesSet.has(id)) {
-				await dislikeDeck({ deckId: id, userId })
-				dispatch(removeDeckId(id))
-			} else {
-				await likeDeck({ deckId: id, userId })
-				dispatch(addDeckId(id))
-			}
-		} catch (e) {
-			console.error('Error:', e)
-		}
-	}
-
-	const labels = labelsString?.split(';')
+	const labels = deck.labels?.split(';')
 
 	return (
-		<View style={styles.deck} key={id}>
+		<View style={styles.deck} key={deck.id}>
 			<View style={{ flexDirection: 'column', margin: 12, flex: 1 }}>
 				<View
 					style={{
@@ -73,17 +37,17 @@ function Deck({
 				>
 					<LabelList labels={labels} />
 
-					<LikeButton handleLike={handleLike} isLiked={isLiked} />
+					<DeckLikeButton deckId={deck.id}/>
 				</View>
-				<DeckInfo imageId={imageId} title={title} id={id} />
+				<DeckInfo imageId={deck.image_id} title={deck.name} id={deck.id} />
 
-				<DeckAdditionalButton onPresent={onPresent} id={id} />
+				<DeckAdditionalButton onPresent={onPresent} id={deck.id} />
 			</View>
 		</View>
 	)
 }
 
-export default Deck
+export default DeckItem
 
 const styles = StyleSheet.create({
 	deck: {
