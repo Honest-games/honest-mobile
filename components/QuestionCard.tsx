@@ -73,16 +73,20 @@ const QuestionCard = (props: QuestionCardProps) => {
 
 	return (
 		<View style={styles.questionCardWrapper}>
-			<CardTopContent level={displayData.level} />
-			<View style={{ alignItems: 'center', flexDirection: 'column', gap: 22 }}>
+			{!displayData.shouldShowLevelOnCard && <CardTopContent level={displayData.level} />}
+			<View style={styles.cardTextsWrapper}>
 				{question ? (
 					<>
 						{question.additional_text && (
-							<Text style={styles.additionalText}>
-								{question.additional_text}
-							</Text>
+							<View style={styles.cardAdditionalTextWrapper}>
+								<Text style={styles.additionalText}>
+									{question.additional_text}
+								</Text>
+							</View>
 						)}
-						<Text style={{ ...styles.cardText, color }}>{question.text}</Text>
+						<View style={styles.cardMainTextWrapper}>
+							<Text style={{ ...styles.cardText, color }}>{question.text}</Text>
+						</View>
 					</>
 				) : (
 					<Text>Loading...</Text>
@@ -94,24 +98,6 @@ const QuestionCard = (props: QuestionCardProps) => {
 }
 
 export default QuestionCard
-
-interface BlurredQuestionCardProps {
-	displayData?: DisplayedCardItem
-}
-
-export const BlurredQuestionCard = ({
-	displayData
-}: BlurredQuestionCardProps) => {
-	return (
-		<View
-			style={{ ...styles.questionCardWrapper, ...styles.takeFirstCardWrapper }}
-		>
-			<Text style={{ ...styles.cardText, ...styles.takeFirstCardText }}>
-				Loading...
-			</Text>
-		</View>
-	)
-}
 
 export const TakeFirstCard = () => {
 	const { t } = useTranslation()
@@ -132,16 +118,31 @@ const styles = StyleSheet.create({
 		margin: 0,
 		zIndex: 1,
 		flexDirection: 'column',
-		justifyContent: 'space-between',
+		// justifyContent: 'space-between',
 		alignItems: 'center',
 		width: '100%',
 		height: '100%',
 		borderRadius: 20,
 		padding: 16,
+
 		backgroundColor: Colors.beige
 	},
 	takeFirstCardWrapper: {
 		justifyContent: 'center'
+	},
+	cardTextsWrapper: {
+		flexDirection: 'column',
+		flexGrow: 1,
+		alignItems: "center",
+		justifyContent: 'center',
+	},
+	cardAdditionalTextWrapper: {
+
+	},
+	cardMainTextWrapper: {
+		alignItems: 'center',
+		justifyContent: 'center',
+		marginTop: 25
 	},
 	cardText: {
 		fontSize: 20,

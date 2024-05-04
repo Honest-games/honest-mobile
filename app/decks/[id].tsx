@@ -22,17 +22,20 @@ export class DisplayedCardItem {
 	id: number
 	level: ILevelData
 	shouldLoadQuestion: boolean
+	shouldShowLevelOnCard: boolean
 
 	static _currentDisplayDataIndex = 0
 
-	static create(level: ILevelData, shouldLoadQuestion?: boolean) {
-		return new DisplayedCardItem(level, shouldLoadQuestion)
+	static create(level: ILevelData, shouldLoadQuestion: boolean = false,
+				  shouldShowLevelOnCard: boolean = true) {
+		return new DisplayedCardItem(level, shouldLoadQuestion, shouldShowLevelOnCard)
 	}
 
-	constructor(level: ILevelData, shouldLoadQuestion?: boolean) {
+	constructor(level: ILevelData, shouldLoadQuestion: boolean, shouldShowLevelOnCard: boolean) {
 		this.id = DisplayedCardItem._currentDisplayDataIndex++
 		this.level = level
-		this.shouldLoadQuestion = !!shouldLoadQuestion
+		this.shouldLoadQuestion = shouldLoadQuestion
+		this.shouldShowLevelOnCard = shouldShowLevelOnCard
 	}
 }
 
@@ -76,6 +79,7 @@ const OpenedDeckWithLevels = ({
 	levels: ILevelData[]
 	userId: string
 }) => {
+	const isSingleLevel = levels.length === 1
 	const [selectedLevel, setSelectedLevel] = useState<ILevelData>()
 	const [displayDataStack, setDisplayDataStack] = useState<DisplayedCardItem[]>(
 		[]
@@ -88,7 +92,7 @@ const OpenedDeckWithLevels = ({
 			setDisplayDataStack(prevState => {
 				let second = prevState[1]
 				second.shouldLoadQuestion = true
-				return [second, DisplayedCardItem.create(level)]
+				return [second, DisplayedCardItem.create(level, false, isSingleLevel)]
 			})
 		}
 	}
@@ -97,7 +101,7 @@ const OpenedDeckWithLevels = ({
 		if (!selectedLevel) {
 			setDisplayDataStack([
 				DisplayedCardItem.create(level, true),
-				DisplayedCardItem.create(level)
+				DisplayedCardItem.create(level, false, isSingleLevel)
 			])
 			setSelectedLevel(level)
 		} else {
@@ -112,7 +116,7 @@ const OpenedDeckWithLevels = ({
 				//replace second item with having needed level and loading its question
 				setDisplayDataStack(prev => [
 					prev[0],
-					DisplayedCardItem.create(level, true)
+					DisplayedCardItem.create(level, true, isSingleLevel)
 				])
 				setSelectedLevel(level)
 			}
