@@ -43,6 +43,7 @@ const DeckId: React.FC = () => {
 
 	const [selectedDeck, setSelectedDeck] = useState<IDeck>()
 
+	//TODO fix
 	useEffect(() => {
 		if (decks) {
 			const finded = decks.find(d => d.id === deckId)

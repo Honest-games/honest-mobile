@@ -26,3 +26,13 @@ export interface ILevelData {
 	Name: string; // строка с названием
 	emoji: string; // строка с эмодзи
 }
+
+export interface DeckLike{
+	id: string
+	deckId: string
+}
+
+export interface QuestionLike{
+	id: string
+	questionId: string
+}

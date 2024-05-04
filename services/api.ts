@@ -56,7 +56,7 @@ export const api = createApi({
 			transformResponse: (response: Response) => response.text()
 		}),
 		getAllLikes: builder.query<any, any>({
-			query: userId => `v1/user/${userId}/likes?userId=${userId}`
+			query: userId => `v1/user/${userId}/likes`
 		}),
 		likeDeck: builder.mutation<FetchArgs | any, any>({
 			query: ({ deckId, userId }) => {

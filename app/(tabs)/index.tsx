@@ -28,16 +28,6 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import {setQuestionsLikesSet} from "@/store/reducer/question-like-slice";
 const { width } = Dimensions.get('window')
 
-interface DeckLike{
-	id: string
-	deckId: string
-}
-
-interface QuestionLike{
-	id: string
-	questionId: string
-}
-
 const Page = () => {
 	const {
 		decks,
@@ -70,6 +60,7 @@ const Page = () => {
 		}
 	}, [likes])
 
+	/*ANIMATION*/
 	const scrollToTop = (scrollRef: any, scrollY: any) => {
 		scrollRef.current?.scrollTo({ y: 0, animated: true })
 	}
@@ -79,9 +70,7 @@ const Page = () => {
 	}
 
 	const scrollHandler = useAnimatedScrollHandler({
-		onScroll: event => {
-			scrollY.value = event.contentOffset.y
-		}
+		onScroll: event => {scrollY.value = event.contentOffset.y}
 	})
 
 	const searchBarStyle = useAnimatedStyle(() => {
@@ -134,6 +123,7 @@ const Page = () => {
 			opacity: withTiming(opacity, { duration: 600 })
 		}
 	})
+	/*END ANIMATION*/
 
 	const handleOpenSheet = (id: string) => {
 		bottomSheetRef.current?.present()

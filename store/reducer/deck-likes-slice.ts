@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+import {DeckLike} from "@/services/types/types";
 
 
 interface LikesState {
@@ -20,7 +21,7 @@ const likesSlice = createSlice({
       state.decksLikesSet.delete(action.payload);
     },
     setDecksLikesSet: (state, action) => {
-      state.decksLikesSet = new Set(action.payload);
+      state.decksLikesSet = new Set(action.payload.map((like: DeckLike)=>like.deckId));
     },
    
   },
