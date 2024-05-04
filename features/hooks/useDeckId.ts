@@ -13,12 +13,13 @@ import {
 	withSpring,
 	withTiming
 } from 'react-native-reanimated'
+import {useUserId} from "@/features/hooks/useUserId";
 
 const useDeckId = () => {
 	const router = useRouter()
 	const { id } = useLocalSearchParams()
 	const [level, setLevel] = useState<any>('')
-	const [userId, setUserId] = useState<any>(null)
+	const userId = useUserId()
 	const [buttonState, setButtonState] = useState<IQuestonLevelAndColor>()
 	const positionX = useSharedValue(0)
 
@@ -40,16 +41,6 @@ const useDeckId = () => {
 		
 		)
 	}
-
-	useEffect(() => {
-		const getUserId = async () => {
-			const user_id = await AsyncStorage.getItem('user_id')
-			if (userId !== user_id) {
-				setUserId(user_id)
-			}
-		}
-		getUserId()
-	}, [userId])
 
 	const time = useRef(Date.now()).current
 	const { data: levels, isFetching: isFetchingLevels } = useGetLevelsQuery(

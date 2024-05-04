@@ -1,6 +1,6 @@
 import DeckScrollView from '@/components/deck/DeckScrollView'
 import { getLevelsInfo } from '@/features/converters'
-import { useDeck } from '@/features/hooks'
+import {useDeck, useUserId} from '@/features/hooks'
 import useLanguage from '@/features/hooks/useLanguage'
 import { useAppDispatch } from '@/features/hooks/useRedux'
 import CustomBottomSheetModal from '@/modules/CustomBottomSheetModal'
@@ -43,14 +43,14 @@ const Page = () => {
 		onFilteredDecks
 	} = useDeck()
 	const dispatch = useAppDispatch()
-	const [userId, setUserId] = useState<any>(null)
+	const userId = useUserId()
 	const { changeLanguage } = useLanguage()
 	const bottomSheetRef = useRef<BottomSheetModal>(null)
 	const scrollY = useSharedValue(0)
 	const scrollRef = useAnimatedRef<Animated.ScrollView>()
 	const levelInfo = getLevelsInfo(levels?.length ?? 0)
 
-	const { data: likes, isFetching: isFetchingLikes } =
+	const { data: likes } =
 		useGetAllLikesQuery(userId)
 	const scrollToTop = (scrollRef: any, scrollY: any) => {
 		scrollRef.current?.scrollTo({ y: 0, animated: true })
@@ -127,16 +127,6 @@ const Page = () => {
 			dispatch(setDecksLikesSet(likes.decks.map((deck: IDeck) => deck.id)))
 		}
 	}, [likes])
-
-	useEffect(() => {
-		const getUserId = async () => {
-			const user_id = await AsyncStorage.getItem('user_id')
-			if (userId !== user_id) {
-				setUserId(user_id)
-			}
-		}
-		getUserId()
-	}, [userId])
 
 	return (
 		<SafeAreaView style={styles.container}>

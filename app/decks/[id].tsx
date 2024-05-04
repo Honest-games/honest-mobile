@@ -3,7 +3,7 @@ import QuestionCard, { TakeFirstCard } from '@/components/QuestionCard'
 import SwipeableCard from '@/components/SwipableCard'
 import getPanResponder from '@/components/animations'
 import { DeckTopContent } from '@/components/deck'
-import { useDeck, useDeckId } from '@/features/hooks'
+import {useDeck, useDeckId, useUserId} from '@/features/hooks'
 import { LevelButtons } from '@/modules/LevelButtons'
 import Loader from '@/modules/Loader'
 import { useGetLevelsQuery, useGetQuestionQuery } from '@/services/api'
@@ -52,13 +52,7 @@ const DeckId: React.FC = () => {
 		}
 	}, [decks])
 
-	const [userId, setUserId] = useState<string>()
-	useEffect(() => {
-		;(async () => {
-			const userIdFromAS = await AsyncStorage.getItem('user_id')
-			if (userIdFromAS) setUserId(userIdFromAS)
-		})()
-	})
+	const userId = useUserId()
 	if (!selectedDeck || !userId) return <Loader />
 	return <OpenedDeck deck={selectedDeck} userId={userId} />
 }

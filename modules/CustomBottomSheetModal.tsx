@@ -26,6 +26,7 @@ import {
 import { SvgXml } from 'react-native-svg'
 import { LevelButtons } from './LevelButtons'
 import Loader from './Loader'
+import {useUserId} from "@/features/hooks";
 
 const { width } = Dimensions.get('window')
 
@@ -50,25 +51,13 @@ const CustomBottomSheetModal = forwardRef<Ref, CustomBottomSheetModalProps>(
 		} = useFetchDeckSvg(deck?.image_id)
 		const dispatch = useAppDispatch()
 		const decksLikesSet = useAppSelector(state => state.decksLikes.decksLikesSet)
-		const [userId, setUserId] = useState<any>(null)
+		const userId = useUserId()
 		const [likeDeck] = useLikeDeckMutation()
 		const [dislikeDeck] = useDislikeDeckMutation()
 
 		const isLiked = () => {
 			return decksLikesSet.has(deckId)
 		}
-
-		useEffect(() => {
-			const getUser = async () => {
-				try {
-					const user = await AsyncStorage.getItem('user_id')
-					setUserId(user)
-				} catch (e) {
-					console.log(e)
-				}
-			}
-			getUser()
-		}, [userId])
 
 		const handleLike = async () => {
 			try {

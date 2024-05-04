@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, View } from 'react-native'
 import CardLikeButton from './card/CardLikeButton'
 import CardTopContent from './card/CardTopContent'
+import {useUserId} from "@/features/hooks";
 
 interface QuestionCardProps {
 	displayData: DisplayedCardItem
@@ -44,23 +45,9 @@ const QuestionCard = (props: QuestionCardProps) => {
 			setLike(!!questionsLikesSet.has(questionId))
 		}
 	}, [isFetchingQuestion, questionId, questionsLikesSet])
-	const [userId, setUserId] = useState<any>(null)
+	const userId = useUserId()
 	const [likeQuestion] = useLikeQuestionMutation()
 	const [dislikeQuestion] = useDislikeQuestionMutation()
-
-	useEffect(() => {
-		const getUser = async () => {
-			try {
-				const user = await AsyncStorage.getItem('user_id')
-				if (user !== userId) {
-					setUserId(user)
-				}
-			} catch (e) {
-				console.error('Error fetching user ID:', e)
-			}
-		}
-		getUser()
-	}, [userId])
 
 	const handleLike = async () => {
 		try {

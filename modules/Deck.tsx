@@ -8,6 +8,7 @@ import LikeButton from '../UI/LikeButton'
 import DeckAdditionalButton from '../components/deck/DeckAdditionalButton'
 import DeckInfo from '../components/deck/DeckInfo'
 import LabelList from '../components/deck/DeckLabelList'
+import {useUserId} from "@/features/hooks";
 
 export interface DeckProps {
 	title?: string
@@ -36,25 +37,13 @@ function Deck({
 }: DeckProps) {
 	const dispatch = useAppDispatch()
 	const decksLikesSet = useAppSelector(state => state.decksLikes.decksLikesSet)
-	const [userId, setUserId] = useState<any>(null)
+	const userId = useUserId()
 	const [likeDeck] = useLikeDeckMutation()
 	const [dislikeDeck] = useDislikeDeckMutation()
 
 	const isLiked = () => {
 		return decksLikesSet.has(id)
 	}
-
-	useEffect(() => {
-		const getUser = async () => {
-			try {
-				const user = await AsyncStorage.getItem('user_id')
-				setUserId(user)
-			} catch (e) {
-				console.log(e)
-			}
-		}
-		getUser()
-	}, [userId])
 
 	const handleLike = async () => {
 		try {
