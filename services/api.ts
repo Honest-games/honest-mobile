@@ -35,8 +35,8 @@ export const api = createApi({
 			providesTags: _ => ['Decks']
 		}),
 		getLevels: builder.query<ILevelData[], { deckId: string; time: number }>({
-			query: (x: { deckId: string; time: number }) =>
-				`v1/levels?deckId=${x.deckId}`
+			query: (x: { deckId: string; clientId: string, time: number }) =>
+				`v1/deck/${x.deckId}/levels?clientId=${x.clientId}`
 		}),
 		getQuestion: builder.query<
 			IQuestion,

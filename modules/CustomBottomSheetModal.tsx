@@ -49,29 +49,6 @@ const CustomBottomSheetModal = forwardRef<Ref, CustomBottomSheetModalProps>(
 			isLoadingImage,
 			error: errorSvg
 		} = useFetchDeckSvg(deck?.image_id)
-		const dispatch = useAppDispatch()
-		const decksLikesSet = useAppSelector(state => state.decksLikes.decksLikesSet)
-		const userId = useUserId()
-		const [likeDeck] = useLikeDeckMutation()
-		const [dislikeDeck] = useDislikeDeckMutation()
-
-		const isLiked = () => {
-			return decksLikesSet.has(deckId)
-		}
-
-		const handleLike = async () => {
-			try {
-				if (decksLikesSet.has(deckId)) {
-					await dislikeDeck({ deckId: deckId, userId })
-					dispatch(removeDeckId(deckId))
-				} else {
-					await likeDeck({ deckId: deckId, userId })
-					dispatch(addDeckId(deckId))
-				}
-			} catch (e) {
-				console.error('Error:', e)
-			}
-		}
 
 		const renderBackdrop = useCallback(
 			(props: any) => (
@@ -112,14 +89,12 @@ const CustomBottomSheetModal = forwardRef<Ref, CustomBottomSheetModalProps>(
 				backdropComponent={renderBackdrop}
 				backgroundStyle={styles.bottomSheetModal}
 			>
-				{isFetching || isLoading ? (
+				{isFetching || isLoading || !deck ? (
 					<Loader />
 				) : (
 					<View style={{ flex: 1, marginBottom: 65, gap: 20 }}>
-						<DeckProgressBar
+						<DeckInfoTopContent
 							cardsCount={cardsCount}
-							handleLike={handleLike}
-							isLiked={isLiked}
 							completedCount={completedCount}
 							deck={deck}
 						/>
@@ -167,24 +142,38 @@ const DeckInformation = ({
 	</View>
 )
 
-const DeckProgressBar = ({
+const DeckInfoTopContent = ({
 	completedCount,
 	deck,
-	style,
-	handleLike,
-	isLiked,
 	cardsCount
 }: {
-	deck: IDeck | undefined
-	style?: ViewStyle
+	deck: IDeck
 	completedCount: number
-	handleLike: () => void
-	isLiked: () => boolean
 	cardsCount: number | undefined
 }) => {
-	const [pressHeart, setPressHeart] = useState(false)
+	const dispatch = useAppDispatch()
+	const decksLikesSet = useAppSelector(state => state.decksLikes.decksLikesSet)
+	const userId = useUserId()
+	const [likeDeck] = useLikeDeckMutation()
+	const [dislikeDeck] = useDislikeDeckMutation()
+
+	const isLiked = decksLikesSet.has(deck.id)
+
+	const handleLike = async () => {
+		try {
+			if (isLiked) {
+				await dislikeDeck({ deckId: deck.id, userId })
+				dispatch(removeDeckId(deck.id))
+			} else {
+				await likeDeck({ deckId: deck.id, userId })
+				dispatch(addDeckId(deck.id))
+			}
+		} catch (e) {
+			console.error('Error:', e)
+		}
+	}
 	return (
-		<View style={[styles.topContent, style]}>
+		<View style={[styles.topContent]}>
 			<View style={styles.deckProgress}>
 				<View style={styles.progressBar}>
 					<View style={styles.progressColor}></View>
@@ -199,7 +188,7 @@ const DeckProgressBar = ({
 						marginLeft: 10,
 						marginRight: 10
 					}}
-					name={isLiked() ? 'heart' : 'heart-o'}
+					name={isLiked ? 'heart' : 'heart-o'}
 					size={16}
 					color={Colors.orange}
 				/>

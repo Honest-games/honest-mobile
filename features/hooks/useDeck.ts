@@ -16,6 +16,7 @@ const useDeck = () => {
 	} = useGetDecksQuery({ language, timestampRef })
 	const [deckId, setDeckId] = useState('')
 	const time = useRef(Date.now()).current
+
 	const { data: levels, isFetching: isFetchingLevels } = useGetLevelsQuery({
 		deckId,
 		time
