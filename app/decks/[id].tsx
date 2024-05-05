@@ -63,7 +63,7 @@ const DeckId: React.FC = () => {
 
 const OpenedDeck = ({ deck, userId }: { deck: IDeck; userId: string }) => {
 	const time = useRef(Date.now()).current
-	const { data: levels } = useGetLevelsQuery({ deckId: deck.id, time })
+	const { data: levels } = useGetLevelsQuery({ deckId: deck.id, time, clientId: userId })
 	if (!levels) {
 		return <Loader />
 	} else {

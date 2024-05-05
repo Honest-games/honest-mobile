@@ -25,6 +25,10 @@ export interface ILevelData {
 	LevelOrder: number; // числовое значение
 	Name: string; // строка с названием
 	emoji: string; // строка с эмодзи
+	counts: {
+		questionsCount: number,
+		openedQuestionsCount: number
+	}
 }
 
 export interface DeckLike{

@@ -28,7 +28,22 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import {setQuestionsLikesSet} from "@/store/reducer/question-like-slice";
 const { width } = Dimensions.get('window')
 
+const WithUserId = ({ children }: {children: (userId: string) => React.ReactNode}) => {
+	const userId = useUserId()
+	if (!userId) {
+		return <Loader />
+	} else {
+		return children(userId)
+	}
+}
+
 const Page = () => {
+	return <WithUserId>
+		{(userId)=><PageWithUserId userId={userId}/>}
+	</WithUserId>
+}
+
+const PageWithUserId = ({userId}: {userId: string}) => {
 	const {
 		decks,
 		isLoadingDecks,
@@ -44,7 +59,6 @@ const Page = () => {
 		onFilteredDecks
 	} = useDeck()
 	const dispatch = useAppDispatch()
-	const userId = useUserId()
 	const { changeLanguage } = useLanguage()
 	const bottomSheetRef = useRef<BottomSheetModal>(null)
 	const scrollY = useSharedValue(0)
@@ -55,8 +69,8 @@ const Page = () => {
 		useGetAllLikesQuery(userId)
 	useEffect(() => {
 		if (likes) {
-			if(likes.decks) dispatch(setDecksLikesSet(likes.decks))
-			if(likes.questions) dispatch(setQuestionsLikesSet(likes.questions))
+			if (likes.decks) dispatch(setDecksLikesSet(likes.decks))
+			if (likes.questions) dispatch(setQuestionsLikesSet(likes.questions))
 		}
 	}, [likes])
 
@@ -70,7 +84,9 @@ const Page = () => {
 	}
 
 	const scrollHandler = useAnimatedScrollHandler({
-		onScroll: event => {scrollY.value = event.contentOffset.y}
+		onScroll: event => {
+			scrollY.value = event.contentOffset.y
+		}
 	})
 
 	const searchBarStyle = useAnimatedStyle(() => {
@@ -157,20 +173,15 @@ const Page = () => {
 					decks={decks}
 				/>
 			)}
-			<CustomBottomSheetModal
-				deckId={deckId}
-				isLoading={isLoadingDecks}
-				error={error}
-				isFetching={isFetchingLevels}
+			{selectedDeck && <CustomBottomSheetModal
 				deck={selectedDeck}
 				ref={bottomSheetRef}
-				levels={levels}
 				levelInfo={levelInfo}
-			/>
+				userId={userId}
+			/>}
 		</SafeAreaView>
 	)
 }
-
 export default Page
 
 const styles = StyleSheet.create({

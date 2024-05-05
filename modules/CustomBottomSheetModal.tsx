@@ -2,7 +2,7 @@ import { LevelInfo } from '@/UI/LevelInfo'
 import Colors from '@/constants/Colors'
 import useFetchDeckSvg from '@/features/hooks/useFetchDeckSvg'
 import { useAppDispatch, useAppSelector } from '@/features/hooks/useRedux'
-import { useDislikeDeckMutation, useLikeDeckMutation } from '@/services/api'
+import {useDislikeDeckMutation, useGetLevelsQuery, useLikeDeckMutation} from '@/services/api'
 import { IDeck, ILevelData } from '@/services/types/types'
 import { addDeckId, removeDeckId } from '@/store/reducer/deck-likes-slice'
 import { FontAwesome } from '@expo/vector-icons'
@@ -12,7 +12,7 @@ import React, {
 	forwardRef,
 	useCallback,
 	useEffect,
-	useMemo,
+	useMemo, useRef,
 	useState
 } from 'react'
 import {
@@ -27,130 +27,104 @@ import { SvgXml } from 'react-native-svg'
 import { LevelButtons } from './LevelButtons'
 import Loader from './Loader'
 import {useUserId} from "@/features/hooks";
+import {ILevelsInfo} from "@/features/converters/levels-info-converter";
+import {getLevelColor} from "@/features/converters/button-converters";
 
 const { width } = Dimensions.get('window')
 
 interface CustomBottomSheetModalProps {
-	deck: IDeck | undefined
-	error: any
-	levels: ILevelData[] | undefined
+	deck: IDeck
 	levelInfo: string
-	isFetching: boolean
-	isLoading: boolean
-	deckId: string
+	userId: string
 }
 
 export type Ref = BottomSheetModal
-
+const renderBackdrop = ()=>useCallback(
+	(props: any) => (
+		<BottomSheetBackdrop
+			appearsOnIndex={0}
+			disappearsOnIndex={-1}
+			{...props}
+		/>
+	),
+	[]
+)
 const CustomBottomSheetModal = forwardRef<Ref, CustomBottomSheetModalProps>(
-	({ deck, error, levels, levelInfo, isFetching, isLoading, deckId }, ref) => {
-		const {
-			svgData,
-			isLoadingImage,
-			error: errorSvg
-		} = useFetchDeckSvg(deck?.image_id)
-
-		const renderBackdrop = useCallback(
-			(props: any) => (
-				<BottomSheetBackdrop
-					appearsOnIndex={0}
-					disappearsOnIndex={-1}
-					{...props}
-				/>
-			),
-			[]
-		)
-		const [completedCount, setCompletedCount] = useState<any>(0)
-
-		useEffect(() => {
-			async function fetchData() {
-				try {
-					const storedCompletedCount = await AsyncStorage.getItem(
-						`completedCount_${deckId}`
-					)
-
-					if (storedCompletedCount) {
-						setCompletedCount(parseInt(storedCompletedCount))
-					}
-				} catch (e) {
-					console.error('Ошибка чтения из AsyncStorage:', e)
-				}
-			}
-			fetchData()
-		}, [deck, setCompletedCount, completedCount, ref, deckId])
-
+	({ deck, levelInfo, userId }, ref) => {
 		const snapPoints = useMemo(() => ['80%'], [])
-		const cardsCount = deck?.cardsCount
 		return (
 			<BottomSheetModal
 				ref={ref}
 				index={0}
 				snapPoints={snapPoints}
-				backdropComponent={renderBackdrop}
+				backdropComponent={renderBackdrop()}
 				backgroundStyle={styles.bottomSheetModal}
 			>
-				{isFetching || isLoading || !deck ? (
-					<Loader />
-				) : (
-					<View style={{ flex: 1, marginBottom: 65, gap: 20 }}>
-						<DeckInfoTopContent
-							cardsCount={cardsCount}
-							completedCount={completedCount}
-							deck={deck}
-						/>
-						<DeckInformation
-							svgIcon={svgData}
-							isLoading={isLoadingImage}
-							deck={deck}
-						/>
-						<LevelInfo levelInfo={levelInfo} />
-						<LevelButtons levels={levels} />
-					</View>
-				)}
+				<DeckInfoSheet deck={deck} levelInfo={levelInfo} userId={userId}/>
 			</BottomSheetModal>
 		)
 	}
 )
 
-const DeckInformation = ({
-	deck,
-	style,
-	svgIcon,
-	isLoading
-}: {
-	deck: IDeck | undefined
-	style?: ViewStyle
-	svgIcon: any
-	isLoading: boolean
-}) => (
-	<View style={[styles.commonInformation, style]}>
-		{isLoading ? (
-			<Loader />
-		) : svgIcon ? (
-			<View>
-				<SvgXml xml={svgIcon} width={121} height={118} />
-			</View>
-		) : (
-			<Text>SVG not available</Text>
-		)}
-		<Text style={styles.deckTitle}>
-			{deck?.name.toLowerCase() || 'Название колоды'}
-		</Text>
-		<Text style={styles.deckDescription}>
-			{deck?.description.toLowerCase() || 'описание колоды'}
-		</Text>
-	</View>
-)
-
-const DeckInfoTopContent = ({
-	completedCount,
-	deck,
-	cardsCount
+const DeckInfoSheet = ({
+	deck, levelInfo, userId
 }: {
 	deck: IDeck
-	completedCount: number
-	cardsCount: number | undefined
+	levelInfo: string
+	userId: string
+})=>{
+	const {data: levels, isLoading, isError} = useGetLevelsQuery(
+		{deckId: deck.id, time: useRef(Date.now()).current, clientId: userId})
+	console.log(deck.id, userId, levels, isError)
+	if(isLoading || !levels) {
+		return <Loader/>
+	}
+	return <View style={{ flex: 1, marginBottom: 65, gap: 20 }}>
+		<DeckInfoTopContent levels={levels} deck={deck}/>
+		<DeckDescription deck={deck}/>
+		<LevelInfo levelInfo={levelInfo} />
+		<LevelButtons levels={levels} />
+	</View>
+}
+
+const DeckDescription = ({
+	deck,
+	style,
+}: {
+	deck: IDeck
+	style?: ViewStyle
 }) => {
+	const {
+		svgData,
+		isLoadingImage,
+	} = useFetchDeckSvg(deck?.image_id)
+	return <View style={[styles.commonInformation, style]}>
+		{isLoadingImage ? (
+			<Loader/>
+		) : svgData ? (
+			<View>
+				<SvgXml xml={svgData} width={121} height={118}/>
+			</View>
+		) : (
+			<Text>.</Text>
+		)}
+		<Text style={styles.deckTitle}>
+			{deck.name.toLowerCase() || 'Название колоды'}
+		</Text>
+		<Text style={styles.deckDescription}>
+			{deck.description.toLowerCase() || 'описание колоды'}
+		</Text>
+	</View>
+}
+
+const DeckInfoTopContent = ({
+	deck,
+	levels
+}: {
+	deck: IDeck
+	levels: ILevelData[]
+}) =>
+{
 	const dispatch = useAppDispatch()
 	const decksLikesSet = useAppSelector(state => state.decksLikes.decksLikesSet)
 	const userId = useUserId()
@@ -174,13 +148,24 @@ const DeckInfoTopContent = ({
 	}
 	return (
 		<View style={[styles.topContent]}>
-			<View style={styles.deckProgress}>
-				<View style={styles.progressBar}>
-					<View style={styles.progressColor}></View>
-				</View>
-				<Text
-					style={styles.progressText}
-				>{`${completedCount}/${cardsCount}`}</Text>
+			<View>
+				{levels.map(level=>{
+					const all = level.counts.questionsCount
+					const opened = level.counts.openedQuestionsCount
+					const progressPercents = all>0 ? (opened/all*100) : 0
+					return <View key={level.ID} style={styles.deckProgress}>
+						<View style={styles.progressBar}>
+							<View style={{
+								...styles.progressColor,
+								backgroundColor: getLevelColor(level.ColorButton),
+								width: `${progressPercents}%`
+							}}></View>
+						</View>
+						<Text
+							style={styles.progressText}
+						>`${opened} / ${all}`</Text>
+					</View>
+				})}
 			</View>
 			<TouchableOpacity style={styles.likes} onPress={handleLike}>
 				<FontAwesome
@@ -207,18 +192,19 @@ const styles = StyleSheet.create({
 	},
 	deckProgress: {
 		flexDirection: 'row',
-		alignItems: 'center'
+		alignItems: 'center',
 	},
 	progressBar: {
 		width: 80,
 		height: 8,
 		backgroundColor: '#EBEBEB',
-		borderRadius: 4
+		borderRadius: 4,
+		marginTop: 4,
+		marginBottom: 4
 	},
 	progressColor: {
-		backgroundColor: Colors.lightGreen,
 		height: '100%',
-		width: '30%',
+		width: '0%',
 		borderRadius: 4
 	},
 	progressText: {

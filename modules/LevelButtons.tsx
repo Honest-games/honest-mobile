@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native'
 import React from "react";
 
 interface LevelButtonsProps {
-	levels: ILevelData[] | undefined
+	levels: ILevelData[]
 	onButtonPress?: (level: ILevelData) => void
 	size?: 'large' | 'small'
 	isButtonPressed?: boolean
@@ -27,8 +27,7 @@ export const LevelButtons: React.FC<LevelButtonsProps> = ({
 
 	return (
 		<View style={styles.sectionButtons}>
-			{levels &&
-				levels.map(level => (
+			{levels.map(level => (
 					<Button
 						isButtonPressed={isButtonPressed}
 						key={level.ID}
