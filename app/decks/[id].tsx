@@ -98,6 +98,9 @@ const OpenedDeckWithLevels = ({
 	}
 
 	const onButtonPress = (level: ILevelData) => {
+		if(isAnimationGoing){
+			return
+		}
 		if (!selectedLevel) {
 			setDisplayDataStack([
 				DisplayedCardItem.create(level, true, isSeveralLevels),
@@ -127,6 +130,7 @@ const OpenedDeckWithLevels = ({
 	/*ANIMATION*/
 	const swipe = useRef(new Animated.ValueXY()).current
 	const [swipeDirection, setSwipeDirection] = useState(-1) //s Начинаем с направления влево (-1)
+	const [isAnimationGoing, setIsAnimationGoing] = useState<boolean>(false)
 
 	const triggerSwipeAnimation = (onEnd: () => void) => {
 		Animated.timing(swipe, {
@@ -136,10 +140,12 @@ const OpenedDeckWithLevels = ({
 		}).start(() => {
 			onAnimationEnd(onEnd)
 		})
+		setIsAnimationGoing(true)
 	}
 	const onAnimationEnd = (action: () => void) => {
 		swipe.setValue({ x: 0, y: 0 })
 		setSwipeDirection(prevDirection => -prevDirection)
+		setIsAnimationGoing(false)
 		action()
 	}
 

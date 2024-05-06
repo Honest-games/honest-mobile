@@ -163,7 +163,7 @@ const DeckInfoTopContent = ({
 						</View>
 						<Text
 							style={styles.progressText}
-						>`${opened} / ${all}`</Text>
+						>{opened} / {all}</Text>
 					</View>
 				})}
 			</View>
