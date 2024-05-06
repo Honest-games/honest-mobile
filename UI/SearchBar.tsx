@@ -7,14 +7,14 @@ import Animated from 'react-native-reanimated'
 
 interface SearchBarProps {
 	searchBarStyle: any
-	onFilteredDecks: (text: string) => void
-	scrollToTop: any
+	onChangeInput: (text: string) => void
+	onSearchSubmit?: () => void
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
-	scrollToTop,
 	searchBarStyle,
-	onFilteredDecks
+	onChangeInput,
+	onSearchSubmit
 }) => {
 	const { t } = useTranslation()
 
@@ -23,9 +23,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
 			<TextInput
 				style={{ flex: 1, color: Colors.grey1 }}
 				placeholder={t('searchBarPlaceholder')}
-				onChangeText={onFilteredDecks}
+				onChangeText={onChangeInput}
 			/>
-			<TouchableOpacity onPress={scrollToTop}>
+			<TouchableOpacity onPress={onSearchSubmit}>
 				<AntDesign name='search1' size={24} color='black' />
 			</TouchableOpacity>
 		</Animated.View>

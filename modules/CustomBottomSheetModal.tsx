@@ -29,12 +29,12 @@ import Loader from './Loader'
 import {useUserId} from "@/features/hooks";
 import {ILevelsInfo} from "@/features/converters/levels-info-converter";
 import {getLevelColor} from "@/features/converters/button-converters";
+import {getLevelsInfo} from "@/features/converters";
 
 const { width } = Dimensions.get('window')
 
 interface CustomBottomSheetModalProps {
 	deck: IDeck
-	levelInfo: string
 	userId: string
 }
 
@@ -50,7 +50,7 @@ const renderBackdrop = ()=>useCallback(
 	[]
 )
 const CustomBottomSheetModal = forwardRef<Ref, CustomBottomSheetModalProps>(
-	({ deck, levelInfo, userId }, ref) => {
+	({ deck, userId }, ref) => {
 		const snapPoints = useMemo(() => ['80%'], [])
 		return (
 			<BottomSheetModal
@@ -60,22 +60,22 @@ const CustomBottomSheetModal = forwardRef<Ref, CustomBottomSheetModalProps>(
 				backdropComponent={renderBackdrop()}
 				backgroundStyle={styles.bottomSheetModal}
 			>
-				<DeckInfoSheet deck={deck} levelInfo={levelInfo} userId={userId}/>
+				<DeckInfoSheet deck={deck} userId={userId}/>
 			</BottomSheetModal>
 		)
 	}
 )
 
 const DeckInfoSheet = ({
-	deck, levelInfo, userId
+	deck, userId
 }: {
 	deck: IDeck
-	levelInfo: string
 	userId: string
 })=>{
 	const {data: levels, isLoading, isError} = useGetLevelsQuery(
 		{deckId: deck.id, time: useRef(Date.now()).current, clientId: userId})
 	console.log(deck.id, userId, levels, isError)
+	const levelInfo = getLevelsInfo(levels?.length ?? 0)
 	if(isLoading || !levels) {
 		return <Loader/>
 	}

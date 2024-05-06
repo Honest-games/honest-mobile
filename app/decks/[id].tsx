@@ -42,21 +42,21 @@ export class DisplayedCardItem {
 const DeckId: React.FC = () => {
 	const { id: deckId } = useLocalSearchParams()
 
-	const { decks } = useDeck()
+	const userId = useUserId()
+	const { decks } = useDeck(userId)
 
 	const [selectedDeck, setSelectedDeck] = useState<IDeck>()
 
 	//TODO fix
 	useEffect(() => {
-		if (decks) {
-			const finded = decks.find(d => d.id === deckId)
-			if (finded) {
-				setSelectedDeck(finded)
+		if (decks && userId) {
+			const found = decks.find(d => d.id === deckId)
+			if (found) {
+				setSelectedDeck(found)
 			} else throw new Error('deck not found')
 		}
-	}, [decks])
+	}, [decks, userId])
 
-	const userId = useUserId()
 	if (!selectedDeck || !userId) return <Loader />
 	return <OpenedDeck deck={selectedDeck} userId={userId} />
 }

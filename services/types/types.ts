@@ -1,12 +1,14 @@
 export interface IDeck {
 	id: string;
-  languageCode: string;
-  name: string;
-  emoji: string;
-  description: string;
-  labels: string;
-  image_id: string;
+	languageCode: string;
+	name: string;
+	emoji: string;
+	description: string;
+	labels: string;
+	image_id: string;
 	cardsCount: number;
+	hidden: boolean;
+	promo: string;
 }
 
 export interface IQuestion {

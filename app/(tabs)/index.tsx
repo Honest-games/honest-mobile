@@ -5,7 +5,7 @@ import useLanguage from '@/features/hooks/useLanguage'
 import { useAppDispatch } from '@/features/hooks/useRedux'
 import CustomBottomSheetModal from '@/modules/CustomBottomSheetModal'
 import Loader from '@/modules/Loader'
-import { useGetAllLikesQuery } from '@/services/api'
+import {useGetAllLikesQuery, useSendPromoMutation} from '@/services/api'
 import { IDeck } from '@/services/types/types'
 import { setDecksLikesSet } from '@/store/reducer/deck-likes-slice'
 
@@ -17,7 +17,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Dimensions, Platform, StyleSheet, View } from 'react-native'
 import Animated, {
 	Extrapolate,
-	interpolate,
+	interpolate, SharedValue,
 	useAnimatedRef,
 	useAnimatedScrollHandler,
 	useAnimatedStyle,
@@ -43,27 +43,87 @@ const Page = () => {
 	</WithUserId>
 }
 
+const filterDecks = (decks: IDeck[], search: string)=>{
+	return decks.filter(d=>{
+		return d.name.toLowerCase().includes(search.toLowerCase())
+			|| d.promo.toLowerCase().includes(search.toLowerCase())
+	})
+}
+
+const searchBarStyle = (scrollY: SharedValue<number>)=>useAnimatedStyle(() => {
+	const searchBarWidth = interpolate(
+		scrollY.value,
+		[0, 20],
+		[width - 148, 48],
+		Extrapolate.CLAMP
+	)
+
+	const shadowOpacity = interpolate(
+		scrollY.value,
+		[0, 100],
+		[0, 0.25],
+		Extrapolate.CLAMP
+	)
+
+	const shadowOffset = interpolate(
+		scrollY.value,
+		[0, 100],
+		[0, 4],
+		Extrapolate.CLAMP
+	)
+
+	return {
+		width: withTiming(searchBarWidth, { duration: 800 }),
+		shadowColor: '#000000',
+		// shadowOffset: withTiming({ width: 0, height: 4 }, { duration: 500 }),
+		shadowRadius: 4,
+		shadowOpacity: withTiming(shadowOpacity, { duration: 1000 }),
+		elevation: 5
+	}
+})
+const switcherStyle = (scrollY: SharedValue<number>)=>useAnimatedStyle(() => {
+	const scrollOffset = interpolate(
+		scrollY.value,
+		[0, 10],
+		[0, 150],
+		Extrapolate.CLAMP
+	)
+
+	const opacity = interpolate(
+		scrollY.value,
+		[0, 10],
+		[1, 0],
+		Extrapolate.CLAMP
+	)
+	return {
+		transform: [{ translateX: withTiming(scrollOffset, { duration: 600 }) }],
+		opacity: withTiming(opacity, { duration: 600 })
+	}
+})
+
 const PageWithUserId = ({userId}: {userId: string}) => {
 	const {
 		decks,
 		isLoadingDecks,
 		isFetchingDecks,
-		error,
-		deckId,
-		setDeckId,
-		levels,
-		isFetchingLevels,
-		selectedDeck,
-		setSelectedDeck,
-		filteredDecks,
-		onFilteredDecks
-	} = useDeck()
+		refetch: refetchDecks
+	} = useDeck(userId)
+	//TODO кнопка информации о колоде нажимается не с первого раза
 	const dispatch = useAppDispatch()
 	const { changeLanguage } = useLanguage()
 	const bottomSheetRef = useRef<BottomSheetModal>(null)
 	const scrollY = useSharedValue(0)
 	const scrollRef = useAnimatedRef<Animated.ScrollView>()
-	const levelInfo = getLevelsInfo(levels?.length ?? 0)
+
+	const [searchText, setSearchText] = useState('')
+	const [selectedDeck, setSelectedDeck] = useState<IDeck>()
+	const [filteredDecks, setFilteredDecks] = useState<IDeck[]>([])
+	const [sendPromo] = useSendPromoMutation()
+	useEffect(() => {
+		if(decks){
+			setFilteredDecks(filterDecks(decks, searchText))
+		}
+	}, [decks, searchText]);
 
 	const { data: likes, isFetching: isFetchingLikes } =
 		useGetAllLikesQuery(userId)
@@ -75,12 +135,12 @@ const PageWithUserId = ({userId}: {userId: string}) => {
 	}, [likes])
 
 	/*ANIMATION*/
-	const scrollToTop = (scrollRef: any, scrollY: any) => {
+	const scrollToTop = (scrollRef: any) => {
 		scrollRef.current?.scrollTo({ y: 0, animated: true })
 	}
 
 	const handleScrollToTop = () => {
-		scrollToTop(scrollRef, scrollY)
+		scrollToTop(scrollRef)
 	}
 
 	const scrollHandler = useAnimatedScrollHandler({
@@ -88,77 +148,32 @@ const PageWithUserId = ({userId}: {userId: string}) => {
 			scrollY.value = event.contentOffset.y
 		}
 	})
-
-	const searchBarStyle = useAnimatedStyle(() => {
-		const searchBarWidth = interpolate(
-			scrollY.value,
-			[0, 20],
-			[width - 148, 48],
-			Extrapolate.CLAMP
-		)
-
-		const shadowOpacity = interpolate(
-			scrollY.value,
-			[0, 100],
-			[0, 0.25],
-			Extrapolate.CLAMP
-		)
-
-		const shadowOffset = interpolate(
-			scrollY.value,
-			[0, 100],
-			[0, 4],
-			Extrapolate.CLAMP
-		)
-
-		return {
-			width: withTiming(searchBarWidth, { duration: 800 }),
-			shadowColor: '#000000',
-			// shadowOffset: withTiming({ width: 0, height: 4 }, { duration: 500 }),
-			shadowRadius: 4,
-			shadowOpacity: withTiming(shadowOpacity, { duration: 1000 }),
-			elevation: 5
-		}
-	})
-	const switcherStyle = useAnimatedStyle(() => {
-		const scrollOffset = interpolate(
-			scrollY.value,
-			[0, 10],
-			[0, 150],
-			Extrapolate.CLAMP
-		)
-
-		const opacity = interpolate(
-			scrollY.value,
-			[0, 10],
-			[1, 0],
-			Extrapolate.CLAMP
-		)
-		return {
-			transform: [{ translateX: withTiming(scrollOffset, { duration: 600 }) }],
-			opacity: withTiming(opacity, { duration: 600 })
-		}
-	})
 	/*END ANIMATION*/
 
-	const handleOpenSheet = (id: string) => {
+	const onSelectDeck = (deck: IDeck) => {
 		bottomSheetRef.current?.present()
-		setDeckId(id)
+		setSelectedDeck(deck)
+	}
+
+	const onSearchSubmit = ()=>{
+		sendPromo({promo: searchText, userId})
+		handleScrollToTop()
+		refetchDecks()
 	}
 
 	return (
 		<SafeAreaView style={styles.container}>
 			<View style={styles.switcherContainer}>
 				<Switcher
-					switcherStyle={switcherStyle}
+					switcherStyle={switcherStyle(scrollY)}
 					onLanguageChange={changeLanguage}
 				/>
 			</View>
 
 			<SearchBar
-				searchBarStyle={searchBarStyle}
-				onFilteredDecks={onFilteredDecks}
-				scrollToTop={handleScrollToTop}
+				searchBarStyle={searchBarStyle(scrollY)}
+				onChangeInput={setSearchText}
+				onSearchSubmit={onSearchSubmit}
 			/>
 
 			{isLoadingDecks || isFetchingDecks || isFetchingLikes ? (
@@ -167,8 +182,8 @@ const PageWithUserId = ({userId}: {userId: string}) => {
 				<DeckScrollView
 					scrollRef={scrollRef}
 					scrollHandler={scrollHandler}
-					filtedDecks={filteredDecks}
-					handleOpenSheet={handleOpenSheet}
+					filteredDecks={filteredDecks}
+					onSelectDeck={onSelectDeck}
 					handleDismissSheet={() => bottomSheetRef.current?.dismiss()}
 					decks={decks}
 				/>
@@ -176,7 +191,6 @@ const PageWithUserId = ({userId}: {userId: string}) => {
 			{selectedDeck && <CustomBottomSheetModal
 				deck={selectedDeck}
 				ref={bottomSheetRef}
-				levelInfo={levelInfo}
 				userId={userId}
 			/>}
 		</SafeAreaView>

@@ -2,16 +2,14 @@ import MoreAboutDeck from '@/assets/svg/MoreAboutDeck'
 import React from 'react'
 import { StyleSheet, TouchableOpacity } from 'react-native'
 interface DeckAdditionalButtonProps {
-	onPresent: (id: string) => void
-	id: string
+	onClick: () => void
 }
 
 const DeckAdditionalButton: React.FC<DeckAdditionalButtonProps> = ({
-	onPresent,
-	id
+	onClick
 }) => {
 	return (
-		<TouchableOpacity style={styles.questionIcon} onPress={() => onPresent(id)}>
+		<TouchableOpacity style={styles.questionIcon} onPress={onClick}>
 			<MoreAboutDeck />
 		</TouchableOpacity>
 	)

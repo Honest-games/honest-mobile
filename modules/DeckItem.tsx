@@ -13,14 +13,14 @@ import {IDeck} from "@/services/types/types";
 
 export interface DeckProps {
 	deck: IDeck
-	onPresent: (id: string) => void
+	onInfoClick: () => void
 	onDismiss: () => void
 	onPress?: () => void
 }
 
 function DeckItem({
 	deck,
-	onPresent,
+	onInfoClick,
 }: DeckProps) {
 
 	const labels = deck.labels?.split(';')
@@ -41,7 +41,7 @@ function DeckItem({
 				</View>
 				<DeckInfo imageId={deck.image_id} title={deck.name} id={deck.id} />
 
-				<DeckAdditionalButton onPresent={onPresent} id={deck.id} />
+				<DeckAdditionalButton onClick={onInfoClick}/>
 			</View>
 		</View>
 	)

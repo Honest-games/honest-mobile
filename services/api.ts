@@ -30,8 +30,8 @@ export const api = createApi({
 	tagTypes: ['Decks', 'Levels', 'Question'],
 	endpoints: builder => ({
 		getDecks: builder.query<IDeck[], any>({
-			query: (x: { language: string; time: number }) =>
-				`/v2/decks?languageCode=${x.language}`,
+			query: (x: { language: string; time: number, clientId: string }) =>
+				`/v3/decks?languageCode=${x.language}&clientId=${x.clientId}`,
 			providesTags: _ => ['Decks']
 		}),
 		getLevels: builder.query<ILevelData[], { deckId: string; time: number, clientId: string }>({
@@ -93,6 +93,14 @@ export const api = createApi({
 					body: { questionId, userId }
 				}
 			}
+		}),
+		sendPromo: builder.mutation<FetchArgs | any, any>({
+			query: ({ promo, userId }) => {
+				return {
+					url: `v1/enter-promo/${promo}?clientId=${userId}`,
+					method: 'POST'
+				}
+			}
 		})
 	})
 })
@@ -107,5 +115,6 @@ export const {
 	useDislikeDeckMutation,
 	useLikeQuestionMutation,
 	useDislikeQuestionMutation,
-	useGetAllLikesQuery
+	useGetAllLikesQuery,
+	useSendPromoMutation
 } = api

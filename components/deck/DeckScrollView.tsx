@@ -7,18 +7,18 @@ import DeckItem from '../../modules/DeckItem'
 interface DeckScrollViewProps {
 	scrollRef: any
 	scrollHandler: ScrollHandlerProcessed<Record<string, unknown>>
-	filtedDecks: IDeck[] | undefined
+	filteredDecks: IDeck[] | undefined
 	decks: any
-	handleOpenSheet: (id: string) => void
+	onSelectDeck: (deck: IDeck) => void
 	handleDismissSheet: () => void
 }
 
 const DeckScrollView: React.FC<DeckScrollViewProps> = ({
 	scrollRef,
 	scrollHandler,
-	filtedDecks,
+	filteredDecks,
 	decks,
-	handleOpenSheet,
+	onSelectDeck,
 	handleDismissSheet
 }) => {
 	return (
@@ -28,13 +28,13 @@ const DeckScrollView: React.FC<DeckScrollViewProps> = ({
 			contentContainerStyle={styles.scrollContainer}
 			scrollEventThrottle={16}
 		>
-			{filtedDecks &&
+			{filteredDecks &&
 				decks &&
-				filtedDecks.map((deck: IDeck) => (
+				filteredDecks.map((deck: IDeck) => (
 					<DeckItem
 						key={deck.id}
 						deck={deck}
-						onPresent={handleOpenSheet}
+						onInfoClick={()=>onSelectDeck(deck)}
 						onDismiss={handleDismissSheet}
 					/>
 				))}
