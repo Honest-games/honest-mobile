@@ -30,7 +30,8 @@ export interface ILevelData {
 	counts: {
 		questionsCount: number,
 		openedQuestionsCount: number
-	}
+	};
+	Description: string
 }
 
 export interface DeckLike{

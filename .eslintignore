@@ -1,0 +1,7 @@
+/node_modules
+/ios
+/android
+/coverage
+app/api/data/config.*
+.eslintrc.js
+/eslint-local-rules

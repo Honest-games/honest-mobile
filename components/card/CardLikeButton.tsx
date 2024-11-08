@@ -11,8 +11,7 @@ interface ICustomView {
 
 const CardLikeButton = ({ color, handleLike, isLiked }: ICustomView) => {
 	return (
-		<View style={{ width: '100%' }}>
-			<View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+			<View style={{ position: 'absolute', bottom: 16, right: 16 }}>
 				<TouchableOpacity onPress={handleLike}>
 					<AntDesign
 						name={isLiked ? 'heart' : 'hearto'}
@@ -21,7 +20,6 @@ const CardLikeButton = ({ color, handleLike, isLiked }: ICustomView) => {
 					/>
 				</TouchableOpacity>
 			</View>
-		</View>
 	)
 }
 

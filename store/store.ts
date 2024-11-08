@@ -8,13 +8,22 @@ import deckLikeReducer from './reducer/deck-likes-slice'
 import cardsOfDeckReducer from './reducer/deck-slice'
 import languageReducer from './reducer/language-slice'
 import questionLikeReducer from './reducer/question-like-slice'
+import levelsReducer from './reducer/levels-slice'
+import userReducer from './reducer/user-slice'
+import splashReducer from './reducer/splash-animation-slice'
+import appReducer from './reducer/app-slice'
+
 
 const rootReducer = combineReducers({
 	[api.reducerPath]: api.reducer,
 	cardsOfDeck: cardsOfDeckReducer,
 	language: languageReducer,
 	decksLikes: deckLikeReducer,
-	questionsLikes: questionLikeReducer
+	questionsLikes: questionLikeReducer,
+	levels: levelsReducer,
+	user: userReducer,
+	splash: splashReducer,
+	app: appReducer
 })
 
 enableMapSet()

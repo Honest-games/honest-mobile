@@ -13,6 +13,7 @@ import { useLocalSearchParams } from 'expo-router'
 import React, { ReactNode, memo, useEffect, useRef, useState } from 'react'
 import { Animated, Dimensions, StyleSheet, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import * as Haptics from 'expo-haptics';
 
 const { width } = Dimensions.get('window')
 
@@ -125,6 +126,7 @@ const OpenedDeckWithLevels = ({
 			}
 			triggerSwipeAnimation(moveToNextCard.bind(null, level))
 		}
+		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
 	}
 
 	/*ANIMATION*/

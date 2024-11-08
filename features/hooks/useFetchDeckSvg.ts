@@ -1,32 +1,25 @@
-import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query';
 
 const useFetchDeckSvg = (imageId: string | undefined) => {
-	const [svgData, setSvgData] = useState('')
-	const [isLoadingImage, setIsLoadingImage] = useState(false)
-	const [error, setError] = useState(null)
+  const fetchSvgData = async (): Promise<string> => {
+    if (!imageId) {
+      throw new Error('Image ID is not provided');
+    }
+    const response = await fetch(`https://logotipiwe.ru/haur/api/v1/get-vector-image/${imageId}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch SVG data');
+    }
+    return response.text();
+  };
 
-	useEffect(() => {
-		if (!imageId) {
-			return
-		}
+  const { data: svgData = '', isLoading: isLoadingImage, error } = useQuery({
+    queryKey: ['fetchSvgData', imageId],
+    queryFn: fetchSvgData,
+    enabled: !!imageId, // Запуск запроса только при наличии imageId
+    retry: false,       // Отключение повторных попыток при ошибке (по желанию)
+  });
 
-		const imageUrl = `https://logotipiwe.ru/haur/api/v1/get-vector-image/${imageId}`
-		setIsLoadingImage(true)
+  return { svgData, isLoadingImage, error };
+};
 
-		fetch(imageUrl)
-			.then(response => response.text())
-			.then(svg => {
-				setSvgData(svg)
-				setIsLoadingImage(false)
-			})
-			.catch(err => {
-				setError(err)
-				console.error('Error fetching SVG:', err)
-				setIsLoadingImage(false)
-			})
-	}, [imageId])
-
-	return { svgData, isLoadingImage, error }
-}
-
-export default useFetchDeckSvg
+export default useFetchDeckSvg;

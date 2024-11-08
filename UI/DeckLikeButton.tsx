@@ -14,7 +14,6 @@ interface LikeButtonProps {
 const DeckLikeButton: React.FC<LikeButtonProps> = ({deckId}) => {
 	const decksLikesSet = useAppSelector(state => state.decksLikes.decksLikesSet)
 	const isLiked = decksLikesSet.has(deckId)
-	console.log(decksLikesSet)
 
 	const dispatch = useAppDispatch()
 	const userId = useUserId()
@@ -43,7 +42,7 @@ const DeckLikeButton: React.FC<LikeButtonProps> = ({deckId}) => {
 				}}
 				name={isLiked ? 'heart' : 'heart-o'}
 				size={16}
-				color={Colors.orange}
+				color={Colors.deepBlue}
 			/>
 		</TouchableOpacity>
 	)

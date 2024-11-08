@@ -18,6 +18,8 @@ import { StyleSheet, Text, View } from 'react-native'
 import CardLikeButton from './card/CardLikeButton'
 import CardTopContent from './card/CardTopContent'
 import {useUserId} from "@/features/hooks";
+import Loader from '@/modules/Loader'
+import * as Haptics from 'expo-haptics';
 
 interface QuestionCardProps {
 	displayData: DisplayedCardItem
@@ -58,6 +60,7 @@ const QuestionCard = (props: QuestionCardProps) => {
 				} else {
 					await likeQuestion({ questionId, userId })
 					dispatch(addQuestionId(questionId))
+					Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
 				}
 			} else {
 				console.error(
@@ -89,7 +92,7 @@ const QuestionCard = (props: QuestionCardProps) => {
 						</View>
 					</>
 				) : (
-					<Text>Loading...</Text>
+					<Loader/>
 				)}
 			</View>
 			<CardLikeButton color={color} handleLike={handleLike} isLiked={like} />

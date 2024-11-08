@@ -5,14 +5,14 @@ import { useAppSelector } from './useRedux'
 
 const useDeck = (userId: string) => {
 	const language = useAppSelector(state => state.language.language)
-	const timestampRef = useRef(Date.now()).current
+	// const timestampRef = useRef(Date.now()).current
 	const {
 		data: decks,
 		isLoading: isLoadingDecks,
 		isFetching: isFetchingDecks,
 		refetch,
 		error
-	} = useGetDecksQuery({ language, timestampRef, clientId: userId })
+	} = useGetDecksQuery({ language, clientId: userId })
 
 	return {
 		decks,

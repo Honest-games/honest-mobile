@@ -9,7 +9,7 @@ interface IButton {
 	size?: string
 	color: string
 	isButtonPressed?: boolean
-	bgColor: string
+	bgColor?: string
 }
 
 const Button = (props: IButton) => {

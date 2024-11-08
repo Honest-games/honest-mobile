@@ -1,123 +1,128 @@
-import { AnimateSplashScreen } from '@/components/screens'
-import FontAwesome from '@expo/vector-icons/FontAwesome'
-import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import { useFonts } from 'expo-font'
-import * as Localization from 'expo-localization'
-import { Stack, useRouter } from 'expo-router'
-import React, { useEffect, useState } from 'react'
-import { GestureHandlerRootView } from 'react-native-gesture-handler'
-import uuid from 'react-native-uuid'
-import { Provider } from 'react-redux'
-import '../constants/i18n/i18n.config'
-import store from '../store/store'
+import { AnimateSplashScreen } from "@/components/screens";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFonts } from "expo-font";
+import * as Localization from "expo-localization";
+import { Stack, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import uuid from "react-native-uuid";
+import { Provider } from "react-redux";
+import "../constants/i18n/i18n.config";
+import store from "../store/store";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { setSplashAnimationFinished } from "@/store/reducer/splash-animation-slice";
+import { useAppDispatch, useAppSelector } from "@/features/hooks/useRedux";
+import { setUserId } from "@/store/reducer/user-slice";
+import { useDeck } from "@/features/hooks";
+import { useGetAllLikesQuery } from "@/services/api";
+import { setContentReady } from "@/store/reducer/app-slice";
+import { setDecks } from "@/store/reducer/deck-slice";
 
-export { ErrorBoundary } from 'expo-router'
+export { ErrorBoundary } from "expo-router";
 
 export const unstable_settings = {
-	initialRouteName: '(tabs)'
+  initialRouteName: "(tabs)",
+};
+
+function AppContent() {
+  const isContentReady = useAppSelector((state) => state.app.isContentReady);
+  const splashAnimationFinished = useAppSelector((state) => state.splash.splashAnimationFinished);
+  const userId = useAppSelector((state) => state.user.userId); // Из Redux
+
+  const dispatch = useAppDispatch();
+  const [appReady, setAppReady] = useState(false);
+  const router = useRouter();
+  let [locale, setLocale] = useState<string>(Localization.getLocales()[0].languageCode || "ru");
+  const { decks, isLoadingDecks, isFetchingDecks, refetch: refetchDecks } = useDeck(userId || "");
+  const { data: likes, isFetching: isFetchingLikes } = useGetAllLikesQuery(userId);
+  useEffect(() => {
+    const loadInitialData = async () => {
+      const deviceLanguage = locale;
+      try {
+        await AsyncStorage.setItem("language", deviceLanguage);
+      } catch (e) {
+        console.error("Ошибка при сохранении языка в AsyncStorage:", e);
+      }
+
+      const user = await AsyncStorage.getItem("user_id");
+      if (!user) {
+        try {
+          const id = uuid.v4();
+          dispatch(setUserId(id.toString()));
+          await AsyncStorage.setItem("user_id", id.toString());
+          console.log("UUID успешно сохранен:", id);
+        } catch (error) {
+          console.error("Ошибка при сохранении UUID в AsyncStorage:", error);
+        }
+      } else {
+        console.log("UUID успешно получен:", user);
+      }
+
+      setAppReady(true);
+    };
+
+    loadInitialData();
+  }, [locale]);
+  
+  useEffect(() => {
+    if (!isLoadingDecks && !isFetchingDecks && !isFetchingLikes) {
+      dispatch(setContentReady(true));
+    }
+  }, [isLoadingDecks, isFetchingDecks, isFetchingLikes]);
+
+  useEffect(() => {
+    if (decks) {
+      dispatch(setDecks(decks));
+    }
+  }, [decks, dispatch]);
+  const showAnimatedSplash = !appReady || !splashAnimationFinished || !isContentReady;
+
+  if (showAnimatedSplash) {
+    return (
+      <AnimateSplashScreen
+        onAnimationFinish={(isCancelled) => {
+          if (!isCancelled) {
+            dispatch(setSplashAnimationFinished(true));
+          }
+        }}
+      />
+    );
+  }
+
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <BottomSheetModalProvider>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="decks/[id]" options={{ headerShown: false }} />
+        </Stack>
+      </BottomSheetModalProvider>
+    </GestureHandlerRootView>
+  );
 }
 
 export default function RootLayout() {
-	const [loaded, error] = useFonts({
-		SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-		...FontAwesome.font
-	})
-	const [appReady, setAppReady] = useState(false)
-	const [splashAnimationFinished, setSplashAnimationFinished] = useState(false)
-	const router = useRouter()
-	let [locale, setLocale] = useState<string>(
-		Localization.getLocales()[0].languageCode || 'ru'
-	)
+  const [fontsLoaded, fontsError] = useFonts({
+    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+    ...FontAwesome.font,
+  });
+  const query = new QueryClient();
 
-	useEffect(() => {
-		if (error) throw error
-	}, [error])
+  useEffect(() => {
+    if (fontsError) throw fontsError;
+  }, [fontsError]);
 
-	const saveLanguage = async () => {
-		const deviceLanguage = locale
-		try {
-			await AsyncStorage.setItem('language', deviceLanguage)
-		} catch (e) {
-			console.error('Ошибка при сохранении языка в AsyncStorage:', e)
-		}
-	}
+  if (!fontsLoaded) {
+    return null;
+  }
 
-	const generateAndSaveUUID = async () => {
-		try {
-			const id = uuid.v4()
-			await AsyncStorage.setItem('user_id', id.toString())
-			// await saveLanguage(); // Сохранение языка устройства
-			console.log('UUID успешно сохранен:', id)
-		} catch (error) {
-			console.error('Ошибка при сохранении UUID в AsyncStorage:', error)
-		}
-	}
-
-	const getData = async () => {
-		try {
-			const user = await AsyncStorage.getItem('user_id')
-			if (!user) {
-				await generateAndSaveUUID() // Генерация и сохранение UUID и языка, если пользователь не найден
-			} else {
-				console.log('UUID успешно получен:', user)
-			}
-		} catch (e) {
-			console.error('Ошибка чтения из AsyncStorage:', e)
-		}
-	}
-
-	useEffect(() => {
-		if (loaded || error) {
-			// SplashScreen.hideAsync()
-
-			const user = getData()
-			console.log(user)
-			if (!user) {
-				generateAndSaveUUID()
-			}
-
-			setAppReady(true)
-		}
-	}, [loaded, error])
-
-	if (!loaded) {
-		return null
-	}
-
-	const showAnimatedSplash = !appReady || !splashAnimationFinished
-
-	if (showAnimatedSplash) {
-		return (
-			<AnimateSplashScreen
-				onAnimationFinish={isCancelled => {
-					if (!isCancelled) {
-						setSplashAnimationFinished(true)
-					}
-				}}
-			/>
-		)
-	}
-
-	return (
-		<Provider store={store}>
-			<GestureHandlerRootView style={{ flex: 1 }}>
-				<BottomSheetModalProvider>
-					{/* <ThemeProvider
-						value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
-					> */}
-					<Stack>
-						<Stack.Screen name='(tabs)' options={{ headerShown: false }} />
-						<Stack.Screen
-							name='decks/[id]'
-							options={{
-								headerShown: false
-							}}
-						/>
-					</Stack>
-					{/* </ThemeProvider> */}
-				</BottomSheetModalProvider>
-			</GestureHandlerRootView>
-		</Provider>
-	)
+  return (
+    <Provider store={store}>
+      <QueryClientProvider client={query}>
+        <AppContent />
+      </QueryClientProvider>
+    </Provider>
+  );
 }

@@ -26,7 +26,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 				onChangeText={onChangeInput}
 			/>
 			<TouchableOpacity onPress={onSearchSubmit}>
-				<AntDesign name='search1' size={24} color='black' />
+				<AntDesign name='search1' size={24} color={Colors.deepBlue} />
 			</TouchableOpacity>
 		</Animated.View>
 	)
@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
 	searchBar: {
 		flex: 1,
 		position: 'absolute',
-		top: 50,
+		top: 60,
 		right: 20,
 		zIndex: 100,
 		flexDirection: 'row',
