@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
 	searchBar: {
 		flex: 1,
 		position: 'absolute',
-		top: 60,
+	
 		right: 20,
 		zIndex: 100,
 		flexDirection: 'row',
@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
 		height: 48,
 		backgroundColor: 'white',
 		borderRadius: 25,
-		paddingHorizontal: 12
+		paddingHorizontal: 24
 	}
 })
 export default SearchBar

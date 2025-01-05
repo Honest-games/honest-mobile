@@ -25,10 +25,11 @@ const Button: React.FC<IButton> = (props) => {
       alignItems: 'center',
       borderRadius: height / 2,
       height: height,
-      width: size === 'large' ? '100%' : 120,
+      width: size === 'large' ? '100%' : 'auto',
       backgroundColor: outline ? 'transparent' : levelBgColor ? levelBgColor : Colors.deepBlue,
       borderWidth: outline ? 1 : 0,
       borderColor: outline ? levelBgColor || Colors.deepBlue : 'transparent',
+      paddingHorizontal: 16,
     },
     text: {
       color: outline ? (levelBgColor || Colors.deepBlue) : 'white',

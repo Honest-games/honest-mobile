@@ -7,7 +7,6 @@ import React from 'react'
 export default function TabLayout() {
 
 	const splashAnimationFinished = useAppSelector((state) => state.splash.splashAnimationFinished);
-	console.log(splashAnimationFinished)
 	return (
 		<Tabs
 			

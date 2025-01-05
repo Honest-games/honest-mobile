@@ -35,6 +35,8 @@ interface CustomBottomSheetModalProps {
 export type Ref = BottomSheetModal;
 const renderBackdrop = () => useCallback((props: any) => <BottomSheetBackdrop appearsOnIndex={0} disappearsOnIndex={-1} {...props} />, []);
 const CustomBottomSheetModal = forwardRef<Ref, CustomBottomSheetModalProps>(({ deck, userId }, ref) => {
+  const snapPoints = useMemo(() => ["77%"], []);
+
   const dismissModal = () => {
     if (ref && "current" in ref && ref.current) {
       ref.current.dismiss();
@@ -44,7 +46,7 @@ const CustomBottomSheetModal = forwardRef<Ref, CustomBottomSheetModalProps>(({ d
     <BottomSheetModal
       ref={ref}
       index={0}
-      enableDynamicSizing
+      snapPoints={snapPoints}
       backdropComponent={renderBackdrop()}
       backgroundStyle={styles.bottomSheetModal}
     >
@@ -132,7 +134,7 @@ const DeckDescription = ({ deck, style }: { deck: IDeck; style?: ViewStyle }) =>
         </ContentLoader>
       ) : (
         <View>
-          <SvgXml xml={svgData} width={121} height={118} />
+          <SvgXml xml={svgData} width={79} height={78} />
         </View>
       )}
       {!isLoadingImage && (
@@ -149,10 +151,10 @@ const DeckOpenButton = ({ id, style, onDismiss }: { id: string | number; style?:
   const { t } = useTranslation();
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+    <View style={{ justifyContent: "center", alignItems: "center" }}>
       <Link href={`/decks/${id}`} asChild>
         <TouchableOpacity style={styles.button} onPress={onDismiss}>
-          <Text style={{ color: "white", fontSize: 16, marginBottom: 5 }}>{t("play")}</Text>
+          <Text style={{ color: "white", fontSize: 24, marginBottom: 5 }}>{t("play")}</Text>
         </TouchableOpacity>
       </Link>
     </View>
@@ -161,7 +163,7 @@ const DeckOpenButton = ({ id, style, onDismiss }: { id: string | number; style?:
 
 const styles = StyleSheet.create({
   commonInformation: {
-    marginTop: 20,
+    // marginTop: 20,
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
@@ -171,13 +173,13 @@ const styles = StyleSheet.create({
     color: Colors.deepGray,
     fontSize: 20,
     fontWeight: "bold",
-    marginTop: 33,
+    marginTop: 17,
   },
 
   deckDescription: {
     width: "90%",
     color: Colors.grey1,
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "400",
     textAlign: "center",
     marginTop: 33,
@@ -187,10 +189,9 @@ const styles = StyleSheet.create({
     borderRadius: 32,
   },
   modalWrapper: {
+    flex: 1,
     width: "100%",
-    paddingHorizontal: 8,
-    position: "absolute",
-    bottom: 0,
+    paddingHorizontal: 20,
   },
   button: {
     justifyContent: "center",

@@ -27,37 +27,25 @@ const DeckScrollView: React.FC<DeckScrollViewProps> = ({
 
   const [showLoader, setShowLoader] = useState(false);
 
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (isLoading) {
-      // Устанавливаем таймер для задержки перед показом лоадера
-      timer = setTimeout(() => {
-        setShowLoader(true);
-      }, 5000); // Задержка 500 мс
-    } else {
-      setShowLoader(false); // Скрываем лоадер, когда загрузка завершена
-    }
-
-    return () => clearTimeout(timer); // Очищаем таймер при размонтировании или изменении состояния
-  }, [isLoading]);
-
-  if(isLoading) {
-    return ( <View style={styles.skeletonContainer}>
-      {[...Array(6)].map((_, index) => (
-        <ContentLoader
-          key={index}
-          speed={2}
-          width="100%"
-          height={150}
-          viewBox="0 0 400 150"
-          backgroundColor="#d2d2d2"
-          foregroundColor="#c0c0c0"
-          style={styles.skeletonItem}
-        >
-          <Rect x="0" y="0" rx="10" ry="10" width="100%" height="150" />
-        </ContentLoader>
-      ))}
-    </View>)
+  if (isLoading) {
+    return (
+      <View style={styles.skeletonContainer}>
+        {[...Array(6)].map((_, index) => (
+          <ContentLoader
+            key={index}
+            speed={2}
+            width="100%"
+            height={221}
+            viewBox="0 0 400 221"
+            backgroundColor="#d2d2d2"
+            foregroundColor="#c0c0c0"
+            style={styles.skeletonItem}
+          >
+            <Rect x="5" y="0" rx="20" ry="20" width="90%" height="221" />
+          </ContentLoader>
+        ))}
+      </View>
+    );
   }
 
   return (
@@ -86,14 +74,15 @@ const DeckScrollView: React.FC<DeckScrollViewProps> = ({
 const styles = StyleSheet.create({
   scrollContainer: {
     paddingBottom: Platform.OS === "ios" ? 75 : 100,
-    marginTop: Platform.OS === "ios" ? 55 : 75,
     margin: 20,
+    paddingTop: 28,
   },
   skeletonContainer: {
     width: "100%",
   },
   skeletonItem: {
     marginBottom: 20,
+    top: 90,
   },
 });
 

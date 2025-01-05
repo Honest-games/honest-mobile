@@ -51,7 +51,7 @@ const filterDecks = (decks: IDeck[], search: string) => {
 
 const searchBarStyle = (scrollY: SharedValue<number>) =>
   useAnimatedStyle(() => {
-    const searchBarWidth = interpolate(scrollY.value, [0, 20], [width - 148, 48], Extrapolate.CLAMP);
+    const searchBarWidth = interpolate(scrollY.value, [0, 20], [width - 42, 70], Extrapolate.CLAMP);
 
     const shadowOpacity = interpolate(scrollY.value, [0, 100], [0, 0.25], Extrapolate.CLAMP);
 
@@ -66,16 +66,16 @@ const searchBarStyle = (scrollY: SharedValue<number>) =>
       elevation: 5,
     };
   });
-const switcherStyle = (scrollY: SharedValue<number>) =>
-  useAnimatedStyle(() => {
-    const scrollOffset = interpolate(scrollY.value, [0, 10], [0, 150], Extrapolate.CLAMP);
+// const switcherStyle = (scrollY: SharedValue<number>) =>
+//   useAnimatedStyle(() => {
+//     const scrollOffset = interpolate(scrollY.value, [0, 10], [0, 150], Extrapolate.CLAMP);
 
-    const opacity = interpolate(scrollY.value, [0, 10], [1, 0], Extrapolate.CLAMP);
-    return {
-      transform: [{ translateX: withTiming(scrollOffset, { duration: 600 }) }],
-      opacity: withTiming(opacity, { duration: 600 }),
-    };
-  });
+//     const opacity = interpolate(scrollY.value, [0, 10], [1, 0], Extrapolate.CLAMP);
+//     return {
+//       transform: [{ translateX: withTiming(scrollOffset, { duration: 600 }) }],
+//       opacity: withTiming(opacity, { duration: 600 }),
+//     };
+//   });
 
 const PageWithUserId = ({ userId }: { userId: string }) => {
   // const userId = useUserId();
@@ -95,6 +95,7 @@ const PageWithUserId = ({ userId }: { userId: string }) => {
   const [tapOnDeck, setTapOnDeck] = useState<boolean>();
   const [filteredDecks, setFilteredDecks] = useState<IDeck[]>([]);
   const [sendPromo] = useSendPromoMutation();
+
   useEffect(() => {
     if (decks) {
       setFilteredDecks(filterDecks(decks, searchText));
@@ -102,15 +103,21 @@ const PageWithUserId = ({ userId }: { userId: string }) => {
   }, [decks, searchText]);
 
   const { data: likes, isFetching: isFetchingLikes } = useGetAllLikesQuery(userId);
+
   useEffect(() => {
     if (likes) {
       if (likes.decks) dispatch(setDecksLikesSet(likes.decks));
       if (likes.questions) dispatch(setQuestionsLikesSet(likes.questions));
     }
   }, [likes]);
+
   useEffect(() => {
-    fadeAnimation.value = withTiming(1, { duration: 3000, easing: Easing.out(Easing.exp) });
+    fadeAnimation.value = withTiming(1, {
+      duration: 10000,
+      easing: Easing.out(Easing.exp),
+    });
   }, []);
+
   /*ANIMATION*/
   const scrollToTop = (scrollRef: any) => {
     scrollRef.current?.scrollTo({ y: 0, animated: true });
@@ -127,7 +134,11 @@ const PageWithUserId = ({ userId }: { userId: string }) => {
   });
   const contentStyle = useAnimatedStyle(() => ({
     opacity: fadeAnimation.value,
-    transform: [{ translateY: interpolate(fadeAnimation.value, [0, 1], [20, 0], Extrapolate.CLAMP) }],
+    transform: [
+      {
+        translateY: interpolate(fadeAnimation.value, [0, 1], [20, 0], Extrapolate.CLAMP),
+      },
+    ],
   }));
   /*END ANIMATION*/
 
@@ -155,23 +166,20 @@ const PageWithUserId = ({ userId }: { userId: string }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.switcherContainer}>
-        <Switcher switcherStyle={switcherStyle(scrollY)} onLanguageChange={changeLanguage} />
+      <View style={{ position: "relative", flex: 1, width: '100%', top: 20 }}>
+        <SearchBar searchBarStyle={searchBarStyle(scrollY)} onChangeInput={setSearchText} onSearchSubmit={onSearchSubmit} />
+        <Animated.View style={[contentStyle, { flex: 1}]}>
+          <DeckScrollView
+            scrollRef={scrollRef}
+            scrollHandler={scrollHandler}
+            filteredDecks={filteredDecks}
+            onSelectDeck={onSelectDeck}
+            handleDismissSheet={() => bottomSheetRef.current?.dismiss()}
+            decks={decks}
+            isLoading={isLoadingDecks || isFetchingDecks || isFetchingLikes}
+          />
+        </Animated.View>
       </View>
-
-      <SearchBar searchBarStyle={searchBarStyle(scrollY)} onChangeInput={setSearchText} onSearchSubmit={onSearchSubmit} />
-
-      <Animated.View style={[contentStyle, { flex: 1 }]}>
-        <DeckScrollView
-          scrollRef={scrollRef}
-          scrollHandler={scrollHandler}
-          filteredDecks={filteredDecks}
-          onSelectDeck={onSelectDeck}
-          handleDismissSheet={() => bottomSheetRef.current?.dismiss()}
-          decks={decks}
-          isLoading={isLoadingDecks || isFetchingDecks || isFetchingLikes}
-        />
-      </Animated.View>
 
       {selectedDeck && <CustomBottomSheetModal deck={selectedDeck} ref={bottomSheetRef} userId={userId} />}
     </SafeAreaView>
@@ -183,7 +191,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingBottom: Platform.OS === "ios" ? -35 : 0,
-    height: "100%",
     width: "100%",
   },
   switcherContainer: {

@@ -4,9 +4,9 @@ export default StyleSheet.create({
   topContent: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+
     width: "100%",
-    paddingHorizontal: 20,
+    // paddingHorizontal: 20,
   },
   deckProgress: {
     flexDirection: "row",

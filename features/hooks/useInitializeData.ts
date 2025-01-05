@@ -41,9 +41,6 @@ const useInitializeData = ({ onDataReady, locale }: UseInitializeDataProps) => {
       if (likes.questions) dispatch(setQuestionsLikesSet(likes.questions));
     }
   }, [likes, dispatch]);
-  console.log(1, isLoadingDecks)
-  console.log(2, isFetchingDecks)
-  console.log(3, isFetchingLikes)
 
   useEffect(() => {
     if (!isLoadingDecks && !isFetchingDecks && !isFetchingLikes) {

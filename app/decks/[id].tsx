@@ -126,7 +126,7 @@ const OpenedDeckWithLevels = ({
 			}
 			triggerSwipeAnimation(moveToNextCard.bind(null, level))
 		}
-		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
 	}
 
 	/*ANIMATION*/
@@ -221,6 +221,7 @@ function WithLoadingQuestion({
 		clientId: userId,
 		timestamp: time
 	})
+	
 	useEffect(() => {
 		if (fetchedQuestion && !isFetchingQuestion) {
 			setQuestion(fetchedQuestion)
@@ -244,6 +245,7 @@ const CardsStack = ({
 	userId: string
 }) => {
 	const panResponder = selectedLevel && getPanResponder(swipe, onAnimationEnd)
+	console.log(displayDataStack)
 	return displayDataStack
 		.map((displayData, i) => {
 			const isFirst = i === 0

@@ -22,11 +22,11 @@ const DeckInfo: React.FC<DeckInfoProps> = ({ title, id, imageId, handleOpenDeckI
     <View style={styles.commonInformaion}>
       {isLoadingImage ? (
         <ContentLoader
-          speed={2}
+          speed={1}
           width="100%"
           height={200}
-          backgroundColor="#d1d1d1"
-          foregroundColor="#c0c0c0"
+          backgroundColor="#CCCCCC"
+          foregroundColor="#F5F5F5"
           style={styles.skeletonContainer}
         >
           <Circle cx="50%" cy="70" r="40" />

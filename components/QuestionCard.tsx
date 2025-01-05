@@ -60,7 +60,7 @@ const QuestionCard = (props: QuestionCardProps) => {
 				} else {
 					await likeQuestion({ questionId, userId })
 					dispatch(addQuestionId(questionId))
-					Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+					Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
 				}
 			} else {
 				console.error(

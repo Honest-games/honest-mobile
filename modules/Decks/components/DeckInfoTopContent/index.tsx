@@ -28,7 +28,7 @@ const DeckInfoTopContent = ({ deck, levels }: { deck: IDeck; levels: ILevelData[
       } else {
         await likeDeck({ deckId: deck.id, userId });
         dispatch(addDeckId(deck.id));
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
       }
     } catch (e) {
       console.error("Error:", e);
