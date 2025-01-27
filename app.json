@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "haur",
+    "name": "Честно",
     "slug": "haur",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/appstore.png",
     "scheme": "myapp",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/images/splash-screen.png",
       "resizeMode": "contain",
@@ -16,15 +16,13 @@
       "**/*"
     ],
     "ios": {
+      "icon": "./assets/images/appstore.png",
       "supportsTablet": true,
       "bundleIdentifier": "com.tige21.haur",
-      "buildNumber": "2"
+      "buildNumber": "7"
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/icon1.png",
-        "backgroundColor": "#f3f3f3"
-      },
+      "icon": "./assets/images/playstore.png",
       "package": "com.tige21.haur"
     },
     "web": {
@@ -44,8 +42,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "4170a214-6ff4-4639-9a86-63984cd939fa"
+        "projectId": "32b16ea2-3dc9-45d9-b424-41453f69c5a6"
       }
-    }
+    },
+    "owner": "tinygeekslab"
   }
 }

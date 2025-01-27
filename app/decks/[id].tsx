@@ -80,54 +80,55 @@ const OpenedDeckWithLevels = ({
 	levels: ILevelData[]
 	userId: string
 }) => {
-	const isSeveralLevels = levels.length > 1
-	const [selectedLevel, setSelectedLevel] = useState<ILevelData>()
-	const [displayDataStack, setDisplayDataStack] = useState<DisplayedCardItem[]>(
-		[]
-	)
-	const { goBack } = useDeckId()
+	const isSeveralLevels = levels.length > 1;
+	const [selectedLevel, setSelectedLevel] = useState<ILevelData>();
+	const [displayDataStack, setDisplayDataStack] = useState<DisplayedCardItem[]>([]);
+	const { goBack } = useDeckId();
+	const time = useRef(Date.now()).current;
 
-	const moveToNextCard = (level: ILevelData) => {
-		if (displayDataStack.length > 0) {
-			//discard first item; put second as first and make it load question; add new item
-			setDisplayDataStack(prevState => {
-				let second = prevState[1]
-				second.shouldLoadQuestion = true
-				return [second, DisplayedCardItem.create(level, false, isSeveralLevels)]
-			})
-		}
-	}
+	const onButtonPress = async (level: ILevelData) => {
+		if (isAnimationGoing) return;
 
-	const onButtonPress = (level: ILevelData) => {
-		if(isAnimationGoing){
-			return
-		}
 		if (!selectedLevel) {
+			// Первое нажатие - создаем две карточки с загруженными вопросами
 			setDisplayDataStack([
-				DisplayedCardItem.create(level, true, isSeveralLevels),
-				DisplayedCardItem.create(level, false, isSeveralLevels)
-			])
-			setSelectedLevel(level)
+				DisplayedCardItem.create(level, true, isSeveralLevels),  // Первая карта с загруженным вопросом
+				DisplayedCardItem.create(level, true, isSeveralLevels)   // Вторая карта с загруженным вопросом
+			]);
+			setSelectedLevel(level);
 		} else {
 			if (selectedLevel.ID === level.ID) {
-				//start loading question for second card while first is preparing to be discarded later
+				// Тот же уровень - активируем загрузку вопроса для второй карты
 				setDisplayDataStack(prev => {
-					const second = prev[1]
-					if (second) second.shouldLoadQuestion = true
-					return [...prev]
-				})
+					const second = prev[1];
+					second.shouldLoadQuestion = true;
+					return [...prev];
+				});
+				// triggerSwipeAnimation(() => moveToNextCard(level));
 			} else {
-				//replace second item with having needed level and loading its question
+				// Новый уровень - заменяем вторую карту с новым уровнем
 				setDisplayDataStack(prev => [
 					prev[0],
-					DisplayedCardItem.create(level, true, isSeveralLevels)
-				])
-				setSelectedLevel(level)
+					DisplayedCardItem.create(level, true, isSeveralLevels) // Новая карта сразу с загрузкой вопроса
+				]);
+				setSelectedLevel(level);
 			}
 			triggerSwipeAnimation(moveToNextCard.bind(null, level))
 		}
-		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-	}
+		Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+	};
+
+	const moveToNextCard = (level: ILevelData) => {
+		if (displayDataStack.length > 0) {
+			setDisplayDataStack(prevState => {
+				const second = prevState[1];
+				return [
+					second,
+					DisplayedCardItem.create(level, true, isSeveralLevels) // Новая карта сразу с загрузкой вопроса
+				];
+			});
+		}
+	};
 
 	/*ANIMATION*/
 	const swipe = useRef(new Animated.ValueXY()).current
@@ -203,32 +204,42 @@ function WithLoadingQuestion({
 }: {
 	displayData: DisplayedCardItem
 	userId: string
-	children: (
-		question?: IQuestion,
-		isFetchingQuestion?: boolean,
-		questionId?: string
-	) => ReactNode
+	children: (question?: IQuestion, isFetchingQuestion?: boolean, questionId?: string) => ReactNode
 }) {
-	const [time] = useState(Date.now())
-	const [question, setQuestion] = useState<IQuestion>()
-	const [questionId, setQuestionId] = useState<string>()
+	const [time] = useState(Date.now());
+	const [question, setQuestion] = useState<IQuestion>();
+	const [questionId, setQuestionId] = useState<string>();
+
 	const {
 		data: fetchedQuestion,
 		isFetching: isFetchingQuestion,
-		refetch
 	} = useGetQuestionQuery({
 		levelId: displayData.level.ID,
 		clientId: userId,
 		timestamp: time
-	})
-	
+	});
+
+	const {
+		data: fetchedQuestion2,
+		isFetching: isFetchingQuestion2,
+	} = useGetQuestionQuery({
+		levelId: displayData.level.ID,
+		clientId: userId,
+		timestamp: time
+	});
+
 	useEffect(() => {
+		// Используем первый успешно загруженный вопрос
 		if (fetchedQuestion && !isFetchingQuestion) {
-			setQuestion(fetchedQuestion)
-			setQuestionId(fetchedQuestion.id)
+			setQuestion(fetchedQuestion);
+			setQuestionId(fetchedQuestion.id);
+		} else if (fetchedQuestion2 && !isFetchingQuestion2) {
+			setQuestion(fetchedQuestion2);
+			setQuestionId(fetchedQuestion2.id);
 		}
-	}, [fetchedQuestion])
-	return children(question, isFetchingQuestion, questionId)
+	}, [fetchedQuestion, fetchedQuestion2, isFetchingQuestion, isFetchingQuestion2]);
+
+	return children(question, isFetchingQuestion && isFetchingQuestion2, questionId);
 }
 
 const CardsStack = ({
@@ -244,28 +255,22 @@ const CardsStack = ({
 	selectedLevel: ILevelData
 	userId: string
 }) => {
-	const panResponder = selectedLevel && getPanResponder(swipe, onAnimationEnd)
-	console.log(displayDataStack)
+	const panResponder = selectedLevel && getPanResponder(swipe, onAnimationEnd);
+
 	return displayDataStack
 		.map((displayData, i) => {
-			const isFirst = i === 0
-			const actualHandlers = /*isFirst &&*/ panResponder
-				? panResponder.panHandlers
-				: {}
+			const isFirst = i === 0;
+			const actualHandlers = isFirst && panResponder ? panResponder.panHandlers : {};
+
 			return (
 				<SwipeableCard
 					key={displayData.id}
 					swipe={swipe}
 					allowDrag={isFirst}
-					{...{ ...actualHandlers }}
+					{...actualHandlers}
 				>
-					{!displayData.shouldLoadQuestion ? (
-						//Если вопрос не надо грузить - показываем карточку без него - она с блюром
-						<QuestionCard displayData={displayData} />
-					) : (
-						//А если надо - оборачиваем в функцию которая грузит этот вопрос и отдаёт карточке уже точно загруженный
+					{displayData.shouldLoadQuestion ? (
 						<WithLoadingQuestion displayData={displayData} userId={userId}>
-							{/*здесь в качестве children используется функция. Компонент WithLoadingQuestion сам даёт в неё переменную question*/}
 							{(question, isFetchingQuestion, questionId) => (
 								<QuestionCard
 									questionId={questionId}
@@ -275,12 +280,14 @@ const CardsStack = ({
 								/>
 							)}
 						</WithLoadingQuestion>
+					) : (
+						<QuestionCard displayData={displayData} />
 					)}
 				</SwipeableCard>
-			)
+			);
 		})
-		.reverse()
-}
+		.reverse();
+};
 
 export default React.memo(DeckId)
 

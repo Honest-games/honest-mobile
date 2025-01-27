@@ -1,3 +1,6 @@
+if (__DEV__) {
+	require('../ReactotronConfig')
+}
 import { AnimateSplashScreen } from "@/components/screens";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";

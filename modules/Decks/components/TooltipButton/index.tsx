@@ -15,10 +15,11 @@ interface TooltipButtonProps {
 
 const TooltipButton: React.FC<TooltipButtonProps> = ({ label, tooltipContent, bgColor, size, onPress, isSelected }) => {
     const levelBgColor = getLevelColor(bgColor);
+    const shouldShowTooltip = isSelected && tooltipContent.trim() !== '';
 
   return (
     <View style={styles.container}>
-      {isSelected && (
+      {shouldShowTooltip && (
         <View style={[styles.tooltip, { backgroundColor: levelBgColor }]}>
           <Text style={[styles.tooltipText, { color: getTextColor(bgColor) }]}>{tooltipContent}</Text>
         </View>

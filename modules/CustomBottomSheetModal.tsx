@@ -1,32 +1,21 @@
 import { LevelInfo } from "@/UI/LevelInfo";
 import Colors from "@/constants/Colors";
 import useFetchDeckSvg from "@/features/hooks/useFetchDeckSvg";
-import { useAppDispatch, useAppSelector } from "@/features/hooks/useRedux";
-import { useDislikeDeckMutation, useGetLevelsQuery, useLikeDeckMutation } from "@/services/api";
+import { useAppDispatch } from "@/features/hooks/useRedux";
+import { useGetLevelsQuery } from "@/services/api";
 import { IDeck, ILevelData } from "@/services/types/types";
-import { addDeckId, removeDeckId } from "@/store/reducer/deck-likes-slice";
 import { FontAwesome } from "@expo/vector-icons";
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Dimensions, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View, ViewStyle } from "react-native";
 import { Rect, SvgXml } from "react-native-svg";
-import { LevelButtons } from "./LevelButtons";
 import Loader from "./Loader";
-import { useUserId } from "@/features/hooks";
-import { ILevelsInfo } from "@/features/converters/levels-info-converter";
-import { getLevelColor } from "@/features/converters/button-converters";
 import { getLevelsInfo } from "@/features/converters";
-import { Button } from "@/UI";
 import { useTranslation } from "react-i18next";
 import { Link } from "expo-router";
 import { hideTooltip, showTooltip } from "@/store/reducer/levels-slice";
 import DeckLevels from "./Decks/components/DeckLevels";
 import { DeckInfoTopContent } from "./Decks/components";
-import ContentLoader, { Circle } from "react-content-loader/native";
-
-const { width } = Dimensions.get("window");
-
 interface CustomBottomSheetModalProps {
   deck: IDeck;
   userId: string;
@@ -129,20 +118,16 @@ const DeckDescription = ({ deck, style }: { deck: IDeck; style?: ViewStyle }) =>
   return (
     <View style={[styles.commonInformation, style]}>
       {isLoadingImage ? (
-        <ContentLoader speed={2} width="100%" height={118} backgroundColor="#d1d1d1" foregroundColor="#c0c0c0">
-          <Circle cx="190" cy="50" r="50" />
-        </ContentLoader>
-      ) : (
+        <Loader />
+      ) : svgData ? (
         <View>
-          <SvgXml xml={svgData} width={79} height={78} />
+          <SvgXml xml={svgData} width={121} height={118} />
         </View>
+      ) : (
+        <Text>.</Text>
       )}
-      {!isLoadingImage && (
-        <>
-          <Text style={styles.deckTitle}>{deck.name.toLowerCase() || "Название колоды"}</Text>
-          <Text style={styles.deckDescription}>{deck.description.toLowerCase() || "описание колоды"}</Text>
-        </>
-      )}
+      <Text style={styles.deckTitle}>{deck.name.toLowerCase() || "Название колоды"}</Text>
+      <Text style={styles.deckDescription}>{deck.description.toLowerCase() || "описание колоды"}</Text>
     </View>
   );
 };

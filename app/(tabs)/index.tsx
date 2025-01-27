@@ -49,23 +49,6 @@ const filterDecks = (decks: IDeck[], search: string) => {
   });
 };
 
-const searchBarStyle = (scrollY: SharedValue<number>) =>
-  useAnimatedStyle(() => {
-    const searchBarWidth = interpolate(scrollY.value, [0, 20], [width - 42, 70], Extrapolate.CLAMP);
-
-    const shadowOpacity = interpolate(scrollY.value, [0, 100], [0, 0.25], Extrapolate.CLAMP);
-
-    const shadowOffset = interpolate(scrollY.value, [0, 100], [0, 4], Extrapolate.CLAMP);
-
-    return {
-      width: withTiming(searchBarWidth, { duration: 800 }),
-      shadowColor: "#000000",
-      // shadowOffset: withTiming({ width: 0, height: 4 }, { duration: 500 }),
-      shadowRadius: 4,
-      shadowOpacity: withTiming(shadowOpacity, { duration: 1000 }),
-      elevation: 5,
-    };
-  });
 // const switcherStyle = (scrollY: SharedValue<number>) =>
 //   useAnimatedStyle(() => {
 //     const scrollOffset = interpolate(scrollY.value, [0, 10], [0, 150], Extrapolate.CLAMP);
@@ -89,7 +72,7 @@ const PageWithUserId = ({ userId }: { userId: string }) => {
   const scrollY = useSharedValue(0);
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const fadeAnimation = useSharedValue(0); // состояние для анимации появления контента
-
+  const animationOpacity = useSharedValue(0);
   const [searchText, setSearchText] = useState("");
   const [selectedDeck, setSelectedDeck] = useState<IDeck>();
   const [tapOnDeck, setTapOnDeck] = useState<boolean>();
@@ -113,8 +96,15 @@ const PageWithUserId = ({ userId }: { userId: string }) => {
 
   useEffect(() => {
     fadeAnimation.value = withTiming(1, {
-      duration: 10000,
+      duration: 3000,
       easing: Easing.out(Easing.exp),
+    });
+  }, []);
+
+  useEffect(() => {
+    animationOpacity.value = withTiming(1, {
+      duration: 2000,
+      // easing: Easing.out(Easing.exp),
     });
   }, []);
 
@@ -140,6 +130,12 @@ const PageWithUserId = ({ userId }: { userId: string }) => {
       },
     ],
   }));
+
+  const animatedOpacity = useAnimatedStyle(() => {
+    return {
+      opacity: animationOpacity.value,
+    };
+  });
   /*END ANIMATION*/
 
   const onSelectDeck = (deck: IDeck) => {
@@ -148,13 +144,9 @@ const PageWithUserId = ({ userId }: { userId: string }) => {
   };
 
   const onSearchSubmit = () => {
-    if (scrollY.value === 0) {
-      sendPromo({ promo: searchText, userId });
-      handleScrollToTop();
-      refetchDecks();
-    } else {
-      scrollToTop(scrollRef);
-    }
+    sendPromo({ promo: searchText, userId });
+    handleScrollToTop();
+    refetchDecks();
   };
 
   useEffect(() => {
@@ -166,20 +158,18 @@ const PageWithUserId = ({ userId }: { userId: string }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={{ position: "relative", flex: 1, width: '100%', top: 20 }}>
-        <SearchBar searchBarStyle={searchBarStyle(scrollY)} onChangeInput={setSearchText} onSearchSubmit={onSearchSubmit} />
-        <Animated.View style={[contentStyle, { flex: 1}]}>
-          <DeckScrollView
-            scrollRef={scrollRef}
-            scrollHandler={scrollHandler}
-            filteredDecks={filteredDecks}
-            onSelectDeck={onSelectDeck}
-            handleDismissSheet={() => bottomSheetRef.current?.dismiss()}
-            decks={decks}
-            isLoading={isLoadingDecks || isFetchingDecks || isFetchingLikes}
-          />
-        </Animated.View>
-      </View>
+      <Animated.View style={[animatedOpacity, { flex: 1 }]}>
+        <DeckScrollView
+          onSearchSubmit={onSearchSubmit}
+          scrollRef={scrollRef}
+          filteredDecks={filteredDecks}
+          onSelectDeck={onSelectDeck}
+          handleDismissSheet={() => bottomSheetRef.current?.dismiss()}
+          decks={decks}
+          isLoading={isLoadingDecks || isFetchingDecks || isFetchingLikes}
+          onChangeInput={setSearchText}
+        />
+      </Animated.View>
 
       {selectedDeck && <CustomBottomSheetModal deck={selectedDeck} ref={bottomSheetRef} userId={userId} />}
     </SafeAreaView>
@@ -190,6 +180,7 @@ export default Page;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: 20,
     paddingBottom: Platform.OS === "ios" ? -35 : 0,
     width: "100%",
   },

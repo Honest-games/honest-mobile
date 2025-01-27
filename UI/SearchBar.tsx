@@ -2,24 +2,21 @@ import Colors from '@/constants/Colors'
 import { AntDesign } from '@expo/vector-icons'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { StyleSheet, TextInput, TouchableOpacity } from 'react-native'
-import Animated from 'react-native-reanimated'
+import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native'
 
 interface SearchBarProps {
-	searchBarStyle: any
 	onChangeInput: (text: string) => void
 	onSearchSubmit?: () => void
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({
-	searchBarStyle,
 	onChangeInput,
 	onSearchSubmit
 }) => {
 	const { t } = useTranslation()
 
 	return (
-		<Animated.View style={[styles.searchBar, searchBarStyle]}>
+		<View style={styles.searchBar}>
 			<TextInput
 				style={{ flex: 1, color: Colors.grey1 }}
 				placeholder={t('searchBarPlaceholder')}
@@ -28,23 +25,21 @@ const SearchBar: React.FC<SearchBarProps> = ({
 			<TouchableOpacity onPress={onSearchSubmit}>
 				<AntDesign name='search1' size={24} color={Colors.deepBlue} />
 			</TouchableOpacity>
-		</Animated.View>
+		</View>
 	)
 }
+
 const styles = StyleSheet.create({
 	searchBar: {
-		flex: 1,
-		position: 'absolute',
-	
-		right: 20,
-		zIndex: 100,
 		flexDirection: 'row',
 		justifyContent: 'space-between',
 		alignItems: 'center',
 		height: 48,
 		backgroundColor: 'white',
 		borderRadius: 25,
-		paddingHorizontal: 24
+		paddingHorizontal: 24,
+		
 	}
 })
+
 export default SearchBar

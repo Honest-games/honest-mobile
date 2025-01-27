@@ -30,7 +30,7 @@ export const DeckLevels: React.FC<DeckLevelsProps> = ({
           key={level.ID}
           label={level.Name}
           bgColor={level.ColorButton}
-          tooltipContent={level.Description || "простые вопросы, не копающие в глубину, например: “какая твоя утренняя рутина?”"}
+          tooltipContent={level.description || ''}
           onPress={() => onButtonPress && onButtonPress(level)}
           size={size}
           isSelected={tooltipVisible && selectedLevelId === level.ID}
