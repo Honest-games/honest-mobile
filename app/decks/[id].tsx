@@ -6,14 +6,20 @@ import { DeckTopContent } from '@/components/deck'
 import {useDeck, useDeckId, useUserId} from '@/features/hooks'
 import { LevelButtons } from '@/modules/LevelButtons'
 import Loader from '@/modules/Loader'
-import { useGetLevelsQuery, useGetQuestionQuery } from '@/services/api'
-import { IDeck, ILevelData, IQuestion } from '@/services/types/types'
+import { useGetLevelsQuery, useGetQuestionQuery, useShuffleDeckMutation, useShuffleLevelMutation } from '@/services/api'
+import { IDeck, ILevelData, IQuestion, IAchievement } from '@/services/types/types'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useLocalSearchParams } from 'expo-router'
-import React, { ReactNode, memo, useEffect, useRef, useState } from 'react'
+import React, { ReactNode, memo, useEffect, useRef, useState, useCallback } from 'react'
 import { Animated, Dimensions, StyleSheet, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import * as Haptics from 'expo-haptics';
+import ShuffleDialog from '@/components/deck/ShuffleDialog';
+import { useTranslation } from 'react-i18next';
+import { useAppDispatch, useAppSelector } from '@/features/hooks/useRedux';
+import { incrementStats, updateAchievement, clearLastUnlockedAchievement } from '@/store/reducer/profile-slice';
+import Fireworks from '@/components/animations/Fireworks';
+import AchievementModal from '@/components/achievements/AchievementModal';
 
 const { width } = Dimensions.get('window')
 
@@ -21,22 +27,50 @@ const CardMemo = memo(SwipeableCard)
 
 export class DisplayedCardItem {
 	id: number
-	level: ILevelData
+	level: ILevelData | null
 	shouldLoadQuestion: boolean
 	shouldShowLevelOnCard: boolean
+	isSwipeable: boolean
+	customText?: string
 
 	static _currentDisplayDataIndex = 0
 
-	static create(level: ILevelData, shouldLoadQuestion: boolean = false,
-				  shouldShowLevelOnCard: boolean = true) {
-		return new DisplayedCardItem(level, shouldLoadQuestion, shouldShowLevelOnCard)
+	static createWithText(text: string, isSwipeable: boolean = true) {
+		return new DisplayedCardItem(
+			null, // level
+			false, // shouldLoadQuestion
+			false, // shouldShowLevelOnCard
+			isSwipeable,
+			text
+		);
 	}
 
-	constructor(level: ILevelData, shouldLoadQuestion: boolean, shouldShowLevelOnCard: boolean) {
+	static create(
+		level: ILevelData, 
+		shouldLoadQuestion: boolean = false,
+		shouldShowLevelOnCard: boolean = true
+	) {
+		return new DisplayedCardItem(
+			level,
+			shouldLoadQuestion,
+			shouldShowLevelOnCard,
+			true // isSwipeable
+		);
+	}
+
+	constructor(
+		level: ILevelData | null,
+		shouldLoadQuestion: boolean,
+		shouldShowLevelOnCard: boolean,
+		isSwipeable: boolean,
+		customText?: string
+	) {
 		this.id = DisplayedCardItem._currentDisplayDataIndex++
 		this.level = level
 		this.shouldLoadQuestion = shouldLoadQuestion
 		this.shouldShowLevelOnCard = shouldShowLevelOnCard
+		this.isSwipeable = isSwipeable
+		this.customText = customText
 	}
 }
 
@@ -80,11 +114,55 @@ const OpenedDeckWithLevels = ({
 	levels: ILevelData[]
 	userId: string
 }) => {
+	const { t } = useTranslation();
 	const isSeveralLevels = levels.length > 1;
 	const [selectedLevel, setSelectedLevel] = useState<ILevelData>();
 	const [displayDataStack, setDisplayDataStack] = useState<DisplayedCardItem[]>([]);
 	const { goBack } = useDeckId();
 	const time = useRef(Date.now()).current;
+	const [isShuffleDialogVisible, setShuffleDialogVisible] = useState(false);
+	const [shuffleDeck] = useShuffleDeckMutation();
+	const [shuffleLevel] = useShuffleLevelMutation();
+	const [isShuffling, setIsShuffling] = useState(false);
+	const dispatch = useAppDispatch();
+	const [showFireworks, setShowFireworks] = useState(false);
+	const [showAchievementModal, setShowAchievementModal] = useState(false);
+	const profile = useAppSelector(state => state.profile);
+	const [unlockedAchievement, setUnlockedAchievement] = useState<IAchievement | null>(null);
+
+	useEffect(() => {
+		if (profile.lastUnlockedAchievement) {
+			const achievement = profile.achievements.find(
+				a => a.id === profile.lastUnlockedAchievement
+			);
+			if (achievement) {
+				setUnlockedAchievement(achievement);
+				setShowAchievementModal(true);
+				setShowFireworks(true);
+			}
+		}
+	}, [profile.lastUnlockedAchievement]);
+
+	const handleFireworksFinish = () => {
+		setShowFireworks(false);
+	};
+
+	const handleAchievementModalClose = () => {
+		setShowAchievementModal(false);
+		setUnlockedAchievement(null);
+		dispatch(clearLastUnlockedAchievement());
+	};
+
+	const handleCardComplete = useCallback(() => {
+		if (selectedLevel?.ID) {
+			dispatch(incrementStats({ levelId: selectedLevel.ID }));
+			
+			dispatch(updateAchievement({ 
+				id: 'ten_rounds', 
+				progress: (profile.stats.totalRounds || 0) + 1 
+			}));
+		}
+	}, [selectedLevel, dispatch, profile.stats.totalRounds]);
 
 	const onButtonPress = async (level: ILevelData) => {
 		if (isAnimationGoing) return;
@@ -120,11 +198,14 @@ const OpenedDeckWithLevels = ({
 
 	const moveToNextCard = (level: ILevelData) => {
 		if (displayDataStack.length > 0) {
+			// Вызываем handleCardComplete при переходе к следующей карте
+			handleCardComplete();
+			
 			setDisplayDataStack(prevState => {
 				const second = prevState[1];
 				return [
 					second,
-					DisplayedCardItem.create(level, true, isSeveralLevels) // Новая карта сразу с загрузкой вопроса
+					DisplayedCardItem.create(level, true, isSeveralLevels)
 				];
 			});
 		}
@@ -145,12 +226,104 @@ const OpenedDeckWithLevels = ({
 		})
 		setIsAnimationGoing(true)
 	}
-	const onAnimationEnd = (action: () => void) => {
+	const onAnimationEnd = useCallback((onComplete: () => void) => {
 		swipe.setValue({ x: 0, y: 0 })
 		setSwipeDirection(prevDirection => -prevDirection)
 		setIsAnimationGoing(false)
-		action()
-	}
+		
+		// Если была карта с сообщением о перемешивании, сбрасываем флаг
+		if (displayDataStack[0]?.customText === t('levelCardsShuffled')) {
+			setIsShuffling(false);
+		}
+		
+		onComplete();
+	}, []);
+
+	const handleShufflePress = () => {
+		setShuffleDialogVisible(true);
+	};
+
+	const handleShuffleLevel = async () => {
+		if (selectedLevel && !isShuffling) {
+			try {
+				setIsShuffling(true);
+				await shuffleLevel({ levelId: selectedLevel.ID, userId });
+				
+				// Создаем новый стек карточек с сообщением о перемешивании
+				const newStack = [
+					displayDataStack[0], // Оставляем текущую карту
+					DisplayedCardItem.createWithText(
+						t('levelCardsShuffled'),
+						true
+					),
+					DisplayedCardItem.create(selectedLevel, true, isSeveralLevels)
+				];
+
+				setDisplayDataStack(newStack);
+				triggerSwipeAnimation(() => {
+					// После смахивания первой карты isShuffling останется true
+					// Он сбросится только когда пользователь смахнет карту с сообщением
+					moveToNextCardAfterShuffle();
+				});
+
+			} catch (error) {
+				console.error('Error shuffling level:', error);
+				setIsShuffling(false);
+			}
+		}
+		setShuffleDialogVisible(false);
+	};
+
+	const moveToNextCardAfterShuffle = () => {
+		if (displayDataStack.length > 1) {
+			setDisplayDataStack(prevState => {
+				const remainingCards = prevState.slice(1);
+				return remainingCards;
+			});
+		}
+	};
+
+	const handleShuffleDeck = async () => {
+		try {
+			await shuffleDeck({ deckId: selectedDeck.id, userId });
+			
+			// Если нет карт в стеке (первый вход) или нет выбранного уровня
+			if (displayDataStack.length === 0 || !selectedLevel) {
+				setDisplayDataStack([
+					DisplayedCardItem.createWithText(
+						t('allLevelsShuffled'),
+						false // нельзя смахнуть, нужно выбрать уровень
+					)
+				]);
+			} else {
+				// Если есть текущая карта, добавляем её в стек перед сообщением
+				setDisplayDataStack([
+					displayDataStack[0],
+					DisplayedCardItem.createWithText(
+						t('allLevelsShuffled'),
+						selectedLevel !== undefined // можно смахнуть только если уровень был выбран
+					),
+					...(selectedLevel 
+						? [DisplayedCardItem.create(selectedLevel, true, isSeveralLevels)]
+						: []
+					)
+				]);
+				
+				// Запускаем анимацию смахивания текущей карты
+				triggerSwipeAnimation(() => {
+					moveToNextCardAfterShuffle();
+				});
+			}
+		} catch (error) {
+			console.error('Error shuffling deck:', error);
+		}
+		setShuffleDialogVisible(false);
+	};
+
+	const handleCardSwipe = () => {
+		dispatch(incrementStats({ levelId: selectedLevel?.ID }));
+		// остальная логика обработки свайпа
+	};
 
 	return (
 		//TODO block buttons when animation
@@ -158,7 +331,11 @@ const OpenedDeckWithLevels = ({
 			<View style={styles.deck}>
 				<View style={styles.wrapper}>
 					<View style={{ flex: 1, justifyContent: 'space-between' }}>
-						<DeckTopContent selectedDeck={selectedDeck} goBack={goBack} />
+						<DeckTopContent 
+							selectedDeck={selectedDeck} 
+							goBack={goBack}
+							onShufflePress={handleShufflePress}
+						/>
 						<View
 							style={{
 								flex: 1,
@@ -166,7 +343,7 @@ const OpenedDeckWithLevels = ({
 								marginTop: 12
 							}}
 						>
-							{displayDataStack.length && selectedLevel ? (
+							{displayDataStack.length > 0 ? (
 								<CardsStack
 									userId={userId}
 									displayDataStack={displayDataStack}
@@ -193,6 +370,28 @@ const OpenedDeckWithLevels = ({
 					</View>
 				</View>
 			</View>
+
+			<ShuffleDialog
+				visible={isShuffleDialogVisible}
+				onClose={() => setShuffleDialogVisible(false)}
+				onShuffleLevel={handleShuffleLevel}
+				onShuffleDeck={handleShuffleDeck}
+				isShuffleLevelDisabled={!selectedLevel || isShuffling}
+				isSingleLevel={levels.length === 1}
+			/>
+
+			<Fireworks 
+				visible={showFireworks} 
+				onAnimationFinish={handleFireworksFinish} 
+			/>
+
+			<AchievementModal
+				achievement={unlockedAchievement}
+				visible={showAchievementModal}
+				onClose={handleAchievementModalClose}
+				showFireworks={showFireworks}
+				onFireworksFinish={handleFireworksFinish}
+			/>
 		</SafeAreaView>
 	)
 }
@@ -214,7 +413,7 @@ function WithLoadingQuestion({
 		data: fetchedQuestion,
 		isFetching: isFetchingQuestion,
 	} = useGetQuestionQuery({
-		levelId: displayData.level.ID,
+		levelId: displayData.level?.ID,
 		clientId: userId,
 		timestamp: time
 	});
@@ -223,7 +422,7 @@ function WithLoadingQuestion({
 		data: fetchedQuestion2,
 		isFetching: isFetchingQuestion2,
 	} = useGetQuestionQuery({
-		levelId: displayData.level.ID,
+		levelId: displayData.level?.ID,
 		clientId: userId,
 		timestamp: time
 	});

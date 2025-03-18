@@ -47,6 +47,7 @@ const QuestionCard = (props: QuestionCardProps) => {
 			setLike(!!questionsLikesSet.has(questionId))
 		}
 	}, [isFetchingQuestion, questionId, questionsLikesSet])
+
 	const userId = useUserId()
 	const [likeQuestion] = useLikeQuestionMutation()
 	const [dislikeQuestion] = useDislikeQuestionMutation()
@@ -72,11 +73,25 @@ const QuestionCard = (props: QuestionCardProps) => {
 		}
 	}
 
-	const color = getLevelColor(displayData.level.ColorButton)
+	if (displayData.customText) {
+		return (
+			<View
+				style={{ ...styles.questionCardWrapper, ...styles.takeFirstCardWrapper }}
+			>
+				<Text style={{ ...styles.cardText, ...styles.takeFirstCardText }}>
+					{displayData.customText}
+				</Text>
+			</View>
+		);
+	}
+
+	const color = displayData.level ? getLevelColor(displayData.level.ColorButton) : undefined;
 
 	return (
 		<View style={styles.questionCardWrapper}>
-			{displayData.shouldShowLevelOnCard && <CardTopContent level={displayData.level} />}
+			{displayData.shouldShowLevelOnCard && displayData.level && (
+				<CardTopContent level={displayData.level} />
+			)}
 			<View style={styles.cardTextsWrapper}>
 				{question ? (
 					<>
@@ -95,7 +110,9 @@ const QuestionCard = (props: QuestionCardProps) => {
 					<Loader/>
 				)}
 			</View>
-			<CardLikeButton color={color} handleLike={handleLike} isLiked={like} />
+			{displayData.level && (
+				<CardLikeButton color={color} handleLike={handleLike} isLiked={like} />
+			)}
 		</View>
 	)
 }
@@ -121,13 +138,11 @@ const styles = StyleSheet.create({
 		margin: 0,
 		zIndex: 1,
 		flexDirection: 'column',
-		// justifyContent: 'space-between',
 		alignItems: 'center',
 		width: '100%',
 		height: '100%',
 		borderRadius: 20,
 		padding: 16,
-
 		backgroundColor: Colors.beige
 	},
 	takeFirstCardWrapper: {

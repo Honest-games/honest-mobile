@@ -22,7 +22,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 				placeholder={t('searchBarPlaceholder')}
 				onChangeText={onChangeInput}
 			/>
-			<TouchableOpacity onPress={onSearchSubmit}>
+			<TouchableOpacity hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} onPress={onSearchSubmit}>
 				<AntDesign name='search1' size={24} color={Colors.deepBlue} />
 			</TouchableOpacity>
 		</View>

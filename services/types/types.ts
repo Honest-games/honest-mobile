@@ -43,3 +43,37 @@ export interface QuestionLike{
 	id: string
 	questionId: string
 }
+
+export interface IUserProfile {
+	id: string;
+	name: string;
+	bio: string;
+	interests: string[];
+	mood: string;
+	avatarId: number;
+	achievements: IAchievement[];
+	stats: IUserStats;
+}
+
+export interface IAchievement {
+	id: string;
+	title: string;
+	description: string;
+	icon: string;
+	isUnlocked: boolean;
+	progress?: {
+		current: number;
+		required: number;
+	};
+}
+
+export interface IUserStats {
+	totalRounds: number;
+	totalQuestions: number;
+	levelStats: {
+		[levelId: string]: {
+			questionsAnswered: number;
+			roundsPlayed: number;
+		};
+	};
+}

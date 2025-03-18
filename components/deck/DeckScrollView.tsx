@@ -1,7 +1,7 @@
 import SearchBar from "@/UI/SearchBar";
 import { IDeck } from "@/services/types/types";
 import React from "react";
-import { Platform, ScrollView, StyleSheet, View } from "react-native";
+import { Platform, ScrollView, StyleSheet, View, Keyboard } from "react-native";
 import Animated from "react-native-reanimated";
 import DeckItem from "../../modules/DeckItem";
 import ContentLoader, { Circle, Rect } from "react-content-loader/native";
@@ -28,6 +28,10 @@ const DeckScrollView: React.FC<DeckScrollViewProps> = ({
   onChangeInput,
   onSearchSubmit,
 }) => {
+  const handleScroll = () => {
+    Keyboard.dismiss();
+  };
+
   const renderContent = () => {
     if (isLoading) {
       return (
@@ -58,7 +62,13 @@ const DeckScrollView: React.FC<DeckScrollViewProps> = ({
 
   return (
     <View style={styles.container}>
-      <ScrollView ref={scrollRef} contentContainerStyle={styles.scrollContainer} scrollEventThrottle={16}>
+      <ScrollView 
+        ref={scrollRef} 
+        contentContainerStyle={styles.scrollContainer} 
+        scrollEventThrottle={16}
+        onScrollBeginDrag={handleScroll}
+        keyboardShouldPersistTaps="never"
+      >
         <View>
           <SearchBar onChangeInput={onChangeInput} onSearchSubmit={onSearchSubmit} />
         </View>

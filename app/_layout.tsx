@@ -22,6 +22,7 @@ import { useDeck } from "@/features/hooks";
 import { useGetAllLikesQuery } from "@/services/api";
 import { setContentReady } from "@/store/reducer/app-slice";
 import { setDecks } from "@/store/reducer/deck-slice";
+import { updateProfile, initializeProfile } from "@/store/reducer/profile-slice";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -40,6 +41,11 @@ function AppContent() {
   let [locale, setLocale] = useState<string>(Localization.getLocales()[0].languageCode || "ru");
   const { decks, isLoadingDecks, isFetchingDecks, refetch: refetchDecks } = useDeck(userId || "");
   const { data: likes, isFetching: isFetchingLikes } = useGetAllLikesQuery(userId);
+
+  useEffect(() => {
+    dispatch(initializeProfile());
+  }, [dispatch]);
+
   useEffect(() => {
     const loadInitialData = async () => {
       const deviceLanguage = locale;
@@ -56,11 +62,14 @@ function AppContent() {
           dispatch(setUserId(id.toString()));
           await AsyncStorage.setItem("user_id", id.toString());
           console.log("UUID успешно сохранен:", id);
+          
+          dispatch(updateProfile({ id: id.toString() }));
         } catch (error) {
           console.error("Ошибка при сохранении UUID в AsyncStorage:", error);
         }
       } else {
         console.log("UUID успешно получен:", user);
+        dispatch(updateProfile({ id: user }));
       }
 
       setAppReady(true);

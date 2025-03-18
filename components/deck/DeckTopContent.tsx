@@ -1,7 +1,7 @@
 import Colors from "@/constants/Colors";
 import Loader from "@/modules/Loader";
 import { IDeck } from "@/services/types/types";
-import { AntDesign } from "@expo/vector-icons";
+import { AntDesign, MaterialIcons } from "@expo/vector-icons";
 import { ImageSourcePropType, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SvgXml } from "react-native-svg";
 import React from "react";
@@ -11,9 +11,10 @@ import ContentLoader, { Circle } from "react-content-loader/native";
 interface TopContentProps {
   goBack: () => void;
   selectedDeck: IDeck;
+  onShufflePress: () => void;
 }
 
-export const DeckTopContent: React.FC<TopContentProps> = ({ goBack, selectedDeck }) => {
+export const DeckTopContent: React.FC<TopContentProps> = ({ goBack, selectedDeck, onShufflePress }) => {
   const { svgData, isLoadingImage, error: errorSvg } = useFetchDeckSvg(selectedDeck.image_id);
   return (
     <View style={styles.topContent}>
@@ -31,9 +32,17 @@ export const DeckTopContent: React.FC<TopContentProps> = ({ goBack, selectedDeck
       {!isLoadingImage && (
         <>
           <Text style={styles.text}>{selectedDeck.name.toLowerCase()}</Text>
-          <TouchableOpacity onPress={goBack}>
-            <AntDesign name="close" size={30} color={Colors.primary} />
-          </TouchableOpacity>
+          <View style={styles.rightButtons}>
+            <TouchableOpacity 
+              onPress={onShufflePress}
+              style={styles.iconButton}
+            >
+              <MaterialIcons name="shuffle" size={24} color={Colors.primary} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={goBack}>
+              <AntDesign name="close" size={30} color={Colors.primary} />
+            </TouchableOpacity>
+          </View>
         </>
       )}
     </View>
@@ -62,5 +71,13 @@ const styles = StyleSheet.create({
   },
   skeletonItem: {
     marginRight: 10,
+  },
+  rightButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 15,
+  },
+  iconButton: {
+    padding: 5,
   },
 });

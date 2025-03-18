@@ -12,6 +12,8 @@ import levelsReducer from './reducer/levels-slice'
 import userReducer from './reducer/user-slice'
 import splashReducer from './reducer/splash-animation-slice'
 import appReducer from './reducer/app-slice'
+import profileReducer from './reducer/profile-slice'
+import { ThunkAction, Action } from '@reduxjs/toolkit'
 
 
 const rootReducer = combineReducers({
@@ -23,7 +25,8 @@ const rootReducer = combineReducers({
 	levels: levelsReducer,
 	user: userReducer,
 	splash: splashReducer,
-	app: appReducer
+	app: appReducer,
+	profile: profileReducer
 })
 
 enableMapSet()
@@ -42,5 +45,12 @@ export type RootState = ReturnType<typeof store.getState>
 export type AppDispatch = typeof store.dispatch
 
 export const useAppDispatch = () => useDispatch<AppDispatch>()
+
+export type AppThunk<ReturnType = void> = ThunkAction<
+	ReturnType,
+	RootState,
+	unknown,
+	Action<string>
+>
 
 export default store

@@ -124,11 +124,11 @@ const PageWithUserId = ({ userId }: { userId: string }) => {
   });
   const contentStyle = useAnimatedStyle(() => ({
     opacity: fadeAnimation.value,
-    transform: [
-      {
-        translateY: interpolate(fadeAnimation.value, [0, 1], [20, 0], Extrapolate.CLAMP),
-      },
-    ],
+    // transform: [
+    //   {
+    //     translateY: interpolate(fadeAnimation.value, [0, 1], [20, 0], Extrapolate.CLAMP),
+    //   },
+    // ],
   }));
 
   const animatedOpacity = useAnimatedStyle(() => {
