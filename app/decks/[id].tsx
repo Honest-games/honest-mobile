@@ -156,13 +156,8 @@ const OpenedDeckWithLevels = ({
 	const handleCardComplete = useCallback(() => {
 		if (selectedLevel?.ID) {
 			dispatch(incrementStats({ levelId: selectedLevel.ID }));
-			
-			dispatch(updateAchievement({ 
-				id: 'ten_rounds', 
-				progress: (profile.stats.totalRounds || 0) + 1 
-			}));
 		}
-	}, [selectedLevel, dispatch, profile.stats.totalRounds]);
+	}, [selectedLevel, dispatch]);
 
 	const onButtonPress = async (level: ILevelData) => {
 		if (isAnimationGoing) return;

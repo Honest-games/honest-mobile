@@ -32,6 +32,17 @@ const initialAchievements: IAchievement[] = [
       current: 0,
       required: 100
     }
+  },
+  {
+    id: 'social_butterfly',
+    title: 'Душа компании',
+    description: 'Сыграйте в 5 разных уровнях',
+    icon: 'butterfly',
+    isUnlocked: false,
+    progress: {
+      current: 0,
+      required: 5
+    }
   }
 ];
 
@@ -57,7 +68,6 @@ const profileSlice = createSlice({
   reducers: {
     updateProfile(state, action: PayloadAction<Partial<IUserProfile>>) {
       const newState = { ...state, ...action.payload };
-      // Сохраняем в AsyncStorage
       saveProfile(newState);
       return newState;
     },
@@ -68,19 +78,22 @@ const profileSlice = createSlice({
           achievement.progress.current = action.payload.progress;
           if (achievement.progress.current >= achievement.progress.required) {
             achievement.isUnlocked = true;
+            state.lastUnlockedAchievement = achievement.id;
           }
         } else {
           achievement.isUnlocked = true;
+          state.lastUnlockedAchievement = achievement.id;
         }
       }
-      // Сохраняем в AsyncStorage
       saveProfile(state);
     },
-    incrementStats(state, action: PayloadAction<{ levelId?: string }>) {
+    clearLastUnlockedAchievement(state) {
+      state.lastUnlockedAchievement = null;
+    },
+    incrementStats(state, action: PayloadAction<{ levelId?: string; questionsInRound?: number }>) {
       state.stats.totalQuestions++;
       state.stats.totalRounds++;
       
-      // Обновляем статистику по уровням
       if (action.payload.levelId) {
         if (!state.stats.levelStats[action.payload.levelId]) {
           state.stats.levelStats[action.payload.levelId] = {
@@ -90,9 +103,20 @@ const profileSlice = createSlice({
         }
         state.stats.levelStats[action.payload.levelId].questionsAnswered++;
         state.stats.levelStats[action.payload.levelId].roundsPlayed++;
+
+        // Проверяем достижение "Душа компании"
+        const uniqueLevels = new Set(Object.keys(state.stats.levelStats)).size;
+        const socialButterfly = state.achievements.find(a => a.id === 'social_butterfly');
+        if (socialButterfly && socialButterfly.progress) {
+          socialButterfly.progress.current = uniqueLevels;
+          if (socialButterfly.progress.current >= socialButterfly.progress.required && !socialButterfly.isUnlocked) {
+            socialButterfly.isUnlocked = true;
+            state.lastUnlockedAchievement = socialButterfly.id;
+          }
+        }
       }
 
-      // Проверяем достижения
+      // Проверяем базовые достижения
       const achievements = state.achievements;
       
       // Первая игра
@@ -124,11 +148,7 @@ const profileSlice = createSlice({
         }
       }
 
-      // Сохраняем в AsyncStorage
       saveProfile(state);
-    },
-    clearLastUnlockedAchievement(state) {
-      state.lastUnlockedAchievement = null;
     },
     resetProgress(state) {
       state.stats = {
@@ -138,8 +158,6 @@ const profileSlice = createSlice({
       };
       state.achievements = initialAchievements;
       state.lastUnlockedAchievement = null;
-      
-      // Сохраняем в AsyncStorage
       saveProfile(state);
     },
     loadSavedProfile(state, action: PayloadAction<IUserProfile>) {
@@ -148,17 +166,23 @@ const profileSlice = createSlice({
   }
 });
 
+export const { 
+  updateProfile, 
+  updateAchievement,
+  incrementStats, 
+  clearLastUnlockedAchievement,
+  resetProgress,
+  loadSavedProfile
+} = profileSlice.actions;
+
 // Thunk для загрузки профиля при старте приложения
 export const initializeProfile = (): AppThunk => async (dispatch) => {
   try {
     const savedProfile = await loadProfile();
-    console.log('Initializing profile with saved data:', savedProfile); // Для отладки
     if (savedProfile) {
-      // Убедимся, что все необходимые поля присутствуют
       const completeProfile = {
-        ...initialState, // Используем initialState как базу
-        ...savedProfile, // Перезаписываем сохраненными данными
-        // Убедимся, что achievements содержат все необходимые достижения
+        ...initialState,
+        ...savedProfile,
         achievements: initialAchievements.map(achievement => {
           const savedAchievement = savedProfile.achievements?.find(a => a.id === achievement.id);
           return savedAchievement || achievement;
@@ -170,14 +194,5 @@ export const initializeProfile = (): AppThunk => async (dispatch) => {
     console.error('Error initializing profile:', error);
   }
 };
-
-export const { 
-  updateProfile, 
-  updateAchievement, 
-  incrementStats, 
-  clearLastUnlockedAchievement,
-  resetProgress,
-  loadSavedProfile 
-} = profileSlice.actions;
 
 export default profileSlice.reducer; 

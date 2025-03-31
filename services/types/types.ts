@@ -47,12 +47,21 @@ export interface QuestionLike{
 export interface IUserProfile {
 	id: string;
 	name: string;
-	bio: string;
-	interests: string[];
-	mood: string;
-	avatarId: number;
+	bio?: string;
+	interests?: string[];
+	mood?: string;
+	avatarId?: number;
+	avatarUri?: string;
+	emoji?: string;
+	backgroundColor?: string;
 	achievements: IAchievement[];
-	stats: IUserStats;
+	stats: {
+		totalRounds: number;
+		totalQuestions: number;
+		levelStats: Record<string, any>;
+	};
+	language?: 'en' | 'ru';
+	lastUnlockedAchievement?: string;
 }
 
 export interface IAchievement {

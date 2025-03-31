@@ -2,10 +2,9 @@ import React from 'react';
 import { Modal, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
-import { useTranslation } from 'react-i18next';
 import { IAchievement } from '@/services/types/types';
-import { BlurView } from 'expo-blur';
-import Fireworks from '../animations/Fireworks';
+import { useTranslation } from 'react-i18next';
+import Fireworks from '@/components/animations/Fireworks';
 
 interface AchievementModalProps {
   achievement: IAchievement | null;
@@ -20,7 +19,7 @@ const AchievementModal: React.FC<AchievementModalProps> = ({
   visible,
   onClose,
   showFireworks,
-  onFireworksFinish,
+  onFireworksFinish
 }) => {
   const { t } = useTranslation();
 
@@ -31,66 +30,56 @@ const AchievementModal: React.FC<AchievementModalProps> = ({
       transparent
       visible={visible}
       animationType="fade"
+      onRequestClose={onClose}
     >
-      <BlurView intensity={50} tint="dark" style={styles.overlay}>
-        <View style={styles.container}>
-          <View style={styles.content}>
-            <MaterialCommunityIcons
-              name={achievement.icon as any}
-              size={60}
-              color={Colors.deepBlue}
-              style={styles.icon}
-            />
-            <Text style={styles.congratsText}>{t('achievementUnlocked')}</Text>
-            <Text style={styles.title}>{achievement.title}</Text>
-            <Text style={styles.description}>{achievement.description}</Text>
-            <TouchableOpacity style={styles.button} onPress={onClose}>
-              <Text style={styles.buttonText}>{t('continue')}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-        {showFireworks && (
+      <View style={styles.modalOverlay} onTouchEnd={onClose}>
+        <View style={styles.modalContent}>
           <Fireworks
             visible={showFireworks}
             onAnimationFinish={onFireworksFinish}
           />
-        )}
-      </BlurView>
+          
+          <MaterialCommunityIcons
+            name={achievement.icon as any}
+            size={64}
+            color={Colors.deepBlue}
+            style={styles.icon}
+          />
+          
+          <Text style={styles.title}>{t('achievementUnlocked')}</Text>
+          <Text style={styles.achievementTitle}>
+            {t(`achievements_list.${achievement.id}.title`)}
+          </Text>
+          <Text style={styles.achievementDescription}>
+            {t(`achievements_list.${achievement.id}.description`)}
+          </Text>
+
+          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+            <Text style={styles.closeButtonText}>{t('continue')}</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: {
+  modalOverlay: {
     flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  container: {
-    width: '80%',
+  modalContent: {
     backgroundColor: Colors.white,
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 20,
     alignItems: 'center',
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  content: {
-    alignItems: 'center',
+    width: '80%',
+    maxWidth: 400,
   },
   icon: {
-    marginBottom: 15,
-  },
-  congratsText: {
-    fontSize: 18,
-    color: Colors.deepGray,
-    marginBottom: 10,
+    marginBottom: 20,
   },
   title: {
     fontSize: 24,
@@ -99,19 +88,26 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     textAlign: 'center',
   },
-  description: {
+  achievementTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: Colors.deepGray,
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  achievementDescription: {
     fontSize: 16,
     color: Colors.grey,
     textAlign: 'center',
     marginBottom: 20,
   },
-  button: {
+  closeButton: {
     backgroundColor: Colors.deepBlue,
-    paddingHorizontal: 30,
-    paddingVertical: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
     borderRadius: 8,
   },
-  buttonText: {
+  closeButtonText: {
     color: Colors.white,
     fontSize: 16,
     fontWeight: 'bold',

@@ -2,31 +2,32 @@ import SearchBar from "@/UI/SearchBar";
 import { IDeck } from "@/services/types/types";
 import React from "react";
 import { Platform, ScrollView, StyleSheet, View, Keyboard } from "react-native";
-import Animated from "react-native-reanimated";
+import Animated, { AnimatedRef } from "react-native-reanimated";
 import DeckItem from "../../modules/DeckItem";
 import ContentLoader, { Circle, Rect } from "react-content-loader/native";
 
 interface DeckScrollViewProps {
-  scrollRef: any;
   onSearchSubmit: () => void;
-  filteredDecks: IDeck[] | undefined;
-  decks: any;
+  scrollRef: AnimatedRef<Animated.ScrollView>;
+  filteredDecks: IDeck[];
   onSelectDeck: (deck: IDeck) => void;
   handleDismissSheet: () => void;
+  decks: IDeck[];
   isLoading: boolean;
   onChangeInput: (text: string) => void;
-  onSearchSubmit?: () => void;
+  searchValue: string;
 }
 
 const DeckScrollView: React.FC<DeckScrollViewProps> = ({
+  onSearchSubmit,
   scrollRef,
   filteredDecks,
-  decks,
   onSelectDeck,
   handleDismissSheet,
+  decks,
   isLoading,
   onChangeInput,
-  onSearchSubmit,
+  searchValue
 }) => {
   const handleScroll = () => {
     Keyboard.dismiss();
@@ -70,7 +71,11 @@ const DeckScrollView: React.FC<DeckScrollViewProps> = ({
         keyboardShouldPersistTaps="never"
       >
         <View>
-          <SearchBar onChangeInput={onChangeInput} onSearchSubmit={onSearchSubmit} />
+          <SearchBar
+            onChangeInput={onChangeInput}
+            onSearchSubmit={onSearchSubmit}
+            value={searchValue}
+          />
         </View>
         {renderContent()}
       </ScrollView>

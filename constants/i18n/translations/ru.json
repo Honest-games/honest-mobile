@@ -35,6 +35,8 @@
 	"unnamed": "Без имени",
 	"noBio": "Биография не указана",
 	"noMood": "Настроение не указано",
+	"showMore": "Показать все",
+	"showLess": "Свернуть",
 	"achievements": "Достижения",
 	"totalRounds": "Всего раундов",
 	"totalQuestions": "Всего вопросов",
@@ -46,5 +48,35 @@
 	"achievementUnlocked": "Достижение разблокировано!",
 	"continue": "Продолжить",
 	"resetProgress": "Сбросить прогресс",
-	"resetProgressDesc": "Тестовая кнопка: сбросит всю статистику и достижения"
+	"resetProgressDesc": "Тестовая кнопка: сбросит всю статистику и достижения",
+	"profile": {
+		"chooseAvatar": "Выберите аватар",
+		"takePhoto": "Сделать фото",
+		"chooseFromLibrary": "Выбрать из галереи",
+		"chooseEmoji": "Выбрать эмодзи",
+		"enterEmoji": "Введите эмодзи",
+		"camera": "Камера",
+		"gallery": "Галерея",
+		"emoji": "Эмодзи",
+		"save": "Сохранить",
+		"cancel": "Отмена"
+	},
+	"achievements_list": {
+		"first_game": {
+			"title": "Первый шаг",
+			"description": "Сыграйте свою первую игру"
+		},
+		"ten_rounds": {
+			"title": "Опытный игрок",
+			"description": "Сыграйте 10 раундов"
+		},
+		"hundred_questions": {
+			"title": "Любознательный",
+			"description": "Ответьте на 100 вопросов"
+		},
+		"social_butterfly": {
+			"title": "Душа компании",
+			"description": "Сыграйте в 5 разных уровней"
+		}
+	}
 }

@@ -61,29 +61,51 @@ const filterDecks = (decks: IDeck[], search: string) => {
 //   });
 
 const PageWithUserId = ({ userId }: { userId: string }) => {
-  // const userId = useUserId();
   const dispatch = useAppDispatch();
-  // const decks = useAppSelector((state) => state.cardsOfDecks.decks); // Из Redux
-
   const { decks, isLoadingDecks, isFetchingDecks, refetch: refetchDecks } = useDeck(userId);
-
-  const { changeLanguage } = useLanguage();
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const scrollY = useSharedValue(0);
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
-  const fadeAnimation = useSharedValue(0); // состояние для анимации появления контента
+  const fadeAnimation = useSharedValue(0);
   const animationOpacity = useSharedValue(0);
   const [searchText, setSearchText] = useState("");
   const [selectedDeck, setSelectedDeck] = useState<IDeck>();
   const [tapOnDeck, setTapOnDeck] = useState<boolean>();
   const [filteredDecks, setFilteredDecks] = useState<IDeck[]>([]);
   const [sendPromo] = useSendPromoMutation();
+  const searchTimeoutRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     if (decks) {
       setFilteredDecks(filterDecks(decks, searchText));
     }
   }, [decks, searchText]);
+
+  const handleSearchTextChange = useCallback((text: string) => {
+    setSearchText(text);
+    
+    // Очищаем предыдущий таймаут
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // Устанавливаем новый таймаут
+    searchTimeoutRef.current = setTimeout(() => {
+      if (text) {
+        sendPromo({ promo: text, userId });
+        refetchDecks();
+      }
+    }, 2000);
+  }, [userId, sendPromo, refetchDecks]);
+
+  // Очищаем таймаут при размонтировании компонента
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const { data: likes, isFetching: isFetchingLikes } = useGetAllLikesQuery(userId);
 
@@ -143,12 +165,6 @@ const PageWithUserId = ({ userId }: { userId: string }) => {
     setSelectedDeck(deck);
   };
 
-  const onSearchSubmit = () => {
-    sendPromo({ promo: searchText, userId });
-    handleScrollToTop();
-    refetchDecks();
-  };
-
   useEffect(() => {
     if (selectedDeck || tapOnDeck) {
       bottomSheetRef?.current?.present();
@@ -160,14 +176,21 @@ const PageWithUserId = ({ userId }: { userId: string }) => {
     <SafeAreaView style={styles.container}>
       <Animated.View style={[animatedOpacity, { flex: 1 }]}>
         <DeckScrollView
-          onSearchSubmit={onSearchSubmit}
+          onSearchSubmit={() => {
+            if (searchText) {
+              sendPromo({ promo: searchText, userId });
+              refetchDecks();
+            }
+            handleScrollToTop();
+          }}
           scrollRef={scrollRef}
           filteredDecks={filteredDecks}
           onSelectDeck={onSelectDeck}
           handleDismissSheet={() => bottomSheetRef.current?.dismiss()}
           decks={decks}
           isLoading={isLoadingDecks || isFetchingDecks || isFetchingLikes}
-          onChangeInput={setSearchText}
+          onChangeInput={handleSearchTextChange}
+          searchValue={searchText}
         />
       </Animated.View>
 

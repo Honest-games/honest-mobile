@@ -34,5 +34,40 @@
 	"achievementUnlocked": "Achievement Unlocked!",
 	"continue": "Continue",
 	"resetProgress": "Reset Progress",
-	"resetProgressDesc": "Test button: will reset all statistics and achievements"
+	"resetProgressDesc": "Test button: will reset all statistics and achievements",
+	"showMore": "Show all",
+	"showLess": "Show less",
+	"totalRounds": "Total Rounds",
+	"totalQuestions": "Total Questions",
+	"achievements": "Achievements",
+	"achievements_list": {
+		"first_game": {
+			"title": "First Step",
+			"description": "Play your first game"
+		},
+		"ten_rounds": {
+			"title": "Experienced Player",
+			"description": "Play 10 rounds"
+		},
+		"hundred_questions": {
+			"title": "Curious Mind",
+			"description": "Answer 100 questions"
+		},
+		"social_butterfly": {
+			"title": "Social Butterfly",
+			"description": "Play in 5 different levels"
+		}
+	},
+	"profile": {
+		"chooseAvatar": "Choose Avatar",
+		"takePhoto": "Take Photo",
+		"chooseFromLibrary": "Choose from Library",
+		"chooseEmoji": "Choose Emoji",
+		"enterEmoji": "Enter emoji",
+		"camera": "Camera",
+		"gallery": "Gallery",
+		"emoji": "Emoji",
+		"save": "Save",
+		"cancel": "Cancel"
+	}
 }
