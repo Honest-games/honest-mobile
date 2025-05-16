@@ -1,8 +1,10 @@
-# O-frontend-mobile
+# Honest-mobile
 
 Мобильное приложение на React Native (Expo) для iOS и Android.
 
-## Требования к системе
+## [Процесс разработки](./docs/dev-process.md)
+
+## Локальная установка
 
 ### Общие требования
 - Node.js 18.18 или новее
