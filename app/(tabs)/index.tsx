@@ -28,7 +28,6 @@ import Animated, {
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { setQuestionsLikesSet } from "@/store/reducer/question-like-slice";
-const { width } = Dimensions.get("window");
 
 const WithUserId = ({ children }: { children: (userId: string) => React.ReactNode }) => {
   const userId = useUserId();

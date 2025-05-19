@@ -2,6 +2,8 @@ import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
 import Colors from '@/constants/Colors';
 import { useTranslation } from 'react-i18next';
+import AllDeckMixIcon from '@/assets/images/allDeckMixIcon.svg';
+import CurrentLevelMixIcon from '@/assets/images/currentLevelMixIcon.svg';
 
 interface ShuffleDialogProps {
   visible: boolean;
@@ -33,39 +35,42 @@ const ShuffleDialog: React.FC<ShuffleDialogProps> = ({
         <View style={styles.overlay}>
           <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
             <View style={styles.dialog}>
-              <Text style={styles.title}>{t('shuffleTitle')}</Text>
+              <Text style={styles.title}>Перемешать:</Text>
               
-              <TouchableOpacity 
-                style={[
-                  styles.button,
-                  isShuffleLevelDisabled && styles.disabledButton
-                ]}
-                onPress={onShuffleLevel}
-                disabled={isShuffleLevelDisabled}
-              >
-                <Text style={[
-                  styles.buttonText,
-                  isShuffleLevelDisabled && styles.disabledButtonText
-                ]}>
-                  {t('shuffleCurrentLevel')}
-                </Text>
-              </TouchableOpacity>
-
-              {!isSingleLevel && (
-                <TouchableOpacity 
-                  style={styles.button}
+              <View style={styles.buttonGroup}>
+                <TouchableOpacity
+                  style={[styles.deckButton, /* если выбрана — styles.activeButton */]}
                   onPress={onShuffleDeck}
+                  activeOpacity={0.8}
                 >
-                  <Text style={styles.buttonText}>{t('shuffleAllLevels')}</Text>
+                  <AllDeckMixIcon width={40} height={40} />
+                  <Text style={styles.deckButtonText}>{t('shuffleAllLevels')}</Text>
                 </TouchableOpacity>
-              )}
+                <TouchableOpacity
+                  style={[
+                    styles.levelButton,
+                    isShuffleLevelDisabled && styles.disabledButton
+                  ]}
+                  onPress={onShuffleLevel}
+                  disabled={isShuffleLevelDisabled}
+                  activeOpacity={0.8}
+                >
+                  <CurrentLevelMixIcon width={40} height={40} />
+                  <Text style={[
+                    styles.levelButtonText,
+                    isShuffleLevelDisabled && styles.disabledButtonText
+                  ]}>
+                    {t('shuffleCurrentLevel')}
+                  </Text>
+                </TouchableOpacity>
+              </View>
 
-              <TouchableOpacity 
+              {/* <TouchableOpacity 
                 style={[styles.button, styles.cancelButton]}
                 onPress={onClose}
               >
                 <Text style={[styles.buttonText, styles.cancelText]}>{t('cancel')}</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
           </TouchableWithoutFeedback>
         </View>
@@ -86,13 +91,48 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     width: '80%',
-    alignItems: 'center',
   },
   title: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 20,
-    color: Colors.deepGray,
+    color: Colors.deepGray1,
+  },
+  buttonGroup: {
+    width: '100%',
+    gap: 16,
+  },
+  deckButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#B7DBCA',
+    borderRadius: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginBottom: 12,
+  },
+  deckButtonText: {
+    marginLeft: 12,
+    fontSize: 20,
+    color: '#5B5B5B',
+    fontWeight: '500',
+  },
+  levelButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#B7DBCA',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginBottom: 12,
+  },
+  levelButtonText: {
+    marginLeft: 12,
+    fontSize: 18,
+    color: '#5B5B5B',
+    fontWeight: '500',
   },
   button: {
     width: '100%',
@@ -115,10 +155,10 @@ const styles = StyleSheet.create({
     color: Colors.deepBlue,
   },
   disabledButton: {
-    backgroundColor: Colors.grey1,
+    opacity: 0.5,
   },
   disabledButtonText: {
-    color: Colors.grey,
+    color: '#B7DBCA',
   },
 });
 

@@ -10,6 +10,7 @@ import { IDeck, ILevelData } from "@/services/types/types";
 import Colors from "@/constants/Colors";
 import { FontAwesome } from "@expo/vector-icons";
 import * as Haptics from 'expo-haptics';
+import DeckLikeButton from "@/UI/DeckLikeButton";
 
 const DeckInfoTopContent = ({ deck, levels }: { deck: IDeck; levels: ILevelData[] }) => {
   const dispatch = useAppDispatch();
@@ -59,17 +60,10 @@ const DeckInfoTopContent = ({ deck, levels }: { deck: IDeck; levels: ILevelData[
           );
         })}
       </View>
-      <TouchableOpacity style={styles.likes} onPress={handleLike}>
-        <FontAwesome
-          style={{
-            marginLeft: 10,
-            marginRight: 10,
-          }}
-          name={isLiked ? "heart" : "heart-o"}
-          size={16}
-          color={Colors.deepBlue}
-        />
-      </TouchableOpacity>
+      <DeckLikeButton
+        deckId={deck.id}
+      />
+ 
     </View>
   );
 };

@@ -18,7 +18,7 @@ const AnimateSplashScreen = ({ onAnimationFinish }: ISplashScreen) => {
 				style={{ height: height, width: '100%' }}
 				ref={animation}
 				autoPlay
-				source={require('@/assets/images/anime.json')}
+				source={require('@/assets/animations/anime.json')}
 			/>
 		</View>
 	)

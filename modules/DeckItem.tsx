@@ -3,7 +3,7 @@ import { useDislikeDeckMutation, useLikeDeckMutation } from "@/services/api";
 import { addDeckId, removeDeckId } from "@/store/reducer/deck-likes-slice";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import DeckLikeButton from "../UI/DeckLikeButton";
 import DeckAdditionalButton from "../components/deck/DeckAdditionalButton";
 import DeckInfo from "../components/deck/DeckInfo";
@@ -22,7 +22,7 @@ function DeckItem({ deck, onInfoClick }: DeckProps) {
   const labels = deck.labels?.split(";");
 
   return (
-    <View style={styles.deck} key={deck.id}>
+    <TouchableOpacity style={styles.deck} key={deck.id} onPress={onInfoClick}>
       <View style={{ flexDirection: "column", margin: 12, flex: 1 }}>
         <View
           style={{
@@ -35,9 +35,9 @@ function DeckItem({ deck, onInfoClick }: DeckProps) {
 
           <DeckLikeButton deckId={deck.id} />
         </View>
-        <DeckInfo handleOpenDeckInfo={onInfoClick} imageId={deck.image_id} title={deck.name} id={deck.id} />
+        <DeckInfo imageId={deck.image_id} title={deck.name} id={deck.id} />
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 

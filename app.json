@@ -32,7 +32,25 @@
     },
     "plugins": [
       "expo-router",
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/Poppins-Regular.ttf",
+            "./assets/fonts/Makan_Hati_Cyrillic-Bold.otf"
+          ],
+          "android": {
+            "fontFamily": "MakanHatiCyrillic",
+            "fontDefinitions": [
+              {
+                "path": "./assets/fonts/Makan_Hati_Cyrillic-Bold.otf",
+                "weight": 700
+              }
+            ]
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

@@ -117,7 +117,8 @@ function AppContent() {
 
 export default function RootLayout() {
   const [fontsLoaded, fontsError] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+    Poppins: require("../assets/fonts/Poppins-Regular.ttf"),
+    MakanHatiCyrillic: require("../assets/fonts/MakanHatiCyrillic.otf"),
     ...FontAwesome.font,
   });
   const query = new QueryClient();

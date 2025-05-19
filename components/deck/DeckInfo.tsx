@@ -12,10 +12,9 @@ interface DeckInfoProps {
   title: string | undefined;
   id: string | number;
   imageId: string;
-  handleOpenDeckInfo: () => void;
 }
 
-const DeckInfo: React.FC<DeckInfoProps> = ({ title, id, imageId, handleOpenDeckInfo }) => {
+const DeckInfo: React.FC<DeckInfoProps> = ({ title, id, imageId }) => {
   const { t } = useTranslation();
   const { svgData, isLoadingImage, error: errorSvg } = useFetchDeckSvg(imageId);
   return (
@@ -41,14 +40,11 @@ const DeckInfo: React.FC<DeckInfoProps> = ({ title, id, imageId, handleOpenDeckI
 
       {!isLoadingImage && (
         <>
-          <View style={{ width: "100%", position: "absolute", bottom: 52 }}>
+          <View style={{ width: "100%", position: "absolute", bottom: 30 }}>
             <Text numberOfLines={1} style={styles.text}>
               {title?.toLowerCase()}
             </Text>
           </View>
-          <TouchableOpacity style={styles.button} onPress={handleOpenDeckInfo}>
-            <Text style={{ color: "white", fontSize: 16, marginBottom: 5 }}>{t("play")}</Text>
-          </TouchableOpacity>
         </>
       )}
     </View>

@@ -23,7 +23,7 @@ const Button: React.FC<IButton> = (props) => {
     button: {
       justifyContent: 'center',
       alignItems: 'center',
-      borderRadius: height / 2,
+      borderRadius: 8,
       height: height,
       width: size === 'large' ? '100%' : 'auto',
       backgroundColor: outline ? 'transparent' : levelBgColor ? levelBgColor : Colors.deepBlue,

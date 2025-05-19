@@ -5,9 +5,8 @@ import { useAppDispatch } from "@/features/hooks/useRedux";
 import { useGetLevelsQuery } from "@/services/api";
 import { IDeck, ILevelData } from "@/services/types/types";
 import { FontAwesome } from "@expo/vector-icons";
-import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
 import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Dimensions, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View, ViewStyle } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from "react-native";
 import { Rect, SvgXml } from "react-native-svg";
 import Loader from "./Loader";
 import { getLevelsInfo } from "@/features/converters";
@@ -16,41 +15,53 @@ import { Link } from "expo-router";
 import { hideTooltip, showTooltip } from "@/store/reducer/levels-slice";
 import DeckLevels from "./Decks/components/DeckLevels";
 import { DeckInfoTopContent } from "./Decks/components";
+import DynamicSizeBottomSheet from "../components/DynamicSizeBottomSheet";
+import { BottomSheetModal, TouchableWithoutFeedback, useBottomSheetTimingConfigs } from "@gorhom/bottom-sheet";
+import { Easing } from "react-native-reanimated";
+
 interface CustomBottomSheetModalProps {
   deck: IDeck;
   userId: string;
 }
 
 export type Ref = BottomSheetModal;
-const renderBackdrop = () => useCallback((props: any) => <BottomSheetBackdrop appearsOnIndex={0} disappearsOnIndex={-1} {...props} />, []);
-const CustomBottomSheetModal = forwardRef<Ref, CustomBottomSheetModalProps>(({ deck, userId }, ref) => {
-  const snapPoints = useMemo(() => ["77%"], []);
 
-  const dismissModal = () => {
-    if (ref && "current" in ref && ref.current) {
-      ref.current.dismiss();
-    }
-  };
+const CustomBottomSheetModal = forwardRef<Ref, CustomBottomSheetModalProps>(({ deck, userId }, ref) => {
+  const animationConfigs = useBottomSheetTimingConfigs({
+    duration: 300,
+    easing: Easing.inOut(Easing.ease),
+  });
+
+  if (!deck) {
+    return (
+      <DynamicSizeBottomSheet ref={ref} backgroundStyle={styles.bottomSheetModal} enableScroll={false} animationConfigs={animationConfigs}>
+        <Loader />
+      </DynamicSizeBottomSheet>
+    );
+  }
+
   return (
-    <BottomSheetModal
-      ref={ref}
-      index={0}
-      snapPoints={snapPoints}
-      backdropComponent={renderBackdrop()}
-      backgroundStyle={styles.bottomSheetModal}
-    >
-      <BottomSheetView style={styles.modalWrapper}>
-        <DeckInfoSheet deck={deck} userId={userId} onDismiss={dismissModal} />
-      </BottomSheetView>
-    </BottomSheetModal>
+    <DynamicSizeBottomSheet ref={ref} enableScroll={true} backgroundStyle={styles.bottomSheetModal} animationConfigs={animationConfigs}>
+      <View style={styles.modalWrapper}>
+        <DeckInfoSheet
+          deck={deck}
+          userId={userId}
+          onDismiss={() => {
+            if (ref && "current" in ref && ref.current) {
+              ref.current.dismiss();
+            }
+          }}
+        />
+      </View>
+    </DynamicSizeBottomSheet>
   );
 });
 
 const DeckInfoSheet = ({ deck, userId, onDismiss }: { deck: IDeck; userId: string; onDismiss: () => void }) => {
-  const { data: levels, isLoading, isError } = useGetLevelsQuery({ deckId: deck.id, time: useRef(Date.now()).current, clientId: userId });
+  const { data: levels, isLoading } = useGetLevelsQuery({ deckId: deck.id, time: useRef(Date.now()).current, clientId: userId });
   const levelInfo = getLevelsInfo(levels?.length ?? 0);
   const dispatch = useAppDispatch();
-
+  console.log("deck", deck);
   const [selectedLevelId, setSelectedLevelId] = useState<string | null>(null);
   const [tooltipContent, setTooltipContent] = useState<string>("");
   const [tooltipVisible, setTooltipVisible] = useState(false);
@@ -63,10 +74,10 @@ const DeckInfoSheet = ({ deck, userId, onDismiss }: { deck: IDeck; userId: strin
       }
 
       setSelectedLevelId(level.ID);
-      setTooltipContent(level.Description || "Описание недоступно");
+      setTooltipContent(level.description || "Описание недоступно");
       setTooltipVisible(true);
 
-      dispatch(showTooltip({ levelId: level.ID, content: level.Description || "" }));
+      dispatch(showTooltip({ levelId: level.ID, content: level.description || "" }));
 
       timerRef.current = setTimeout(() => {
         setTooltipVisible(false);
@@ -94,7 +105,7 @@ const DeckInfoSheet = ({ deck, userId, onDismiss }: { deck: IDeck; userId: strin
 
   return (
     <TouchableWithoutFeedback onPress={handleCloseTooltip}>
-      <View style={{ flex: 1, marginBottom: 65, gap: 20, flexDirection: "column" }}>
+      <View style={{gap: 20, marginBottom: 20}}>
         <DeckInfoTopContent levels={levels} deck={deck} />
         <DeckDescription deck={deck} />
         <LevelInfo levelInfo={levelInfo} />
@@ -114,19 +125,9 @@ const DeckInfoSheet = ({ deck, userId, onDismiss }: { deck: IDeck; userId: strin
 };
 
 const DeckDescription = ({ deck, style }: { deck: IDeck; style?: ViewStyle }) => {
-  const { svgData, isLoadingImage } = useFetchDeckSvg(deck?.image_id);
   return (
     <View style={[styles.commonInformation, style]}>
-      {isLoadingImage ? (
-        <Loader />
-      ) : svgData ? (
-        <View>
-          <SvgXml xml={svgData} width={121} height={118} />
-        </View>
-      ) : (
-        <Text>.</Text>
-      )}
-      <Text style={styles.deckTitle}>{deck.name.toLowerCase() || "Название колоды"}</Text>
+      <Text style={styles.deckTitle}>{deck.name.toUpperCase() || "Название колоды"}</Text>
       <Text style={styles.deckDescription}>{deck.description.toLowerCase() || "описание колоды"}</Text>
     </View>
   );
@@ -155,10 +156,11 @@ const styles = StyleSheet.create({
   },
 
   deckTitle: {
-    color: Colors.deepGray,
-    fontSize: 20,
-    fontWeight: "bold",
+    fontFamily: "MakanHatiCyrillic",
+    color: Colors.deepGreen,
+    fontSize: 50,
     marginTop: 17,
+    textAlign: "center",
   },
 
   deckDescription: {
@@ -171,11 +173,11 @@ const styles = StyleSheet.create({
   },
 
   bottomSheetModal: {
-    borderRadius: 32,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
   },
   modalWrapper: {
-    flex: 1,
-    width: "100%",
+    gap: 20,
     paddingHorizontal: 20,
   },
   button: {
@@ -183,8 +185,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     height: 46,
     width: 178,
-    backgroundColor: Colors.deepBlue,
-    borderRadius: 24.5,
+    backgroundColor: Colors.deepGreen,
+    borderRadius: 12,
   },
 });
 

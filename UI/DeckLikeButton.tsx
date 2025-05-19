@@ -42,7 +42,7 @@ const DeckLikeButton: React.FC<LikeButtonProps> = ({deckId}) => {
 				}}
 				name={isLiked ? 'heart' : 'heart-o'}
 				size={16}
-				color={Colors.deepBlue}
+				color={Colors.lightRed}
 			/>
 		</TouchableOpacity>
 	)
@@ -53,9 +53,10 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		justifyContent: 'center',
 		alignItems: 'center',
-		height: 20,
+		height: 40,
 		backgroundColor: '#F2F2F2',
-		borderRadius: 10
+		borderRadius: 20,
+		width: 40,
 	}
 })
 

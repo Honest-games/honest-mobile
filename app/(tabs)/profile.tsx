@@ -120,7 +120,7 @@ const ProfileScreen = () => {
           t={t}
         />
 
-        <View style={styles.languageSection}>
+        {/* <View style={styles.languageSection}>
           <Text style={styles.sectionTitle}>{t('language')}</Text>
           <View style={styles.languageToggle}>
             <Animated.View style={[styles.languageSlider, animatedStyle]} />
@@ -147,7 +147,7 @@ const ProfileScreen = () => {
               </Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </View> */}
 
         <AvatarPickerBottomSheet
           bottomSheetModalRef={avatarPickerRef}

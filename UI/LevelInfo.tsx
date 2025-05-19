@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
 		alignItems: 'center'
 	},
 	levelsInfoText: {
-		color: Colors.deepGray,
+		color: Colors.lightGrey,
 		fontSize: 12,
 		fontWeight: '400'
 	}
