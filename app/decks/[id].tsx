@@ -1,30 +1,28 @@
-import { LevelInfo } from "@/UI/LevelInfo";
-import QuestionCard, { TakeFirstCard } from "@/components/QuestionCard";
-import SwipeableCard from "@/components/SwipableCard";
-import getPanResponder from "@/components/animations";
-import { DeckTopContent } from "@/components/deck";
+import { QuestionCard, TakeFirstCard } from "@/entities/question/ui";
+import { SwipableCard } from "@/entities/card/ui";
+import { getPanResponder } from "@/features/animations/model";
 import { useDeck, useDeckId, useUserId } from "@/features/hooks";
-import { LevelButtons } from "@/modules/LevelButtons";
-import Loader from "@/modules/Loader";
+import { LevelButtons } from "@/widgets/level-list";
 import { useGetLevelsQuery, useGetQuestionQuery, useShuffleDeckMutation, useShuffleLevelMutation } from "@/services/api";
 import { IDeck, ILevelData, IQuestion, IAchievement } from "@/services/types/types";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams } from "expo-router";
 import React, { ReactNode, memo, useEffect, useRef, useState, useCallback } from "react";
 import { Animated, Dimensions, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
-import ShuffleDialog from "@/components/deck/ShuffleDialog";
 import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "@/features/hooks/useRedux";
-import { incrementStats, updateAchievement, clearLastUnlockedAchievement } from "@/store/reducer/profile-slice";
-import Fireworks from "@/components/animations/Fireworks";
-import AchievementModal from "@/components/achievements/AchievementModal";
-import ResumeDeckDialog from "@/components/deck/ResumeDeckDialog";
+import { Fireworks } from "@/shared/ui/animations";
+import { AchievementModal } from "@/features/achievements/ui";
+import { ShuffleDialog } from "@/features/deck-shuffle";
+import { clearLastUnlockedAchievement, incrementStats } from "@/entities/profile/model";
+import { ResumeDeckDialog } from "@/features/deck-resume";
+import { DeckTopContent } from "@/entities/deck/ui/deck-top-content";
+import { Loader } from "@/shared/ui/loader";
 
 const { width } = Dimensions.get("window");
 
-const CardMemo = memo(SwipeableCard);
+const CardMemo = memo(SwipableCard);
 
 export class DisplayedCardItem {
   id: number;
@@ -123,7 +121,7 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
 
   useEffect(() => {
     if (profile.lastUnlockedAchievement) {
-      const achievement = profile.achievements.find((a) => a.id === profile.lastUnlockedAchievement);
+      const achievement = profile.achievements.find((a: any) => a.id === profile.lastUnlockedAchievement);
       if (achievement) {
         setUnlockedAchievement(achievement);
         setShowAchievementModal(true);
@@ -331,7 +329,7 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
                 marginTop: 12,
               }}
             >
-              {displayDataStack.length > 0 ? (
+              {displayDataStack.length > 0 && selectedLevel ? (
                 <CardsStack
                   userId={userId}
                   displayDataStack={displayDataStack}
@@ -343,7 +341,6 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
                 <TakeFirstCard />
               )}
             </View>
-           
 
             <LevelButtons levels={levels} onButtonPress={onButtonPress} size="large" />
           </View>
@@ -385,17 +382,17 @@ function WithLoadingQuestion({
   const [question, setQuestion] = useState<IQuestion>();
   const [questionId, setQuestionId] = useState<string>();
 
-  const { data: fetchedQuestion, isFetching: isFetchingQuestion } = useGetQuestionQuery({
-    levelId: displayData.level?.ID,
+  const { data: fetchedQuestion, isFetching: isFetchingQuestion } = useGetQuestionQuery(displayData.level?.ID ? {
+    levelId: displayData.level.ID,
     clientId: userId,
     timestamp: time,
-  });
+  } : { levelId: '', clientId: userId, timestamp: time }, { skip: !displayData.level?.ID });
 
-  const { data: fetchedQuestion2, isFetching: isFetchingQuestion2 } = useGetQuestionQuery({
-    levelId: displayData.level?.ID,
+  const { data: fetchedQuestion2, isFetching: isFetchingQuestion2 } = useGetQuestionQuery(displayData.level?.ID ? {
+    levelId: displayData.level.ID,
     clientId: userId,
     timestamp: time,
-  });
+  } : { levelId: '', clientId: userId, timestamp: time }, { skip: !displayData.level?.ID });
 
   useEffect(() => {
     // Используем первый успешно загруженный вопрос
@@ -432,7 +429,7 @@ const CardsStack = ({
       const actualHandlers = isFirst && panResponder ? panResponder.panHandlers : {};
 
       return (
-        <SwipeableCard key={displayData.id} swipe={swipe} allowDrag={isFirst} {...actualHandlers}>
+        <SwipableCard key={displayData.id} swipe={swipe} allowDrag={isFirst} {...actualHandlers}>
           {displayData.shouldLoadQuestion ? (
             <WithLoadingQuestion displayData={displayData} userId={userId}>
               {(question, isFetchingQuestion, questionId) => (
@@ -447,7 +444,7 @@ const CardsStack = ({
           ) : (
             <QuestionCard displayData={displayData} />
           )}
-        </SwipeableCard>
+        </SwipableCard>
       );
     })
     .reverse();

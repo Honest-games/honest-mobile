@@ -1,0 +1,1 @@
+export { SwipableCard, tinderCardWidth } from './ui'; 

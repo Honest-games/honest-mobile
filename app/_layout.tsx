@@ -1,7 +1,6 @@
 if (__DEV__) {
 	require('../ReactotronConfig')
 }
-import { AnimateSplashScreen } from "@/components/screens";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -13,16 +12,17 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import uuid from "react-native-uuid";
 import { Provider } from "react-redux";
 import "../constants/i18n/i18n.config";
-import store from "../store/store";
+import store from "../shared/config/_providers/store";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { setSplashAnimationFinished } from "@/store/reducer/splash-animation-slice";
 import { useAppDispatch, useAppSelector } from "@/features/hooks/useRedux";
 import { setUserId } from "@/store/reducer/user-slice";
 import { useDeck } from "@/features/hooks";
 import { useGetAllLikesQuery } from "@/services/api";
-import { setContentReady } from "@/store/reducer/app-slice";
 import { setDecks } from "@/store/reducer/deck-slice";
-import { updateProfile, initializeProfile } from "@/store/reducer/profile-slice";
+import { initializeProfile, updateProfile } from "@/entities/profile/model";
+import { setSplashAnimationFinished } from "@/features/animation/model/slice";
+import { setContentReady } from "@/store/reducer/app-slice";
+import { AnimateSplashScreen } from "@/shared/ui/animations";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -89,7 +89,7 @@ function AppContent() {
       dispatch(setDecks(decks));
     }
   }, [decks, dispatch]);
-  const showAnimatedSplash = !appReady || !splashAnimationFinished || !isContentReady;
+  const showAnimatedSplash = !appReady || !splashAnimationFinished
 
   if (showAnimatedSplash) {
     return (

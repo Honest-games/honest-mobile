@@ -2,32 +2,15 @@
 import { FetchArgs, createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { IDeck, ILevelData, IQuestion } from "./types/types";
 
-// http://logotipiwe.ru/haur/api/v1/
-// const dynamicBaseQuery = async (
-// 	args: string | FetchArgs,
-// 	api: BaseQueryApi,
-// 	extraOptions: {}
-// ) => {
-// 	const version = (await AsyncStorage.getItem('language')) || 'v1'
-// 	console.log('dynamic version', version)
-// 	const baseUrl = `https://logotipiwe.ru/haur/api/v2/decks?languageCode=en
-// 	`
-
-// 	// Вызываем fetchBaseQuery с динамическим baseUrl
-// 	const baseQuery = fetchBaseQuery({ baseUrl })
-
-// 	// Выполняем запрос с обновленным baseUrl
-// 	return baseQuery(args, api, extraOptions)
-// }
-
 export const api = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({ baseUrl: "https://logotipiwe.ru/" }),
   tagTypes: ["Decks", "Levels", "Question"],
-//   refetchOnMountOrArgChange: 30,
+  //   refetchOnMountOrArgChange: 30,
   endpoints: (builder) => ({
+    // эндпоинт getDecks был перенесен в entities/deck/api/new-decks-api.ts
     getDecks: builder.query<IDeck[], any>({
-      query: (x: { language: string; clientId: string }) => `haur/api/v3/decks?languageCode=${x.language}&clientId=${x.clientId}`,
+      query: (x: { language: string; clientId: string }) => `/v3/decks?languageCode=${x.language}&clientId=${x.clientId}`,
       providesTags: (_) => ["Decks"],
     //   keepUnusedDataFor: 300,
     }),
@@ -92,16 +75,16 @@ export const api = createApi({
         };
       },
     }),
-    shuffleLevel: builder.mutation<any, {levelId: string, userId: string}>({
-      query: ({levelId, userId}) => ({
+    shuffleLevel: builder.mutation<any, { levelId: string; userId: string }>({
+      query: ({ levelId, userId }) => ({
         url: `honest/api/v1/levels/${levelId}/shuffle?clientId=${userId}`,
-        method: 'POST'
+        method: "POST",
       }),
     }),
-    shuffleDeck: builder.mutation<any, {deckId: string, userId: string}>({
-      query: ({deckId, userId}) => ({
+    shuffleDeck: builder.mutation<any, { deckId: string; userId: string }>({
+      query: ({ deckId, userId }) => ({
         url: `honest/api/v1/decks/${deckId}/shuffle?clientId=${userId}`,
-        method: 'POST'
+        method: "POST",
       }),
     }),
   }),

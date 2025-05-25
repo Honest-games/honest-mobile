@@ -2,6 +2,7 @@ import { useGetDecksQuery, useGetLevelsQuery } from '@/services/api'
 import { IDeck } from '@/services/types/types'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAppSelector } from './useRedux'
+import { useGetNewDecksQuery } from '@/entities/deck'
 
 const useDeck = (userId: string) => {
 	const language = useAppSelector(state => state.language.language)
@@ -12,8 +13,8 @@ const useDeck = (userId: string) => {
 		isFetching: isFetchingDecks,
 		refetch,
 		error
-	} = useGetDecksQuery({ language, clientId: userId })
-
+	} = useGetNewDecksQuery({ clientId: userId })
+	console.log('decks', decks)
 	return {
 		decks,
 		isLoadingDecks,

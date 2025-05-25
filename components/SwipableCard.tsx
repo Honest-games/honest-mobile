@@ -1,18 +1,6 @@
-import CardLikeButton from '@/components/card/CardLikeButton'
-import Colors from '@/constants/Colors'
-import { IQuestonLevelAndColor } from '@/features/converters/button-converters'
-import {
-	useDislikeQuestionMutation,
-	useLikeQuestionMutation
-} from '@/services/api'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import React, { memo, useEffect, useState } from 'react'
+import React, { memo } from 'react'
 import { Animated, Dimensions, StyleSheet, View } from 'react-native'
-import { SharedValue } from 'react-native-reanimated'
-import CardText from './card/CardText'
-import CardTopContent from './card/CardTopContent'
-import Loader from '../modules/Loader'
-import {all} from "deepmerge";
+
 
 const { height } = Dimensions.get('screen')
 const screenWidth = Dimensions.get('screen').width

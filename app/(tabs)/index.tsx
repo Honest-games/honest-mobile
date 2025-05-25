@@ -1,25 +1,17 @@
-import DeckScrollView from "@/components/deck/DeckScrollView";
-import { getLevelsInfo } from "@/features/converters";
+import { DeckScrollView } from "@/entities/deck/ui/deck-scroll-view";
 import { useDeck, useUserId } from "@/features/hooks";
-import useLanguage from "@/features/hooks/useLanguage";
-import { useAppDispatch, useAppSelector } from "@/features/hooks/useRedux";
-import CustomBottomSheetModal from "@/modules/CustomBottomSheetModal";
-import Loader from "@/modules/Loader";
+import { useAppDispatch } from "@/features/hooks/useRedux";
+import { setQuestionsLikesSet } from "@/features/question-likes/model/slice";
+import { DeckBottomSheetModal } from "@/pages/deck-bottom-sheet/ui";
 import { useGetAllLikesQuery, useSendPromoMutation } from "@/services/api";
 import { IDeck } from "@/services/types/types";
 import { setDecksLikesSet } from "@/store/reducer/deck-likes-slice";
 
-import SearchBar from "@/UI/SearchBar";
-import Switcher from "@/UI/Switcher";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Dimensions, Platform, StyleSheet, View } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
-  Extrapolate,
-  interpolate,
-  SharedValue,
   useAnimatedRef,
   useAnimatedScrollHandler,
   useAnimatedStyle,
@@ -27,7 +19,6 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { setQuestionsLikesSet } from "@/store/reducer/question-like-slice";
 
 const WithUserId = ({ children }: { children: (userId: string) => React.ReactNode }) => {
   const userId = useUserId();
@@ -80,22 +71,25 @@ const PageWithUserId = ({ userId }: { userId: string }) => {
     }
   }, [decks, searchText]);
 
-  const handleSearchTextChange = useCallback((text: string) => {
-    setSearchText(text);
-    
-    // Очищаем предыдущий таймаут
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
+  const handleSearchTextChange = useCallback(
+    (text: string) => {
+      setSearchText(text);
 
-    // Устанавливаем новый таймаут
-    searchTimeoutRef.current = setTimeout(() => {
-      if (text) {
-        sendPromo({ promo: text, userId });
-        refetchDecks();
+      // Очищаем предыдущий таймаут
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
       }
-    }, 2000);
-  }, [userId, sendPromo, refetchDecks]);
+
+      // Устанавливаем новый таймаут
+      searchTimeoutRef.current = setTimeout(() => {
+        if (text) {
+          sendPromo({ promo: text, userId });
+          refetchDecks();
+        }
+      }, 2000);
+    },
+    [userId, sendPromo, refetchDecks],
+  );
 
   // Очищаем таймаут при размонтировании компонента
   useEffect(() => {
@@ -183,17 +177,17 @@ const PageWithUserId = ({ userId }: { userId: string }) => {
             handleScrollToTop();
           }}
           scrollRef={scrollRef}
-          filteredDecks={filteredDecks}
+          filteredDecks={filteredDecks || []}
           onSelectDeck={onSelectDeck}
           handleDismissSheet={() => bottomSheetRef.current?.dismiss()}
-          decks={decks}
+          decks={decks || []}
           isLoading={isLoadingDecks || isFetchingDecks || isFetchingLikes}
           onChangeInput={handleSearchTextChange}
           searchValue={searchText}
         />
       </Animated.View>
 
-      {selectedDeck && <CustomBottomSheetModal deck={selectedDeck} ref={bottomSheetRef} userId={userId} />}
+      {selectedDeck && <DeckBottomSheetModal deck={selectedDeck} ref={bottomSheetRef} userId={userId} />}
     </SafeAreaView>
   );
 };
@@ -217,4 +211,4 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 25,
   },
-});
+}); 

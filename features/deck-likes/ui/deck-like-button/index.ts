@@ -1,0 +1,1 @@
+export { DeckLikeButton } from './deck-like-button'; 

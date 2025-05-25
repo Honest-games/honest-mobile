@@ -7,19 +7,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Colors from '@/constants/Colors';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '@/features/hooks/useRedux';
-import { updateProfile } from '@/store/reducer/profile-slice';
+import { updateProfile } from '@/entities/profile/model';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import AvatarPickerBottomSheet from '@/components/profile/AvatarPickerBottomSheet';
+import { AvatarPickerBottomSheet } from '@/features/profile-edit/ui/avatar-picker-bottom-sheet';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming
 } from 'react-native-reanimated';
-import { setLanguage } from '@/store/reducer/language-slice';
-import Avatar from '@/components/profile/Avatar';
-import Statistics from '@/components/profile/Statistics';
-import AchievementsList from '@/components/profile/AchievementsList';
-import EmojiPicker from '@/components/profile/EmojiPicker';
+import { setLanguage } from '@/features/language/model';
+import { Avatar } from '@/features/profile-edit/ui/avatar';
+import { Statistics } from '@/entities/profile/ui/statistics';
+import { AchievementsList } from '@/entities/achievement/ui/achievements-list';
+import { EmojiPicker } from '@/shared/ui/emoji-picker';
 import { changeLanguage } from '@/constants/i18n/i18n.config';
 
 const ProfileScreen = () => {
@@ -120,7 +120,7 @@ const ProfileScreen = () => {
           t={t}
         />
 
-        {/* <View style={styles.languageSection}>
+        <View style={styles.languageSection}>
           <Text style={styles.sectionTitle}>{t('language')}</Text>
           <View style={styles.languageToggle}>
             <Animated.View style={[styles.languageSlider, animatedStyle]} />
@@ -147,7 +147,7 @@ const ProfileScreen = () => {
               </Text>
             </TouchableOpacity>
           </View>
-        </View> */}
+        </View>
 
         <AvatarPickerBottomSheet
           bottomSheetModalRef={avatarPickerRef}

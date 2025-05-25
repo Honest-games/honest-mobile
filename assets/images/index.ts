@@ -1,4 +1,4 @@
-export { default as notFoundImage } from './notFoundImage.svg'
-export { default as notFoundText } from './notFoundText.svg'
-export { default as currentLevelMixIcon } from './currentLevelMixIcon.svg'
-export { default as allDecksMixIcon } from './allDecksMixIcon.svg'
+export { default as NotFoundImage } from './notFoundImage.svg'
+export { default as NotFoundText } from './notFoundText.svg'
+export { default as CurrentLevelMixIcon } from './currentLevelMixIcon.svg'
+export { default as AllDecksMixIcon } from './allDeckMixIcon.svg'

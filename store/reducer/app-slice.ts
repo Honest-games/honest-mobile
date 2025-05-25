@@ -20,4 +20,4 @@ const appSlice = createSlice({
 });
 
 export const { setContentReady } = appSlice.actions;
-export default appSlice.reducer;
+export default appSlice.reducer; 

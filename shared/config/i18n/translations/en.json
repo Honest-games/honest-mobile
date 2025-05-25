@@ -1,0 +1,73 @@
+{
+	"welcome": "Welcome",
+	"message": "Hello, this is a message",
+	"play": "play",
+	"levelInfoThree": "there is gonna be 3 levels",
+	"levelInfoTwo": "there is gonna be 2 levels",
+	"levelInfoOne": "there is gonna be 1 level",
+	"levelInfoEmpty": "Error no level found",
+	"firstCard": "take first card by pressing on needed level button",
+	"chooseLevel": "choose level",
+	"chooseLevelContinue": "Choose a card to continue",
+	"searchBarPlaceholder": "search",
+	"favoritesSoon": "The Favorites will be available soon!",
+	"favoritesSoonDesc": "You will be able to add entire decks and individual cards with questions!",
+	"lkSoon": "Personal account will be available here soon!",
+	"lkSoonDesc": "You will be able to save progress and navigate to settings",
+	"levelCardsShuffled": "Level cards shuffled. Swipe to continue",
+	"allLevelsShuffled": "All levels shuffled. Choose any level",
+	"shuffleTitle": "Shuffle Cards",
+	"shuffleCurrentLevel": "Shuffle Current Level",
+	"shuffleAllLevels": "Shuffle Deck",
+	"cancel": "Cancel",
+	"profileComingSoon": "Profile Features Coming Soon!",
+	"profileComingSoonDesc": "Soon you'll be able to customize your profile, add bio, and track your progress",
+	"statistics": "Statistics",
+	"statisticsComingSoon": "Statistics Coming Soon!",
+	"statisticsComingSoonDesc": "Track your games, favorite questions, and achievements",
+	"settings": "Settings",
+	"language": "Language",
+	"editProfile": "Edit Profile",
+	"name": "Name",
+	"bio": "About",
+	"mood": "Mood",
+	"achievementUnlocked": "Achievement Unlocked!",
+	"continue": "Continue",
+	"resetProgress": "Reset Progress",
+	"resetProgressDesc": "Test button: will reset all statistics and achievements",
+	"showMore": "Show all",
+	"showLess": "Show less",
+	"totalRounds": "Total Rounds",
+	"totalQuestions": "Total Questions",
+	"achievements": "Achievements",
+	"achievements_list": {
+		"first_game": {
+			"title": "First Step",
+			"description": "Play your first game"
+		},
+		"ten_rounds": {
+			"title": "Experienced Player",
+			"description": "Play 10 rounds"
+		},
+		"hundred_questions": {
+			"title": "Curious Mind",
+			"description": "Answer 100 questions"
+		},
+		"social_butterfly": {
+			"title": "Social Butterfly",
+			"description": "Play in 5 different levels"
+		}
+	},
+	"profile": {
+		"chooseAvatar": "Choose Avatar",
+		"takePhoto": "Take Photo",
+		"chooseFromLibrary": "Choose from Library",
+		"chooseEmoji": "Choose Emoji",
+		"enterEmoji": "Enter emoji",
+		"camera": "Camera",
+		"gallery": "Gallery",
+		"emoji": "Emoji",
+		"save": "Save",
+		"cancel": "Cancel"
+	}
+} 

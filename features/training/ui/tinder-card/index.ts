@@ -1,0 +1,1 @@
+export { TinderCard } from './tinder-card'; 

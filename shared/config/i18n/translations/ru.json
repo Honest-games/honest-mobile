@@ -1,0 +1,82 @@
+{
+	"welcome": "Добро пожаловать",
+	"message": "Привет, это сообщение",
+	"play": "начать",
+	"levelInfoThree": "в этой колоде 3 уровня",
+	"levelInfoTwo": "в этой колоде 2 уровня",
+	"levelInfoOne": "в этой колоде 1 уровень",
+	"levelInfoEmpty": "Ошибка загрузки уровня",
+	"firstCard": "возьмите первую карту, нажав на нужный уровень",
+	"chooseLevel": "Выберите уровень",
+	"chooseLevelContinue": "Вытяните карту чтобы продолжить",
+	"searchBarPlaceholder": "поиск колоды",
+	"favoritesSoon": "Скоро тут будет избранное!",
+	"favoritesSoonDesc": "Можно будет добавлять целые колоды и отдельные карточки с вопросами",
+		"lkSoon": "Скоро тут будет личный кабинет!",
+	"lkSoonDesc": "Можно будет сохранять прогресс лазать в настройках",
+	"levelCardsShuffled": "Карты уровня перемешаны. Смахните чтобы продолжить",
+	"allLevelsShuffled": "Все уровни перемешаны. Выберите любой уровень",
+	"shuffleTitle": "Перемешать карты",
+	"shuffleCurrentLevel": "Перемешать текущий уровень",
+	"shuffleAllLevels": "Перемешать колоду",
+	"cancel": "Отмена",
+	"profileComingSoon": "Функции профиля скоро появятся!",
+	"profileComingSoonDesc": "Скоро вы сможете настроить профиль, добавить описание и отслеживать прогресс",
+	"statistics": "Статистика",
+	"statisticsComingSoon": "Статистика скоро появится!",
+	"statisticsComingSoonDesc": "Отслеживайте свои игры, любимые вопросы и достижения",
+	"settings": "Настройки",
+	"language": "Язык",
+	"enterName": "Введите имя",
+	"enterBio": "Расскажите о себе",
+	"enterMood": "Как ваше настроение?",
+	"save": "Сохранить",
+	"edit": "Редактировать",
+	"unnamed": "Без имени",
+	"noBio": "Биография не указана",
+	"noMood": "Настроение не указано",
+	"showMore": "Показать все",
+	"showLess": "Свернуть",
+	"achievements": "Достижения",
+	"totalRounds": "Всего раундов",
+	"totalQuestions": "Всего вопросов",
+	"chooseAvatar": "Выберите аватар",
+	"editProfile": "Редактировать профиль",
+	"name": "Имя",
+	"bio": "О себе",
+	"mood": "Настроение",
+	"achievementUnlocked": "Достижение разблокировано!",
+	"continue": "Продолжить",
+	"resetProgress": "Сбросить прогресс",
+	"resetProgressDesc": "Тестовая кнопка: сбросит всю статистику и достижения",
+	"profile": {
+		"chooseAvatar": "Выберите аватар",
+		"takePhoto": "Сделать фото",
+		"chooseFromLibrary": "Выбрать из галереи",
+		"chooseEmoji": "Выбрать эмодзи",
+		"enterEmoji": "Введите эмодзи",
+		"camera": "Камера",
+		"gallery": "Галерея",
+		"emoji": "Эмодзи",
+		"save": "Сохранить",
+		"cancel": "Отмена"
+	},
+	"achievements_list": {
+		"first_game": {
+			"title": "Первый шаг",
+			"description": "Сыграйте свою первую игру"
+		},
+		"ten_rounds": {
+			"title": "Опытный игрок",
+			"description": "Сыграйте 10 раундов"
+		},
+		"hundred_questions": {
+			"title": "Любознательный",
+			"description": "Ответьте на 100 вопросов"
+		},
+		"social_butterfly": {
+			"title": "Душа компании",
+			"description": "Сыграйте в 5 разных уровней"
+		}
+	}
+} 

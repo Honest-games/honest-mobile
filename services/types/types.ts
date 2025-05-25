@@ -2,13 +2,17 @@ export interface IDeck {
 	id: string;
 	languageCode: string;
 	name: string;
-	emoji: string;
+	emoji?: string;
 	description: string;
-	labels: string;
-	image_id: string;
-	cardsCount: number;
-	hidden: boolean;
-	promo: string;
+	labels: string[];
+	imageId: string;
+	backgroundImageId: string | null;
+	modalImageId: string | null;
+	aiType: string;
+	color: string;
+	cardsCount?: number;
+	hidden?: boolean;
+	promo?: string;
 }
 
 export interface IQuestion {

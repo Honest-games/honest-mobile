@@ -1,0 +1,1 @@
+export { DeckInfoTopContent } from "./deck-top-content";
