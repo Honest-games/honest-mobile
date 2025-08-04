@@ -4,7 +4,8 @@ import { getPanResponder } from "@/features/animations/model";
 import { useDeck, useDeckId, useUserId } from "@/features/hooks";
 import { LevelButtons } from "@/widgets/level-list";
 import { useGetLevelsQuery, useGetQuestionQuery, useShuffleDeckMutation, useShuffleLevelMutation } from "@/services/api";
-import { IDeck, ILevelData, IQuestion, IAchievement } from "@/services/types/types";
+import { IDeck, ILevelData, IQuestion } from "@/services/types/types";
+import { IAchievement } from "@/entities/achievement/model/types";
 import { useLocalSearchParams } from "expo-router";
 import React, { ReactNode, memo, useEffect, useRef, useState, useCallback } from "react";
 import { Animated, Dimensions, StyleSheet, View } from "react-native";
@@ -12,7 +13,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "@/features/hooks/useRedux";
-import { Fireworks } from "@/shared/ui/animations";
 import { AchievementModal } from "@/features/achievements/ui";
 import { ShuffleDialog } from "@/features/deck-shuffle";
 import { clearLastUnlockedAchievement, incrementStats } from "@/entities/profile/model";
@@ -121,7 +121,7 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
 
   useEffect(() => {
     if (profile.lastUnlockedAchievement) {
-      const achievement = profile.achievements.find((a: any) => a.id === profile.lastUnlockedAchievement);
+      const achievement = profile.achievements.find((a: IAchievement) => a.id === profile.lastUnlockedAchievement);
       if (achievement) {
         setUnlockedAchievement(achievement);
         setShowAchievementModal(true);
@@ -356,8 +356,7 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
         isSingleLevel={levels.length === 1}
       />
       <ResumeDeckDialog visible={isResumeDialogVisible} onClose={handleResumeDialogClose} onStartOver={handleStartOver} />
-      <Fireworks visible={showFireworks} onAnimationFinish={handleFireworksFinish} />
-
+      
       <AchievementModal
         achievement={unlockedAchievement}
         visible={showAchievementModal}
