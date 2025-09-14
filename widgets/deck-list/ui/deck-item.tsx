@@ -4,7 +4,7 @@ import { IDeck } from "@/services/types/types";
 import { DeckInfo } from "@/entities/deck/ui/deck-info";
 import { DeckLabelList } from "@/entities/deck/ui/deck-label-list";
 import useFetchDeckSvg from "@/features/hooks/useFetchDeckSvg";
-import { SvgXml } from "react-native-svg";
+import Svg, { Circle, Defs, Mask, Rect, SvgXml } from "react-native-svg";
 
 export interface DeckItemProps {
   deck: IDeck;
@@ -14,27 +14,36 @@ export interface DeckItemProps {
 }
 
 export const DeckItem: React.FC<DeckItemProps> = ({ deck, onInfoClick }) => {
-  const labels = Array.isArray(deck.labels) ? deck.labels : [];
-  
-  // Получаем фоновое изображение, если оно есть
-  const { svgData: backgroundSvg, isLoadingImage: isLoadingBackground } = 
-    useFetchDeckSvg(deck.backgroundImageId || undefined);
-  
-  // Проверка на валидность SVG
-  const isValidSvg = React.useMemo(() => {
-    if (!backgroundSvg) return false;
-    return backgroundSvg.trim().startsWith('<svg') || backgroundSvg.trim().startsWith('<?xml');
-  }, [backgroundSvg]);
-  
-  const hasBackgroundImage = !!deck.backgroundImageId && !isLoadingBackground && isValidSvg;
+  const labels = deck.labels || [];
+  const { svgData, isLoadingImage, error } = useFetchDeckSvg(deck.backgroundImageId || "");
+  const isValidSvg = typeof svgData === "string" && svgData.trim().toLowerCase().startsWith("<svg");
+  if (deck.backgroundImageId && deck.backgroundImageId !== null) {
+    return (
+      <TouchableOpacity style={styles.deckWithSvg} key={deck.id} onPress={onInfoClick}>
+        <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
+          <Defs>
+            <Mask id="cutoutMask">
+              <Rect width="100%" height="100%" fill="white" />
+              <Circle r="20" cx="95%" cy="5%" fill="white" />
+            </Mask>
+          </Defs>
+          <Rect width="100%" height="100%" fill="white" mask="url(#cutoutMask)" />
+          {isValidSvg ? (
+            <SvgXml xml={svgData} width="100%" height="100%" preserveAspectRatio="xMidYMid slice" />
+          ) : null}
+        </Svg>
+        
+      </TouchableOpacity>
+    );
+  }
 
   return (
     <TouchableOpacity style={styles.deck} key={deck.id} onPress={onInfoClick}>
-      {hasBackgroundImage && (
+      {/* {isLoadingImage && (
         <View style={styles.backgroundImageContainer}>
-          <SvgXml xml={backgroundSvg} width="100%" height="100%" />
+          <SvgXml xml={svgData} width="100%" height="100%" />
         </View>
-      )}
+      )} */}
       <View style={{ flexDirection: "column", margin: 12, flex: 1 }}>
         <View
           style={{
@@ -46,7 +55,7 @@ export const DeckItem: React.FC<DeckItemProps> = ({ deck, onInfoClick }) => {
           <DeckLabelList labels={labels} />
           {/* <DeckLikeButton deckId={deck.id} /> */}
         </View>
-        <DeckInfo imageId={deck.imageId} title={deck.name} id={deck.id} />
+        <DeckInfo imageId={deck.imageId} title={deck.name} id={deck.id} handleOpenDeckInfo={onInfoClick} />
       </View>
     </TouchableOpacity>
   );
@@ -73,4 +82,27 @@ const styles = StyleSheet.create({
     bottom: 0,
     zIndex: 0,
   },
-}); 
+  deckWithSvg: {
+    flex: 1,
+    position: "relative",
+    height: 221,
+    borderRadius: 20,
+    width: "100%",
+    backgroundColor: "white",
+    overflow: "hidden",
+    marginTop: 20,
+  },
+  contentOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+   
+  },
+  topContent: {
+    justifyContent: "space-between",
+    flexDirection: "row",
+    width: "100%",
+  },
+});

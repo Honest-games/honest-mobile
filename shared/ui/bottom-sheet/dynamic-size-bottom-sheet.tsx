@@ -3,6 +3,7 @@ import { StyleProp, ViewStyle } from "react-native";
 import { BottomSheetBackdrop, BottomSheetBackdropProps, BottomSheetModal, BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { WithSpringConfig, WithTimingConfig } from "react-native-reanimated";
 import { CustomBottomSheet } from "./custom-bottom-sheet";
+import { Backdrop } from "../backdrop";
 
 interface IProps {
   onClose?: () => void;
@@ -18,9 +19,6 @@ interface IProps {
 }
 
 const DEFAULT_BOTTOM_INSET = 0;
-
-const renderBackdrop = (props: BottomSheetBackdropProps) => <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />;
-
 
 export const DynamicSizeBottomSheet = forwardRef<BottomSheetModal, PropsWithChildren<IProps>>(
   (
@@ -45,7 +43,7 @@ export const DynamicSizeBottomSheet = forwardRef<BottomSheetModal, PropsWithChil
       enableDynamicSizing
       onDismiss={onClose}
       backgroundStyle={backgroundStyle}
-      backdropComponent={showBackdrop ? renderBackdrop : null}
+      backdropComponent={showBackdrop ? Backdrop : null}
       containerStyle={[containerStyle]}
       enablePanDownToClose={enablePanDownToClose}
       handleStyle={enablePanDownToClose ? undefined : { display: 'none' }}

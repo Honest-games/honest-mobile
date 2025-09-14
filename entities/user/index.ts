@@ -1,2 +1,4 @@
 // Модель
-export type { IUserProfile, IAchievement, IUserStats } from './model/types'; 
+export type { IUserProfile, IAchievement, IUserStats } from './model/types';
+// API
+export * from './api/user-api'; 

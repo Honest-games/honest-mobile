@@ -1,20 +1,19 @@
-import { useGetDecksQuery, useGetLevelsQuery } from '@/services/api'
+import { useGetDecksQuery } from '@/entities/deck'
+import { useGetLevelsQuery } from '@/entities/level'
 import { IDeck } from '@/services/types/types'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAppSelector } from './useRedux'
-import { useGetNewDecksQuery } from '@/entities/deck'
 
 const useDeck = (userId: string) => {
 	const language = useAppSelector(state => state.language.language)
-	// const timestampRef = useRef(Date.now()).current
 	const {
 		data: decks,
 		isLoading: isLoadingDecks,
 		isFetching: isFetchingDecks,
 		refetch,
 		error
-	} = useGetNewDecksQuery({ clientId: userId })
-	console.log('decks', decks)
+	} = useGetDecksQuery({ clientId: userId })
+	console.log("decks", decks)
 	return {
 		decks,
 		isLoadingDecks,

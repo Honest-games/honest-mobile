@@ -3,9 +3,10 @@ import { useDeck, useUserId } from "@/features/hooks";
 import { useAppDispatch } from "@/features/hooks/useRedux";
 import { setQuestionsLikesSet } from "@/features/question-likes/model/slice";
 import { DeckBottomSheetModal } from "@/pages/deck-bottom-sheet/ui";
-import { useGetAllLikesQuery, useSendPromoMutation } from "@/services/api";
-import { IDeck } from "@/services/types/types";
-import { setDecksLikesSet } from "@/store/reducer/deck-likes-slice";
+import { useSendPromoMutation } from "@/entities/user";
+import { useGetAllLikesQuery } from "@/features/deck-likes";
+import { IDeck } from "@/entities/deck/model/types";
+import { setDecksLikesSet } from "@/features/deck-likes/model/slice";
 
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -35,7 +36,7 @@ const Page = () => {
 
 const filterDecks = (decks: IDeck[], search: string) => {
   return decks.filter((d) => {
-    return d.name.toLowerCase().includes(search.toLowerCase()) || d.promo.toLowerCase().includes(search.toLowerCase());
+    return d.name.toLowerCase().includes(search.toLowerCase()) || (d.promo?.toLowerCase() || '').includes(search.toLowerCase());
   });
 };
 
@@ -164,7 +165,6 @@ const PageWithUserId = ({ userId }: { userId: string }) => {
       setTapOnDeck(false);
     }
   }, [selectedDeck, tapOnDeck]);
-
   return (
     <SafeAreaView style={styles.container}>
       <Animated.View style={[animatedOpacity, { flex: 1 }]}>

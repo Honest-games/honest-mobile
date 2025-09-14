@@ -5,9 +5,9 @@ import uuid from "react-native-uuid";
 import { useDeck, useUserId } from "@/features/hooks";
 import { IDeck } from "@/services/types/types";
 import { useAppDispatch } from "./useRedux";
-import { useGetAllLikesQuery } from "@/services/api";
-import { setDecksLikesSet } from "@/store/reducer/deck-likes-slice";
-import { setQuestionsLikesSet } from "@/store/reducer/question-like-slice";
+import { useGetAllLikesQuery } from "@/features/deck-likes";
+import { setDecksLikesSet } from "@/features/deck-likes/model/slice";
+import { setQuestionsLikesSet } from "@/features/question-likes/model/slice";
 
 interface UseInitializeDataProps {
   onDataReady: () => void;

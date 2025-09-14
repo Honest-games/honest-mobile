@@ -2,7 +2,7 @@ import { DisplayedCardItem } from "@/app/decks/[id]";
 import Colors from "@/constants/Colors";
 import { getLevelColor } from "@/features/converters/button-converters";
 import { useAppDispatch, useAppSelector } from "@/features/hooks/useRedux";
-import { useDislikeQuestionMutation, useLikeQuestionMutation } from "@/services/api";
+import { useDislikeQuestionMutation, useLikeQuestionMutation } from "@/features/question-likes";
 import { IQuestion } from "@/services/types/types";
 import { addQuestionId, removeQuestionId } from "@/features/question-likes/model/slice";
 import React, { useEffect, useState } from "react";
@@ -66,7 +66,7 @@ const QuestionCard = (props: QuestionCardProps) => {
     );
   }
 
-  const color = displayData.level ? getLevelColor(displayData.level.ColorButton) : undefined;
+  	const color = displayData.level ? getLevelColor(displayData.level.color) : undefined;
 
   return (
     <View style={styles.questionCardWrapper}>
@@ -87,7 +87,7 @@ const QuestionCard = (props: QuestionCardProps) => {
           <Loader />
         )}
       </View>
-      {displayData.level && <CardLikeButton color={color} handleLike={handleLike} isLiked={like} />}
+      {displayData.level && <CardLikeButton color={color || 'rgb(0,0,0)'} handleLike={handleLike} isLiked={like} />}
     </View>
   );
 };

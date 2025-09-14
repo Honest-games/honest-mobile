@@ -2,7 +2,6 @@ export interface IDeck {
 	id: string;
 	languageCode: string;
 	name: string;
-	emoji?: string;
 	description: string;
 	labels: string[];
 	imageId: string;
@@ -10,6 +9,7 @@ export interface IDeck {
 	modalImageId: string | null;
 	aiType: string;
 	color: string;
+	emoji?: string;
 	cardsCount?: number;
 	hidden?: boolean;
 	promo?: string;
@@ -23,19 +23,17 @@ export interface IQuestion {
 }
 
 export interface ILevelData {
-	ColorButton: string; // предполагаем, что это строка в формате 'r,g,b'
-	ColorEnd: string; // также строка в формате 'r,g,b'
-	ColorStart: string; // аналогично строка в формате 'r,g,b'
-	DeckID: string; // или number, если это числовой ID
-	ID: string; // UUID, так что это строка
-	LevelOrder: number; // числовое значение
-	Name: string; // строка с названием
-	emoji: string; // строка с эмодзи
+	id: string;
+	deckId: string;
+	order: number;
+	name: string;
+	description: string;
 	counts: {
-		questionsCount: number,
-		openedQuestionsCount: number
+		questionsCount: number;
+		openedQuestionsCount: number;
 	};
-	description: string
+	color: string;
+	cardBackgroundImageId: string | null;
 }
 
 export interface DeckLike{

@@ -38,13 +38,13 @@
         {
           "fonts": [
             "./assets/fonts/Poppins-Regular.ttf",
-            "./assets/fonts/Makan_Hati_Cyrillic-Bold.otf"
+            "./assets/fonts/MakanHatiCyrillic.otf"
           ],
           "android": {
             "fontFamily": "MakanHatiCyrillic",
             "fontDefinitions": [
               {
-                "path": "./assets/fonts/Makan_Hati_Cyrillic-Bold.otf",
+                "path": "./assets/fonts/MakanHatiCyrillic.otf",
                 "weight": 700
               }
             ]

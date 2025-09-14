@@ -1,24 +1,22 @@
 // store.ts
-import { api } from '@/services/api'
+import { api } from '@shared/api'
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
 import { setupListeners } from '@reduxjs/toolkit/query'
 import { enableMapSet } from 'immer'
 import { useDispatch } from 'react-redux'
-import deckLikeReducer from '../../../store/reducer/deck-likes-slice'
-import cardsOfDeckReducer from '../../../store/reducer/deck-slice'
+import deckLikeReducer from '@/features/deck-likes/model/slice'
+import cardsOfDeckReducer from '@/entities/deck/model/slice'
 import languageReducer from '@/features/language/model/slice'
 import { questionLikesReducer } from '@/features/question-likes/model'
 import { levelsReducer } from '@/entities/level/model' 
-import userReducer from '../../../store/reducer/user-slice'
+import userReducer from '@/entities/user/model/slice'
 import { splashReducer } from '@/features/animation/model/slice'
 import { profileReducer } from '@/entities/profile/model'
 import { ThunkAction, Action } from '@reduxjs/toolkit'
-import appReducer from '../../../store/reducer/app-slice'
-import { newDecksApi } from '@/entities/deck'
+import appReducer from '../app-slice'
 
 const rootReducer = combineReducers({
 	[api.reducerPath]: api.reducer,
-	[newDecksApi.reducerPath]: newDecksApi.reducer,
 	cardsOfDeck: cardsOfDeckReducer,
 	language: languageReducer,
 	decksLikes: deckLikeReducer,
@@ -38,7 +36,7 @@ const store = configureStore({
 		getDefaultMiddleware({
 			immutableCheck: false,
 			serializableCheck: false
-		}).concat(api.middleware, newDecksApi.middleware)
+		}).concat(api.middleware)
 })
 setupListeners(store.dispatch)
 

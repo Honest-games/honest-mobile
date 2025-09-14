@@ -1,4 +1,4 @@
-import { ILevelData } from '@/services/types/types'
+import { ILevelData } from '@/entities/level'
 import { useEffect, useState } from 'react'
 
 type Question = {
@@ -28,8 +28,8 @@ const useQuestionSelector = (
 		const newUsedQuestions = new Map<string, Set<string>>()
 
 		levels?.forEach(level => {
-			newQuestionsMap.set(level.ID, [])
-			newUsedQuestions.set(level.ID, new Set())
+			newQuestionsMap.set(level.id, [])
+			newUsedQuestions.set(level.id, new Set())
 		})
 
 		questions.forEach(question => {

@@ -1,7 +1,7 @@
 
 import { useAppDispatch } from "@/features/hooks/useRedux";
-import { useGetLevelsQuery } from "@/services/api";
-import { IDeck, ILevelData } from "@/services/types/types";
+import { useGetLevelsQuery, ILevelData } from "@/entities/level";
+import { IDeck } from "@/services/types/types";
 import React, { forwardRef, useCallback, useRef, useState } from "react";
 import { Text, TouchableOpacity, View, ViewStyle } from "react-native";
 
@@ -57,8 +57,10 @@ export const DeckBottomSheetModal = forwardRef<Ref, CustomBottomSheetModalProps>
 });
 
 const DeckInfoSheet = ({ deck, userId, onDismiss }: { deck: IDeck; userId: string; onDismiss: () => void }) => {
-  const { data: levels, isLoading } = useGetLevelsQuery({ deckId: deck.id, time: useRef(Date.now()).current, clientId: userId });
+  const { data: levels, isLoading, isError } = useGetLevelsQuery({ deckId: deck.id, clientId: userId });
+  console.log("levels", levels)
   const levelInfo = getLevelsInfo(levels?.length ?? 0);
+  console.log("levelInfo", levelInfo)
   const dispatch = useAppDispatch();
   console.log("deck", deck);
   const [selectedLevelId, setSelectedLevelId] = useState<string | null>(null);
@@ -72,18 +74,11 @@ const DeckInfoSheet = ({ deck, userId, onDismiss }: { deck: IDeck; userId: strin
         clearTimeout(timerRef.current);
       }
 
-      setSelectedLevelId(level.ID);
+      setSelectedLevelId(level.id);
       setTooltipContent(level.description || "Описание недоступно");
       setTooltipVisible(true);
 
-      dispatch(showTooltip({ levelId: level.ID, content: level.description || "" }));
-
-      timerRef.current = setTimeout(() => {
-        setTooltipVisible(false);
-        setSelectedLevelId(null);
-        dispatch(hideTooltip());
-        timerRef.current = null;
-      }, 3000);
+      dispatch(showTooltip({ levelId: level.id, content: level.description || "" }));
     },
     [dispatch],
   );
@@ -126,8 +121,8 @@ const DeckInfoSheet = ({ deck, userId, onDismiss }: { deck: IDeck; userId: strin
 const DeckDescription = ({ deck, style }: { deck: IDeck; style?: ViewStyle }) => {
   return (
     <View style={[styles.commonInformation, style]}>
-      <Text style={styles.deckTitle}>{deck.name.toUpperCase() || "Название колоды"}</Text>
-      <Text style={styles.deckDescription}>{deck.description.toLowerCase() || "описание колоды"}</Text>
+      <Text style={styles.deckTitle}>{deck?.name || "Название колоды"}</Text>
+      <Text style={styles.deckDescription}>{deck?.description || "описание колоды"}</Text>
     </View>
   );
 };

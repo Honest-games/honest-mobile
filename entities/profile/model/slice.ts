@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { IUserProfile } from '@/entities/profile/model/types';
 import { IAchievement } from '@/entities/achievement/model/types';
-import { saveProfile, loadProfile } from '@/utils/storage';
+import { saveProfile, loadProfile } from '@shared/lib';
 import { AppThunk } from '@/shared/config/_providers/store';
 
 const initialAchievements: IAchievement[] = [

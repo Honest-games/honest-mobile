@@ -2,7 +2,7 @@ import React, { useCallback, useRef, useState } from "react";
 import { View } from "react-native";
 import { TouchableWithoutFeedback } from "@gorhom/bottom-sheet";
 import { IDeck, ILevelData } from "@/services/types/types";
-import { useGetLevelsQuery } from "@/services/api";
+import { useGetLevelsQuery } from "@/entities/level";
 import { getLevelsInfo } from "@/features/converters";
 import { useAppDispatch } from "@/features/hooks/useRedux";
 import { hideTooltip, showTooltip } from "@/entities/level/model/slice";
@@ -20,7 +20,8 @@ interface DeckInfoSheetProps {
 }
 
 export const DeckInfoSheet: React.FC<DeckInfoSheetProps> = ({ deck, userId, onDismiss }) => {
-  const { data: levels, isLoading } = useGetLevelsQuery({ deckId: deck.id, time: useRef(Date.now()).current, clientId: userId });
+  const { data: levels, isLoading } = useGetLevelsQuery({ deckId: deck.id, clientId: userId });
+  console.log("levels", levels)
   const levelInfo = getLevelsInfo(levels?.length ?? 0);
   const dispatch = useAppDispatch();
   
@@ -35,11 +36,11 @@ export const DeckInfoSheet: React.FC<DeckInfoSheetProps> = ({ deck, userId, onDi
         clearTimeout(timerRef.current);
       }
 
-      setSelectedLevelId(level.ID);
+      setSelectedLevelId(level.id);
       setTooltipContent(level.description || "Описание недоступно");
       setTooltipVisible(true);
 
-      dispatch(showTooltip({ levelId: level.ID, content: level.description || "" }));
+      dispatch(showTooltip({ levelId: level.id, content: level.description || "" }));
 
       timerRef.current = setTimeout(() => {
         setTooltipVisible(false);

@@ -1,4 +1,5 @@
-import { useGetLevelsQuery, useGetQuestionQuery } from '@/services/api'
+import { useGetLevelsQuery } from '@/entities/level'
+import { useGetQuestionQuery } from '@/entities/question'
 import {useEffect, useRef, useState} from 'react'
 
 export const useLevelQuestion = (levelId: string, clientId: string) => {

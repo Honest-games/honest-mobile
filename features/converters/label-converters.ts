@@ -1,4 +1,4 @@
-import Colors from '@/constants/Colors'
+import Colors from '@/shared/config/styles/colors'
 
 export interface ILabelColor {
 	labelColor: string
@@ -8,10 +8,10 @@ export function getLabelColor(inputText: string) {
 
 	switch (inputText) {
 		case 'besties':
-			labelColor = Colors.dimGreen
+			labelColor = Colors.green
 			break
 		case 'good to start':
-			labelColor = Colors.dimBlue
+			labelColor = Colors.deepBlue
 			break
 		case 'couples':
 			labelColor = Colors.dimOrange
@@ -23,7 +23,7 @@ export function getLabelColor(inputText: string) {
 			labelColor = Colors.dimBrown
 			break
 		default:
-			labelColor = Colors.dimBlue
+			labelColor = Colors.lightGreen
 	}
 
 	return labelColor

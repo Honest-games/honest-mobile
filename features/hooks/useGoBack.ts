@@ -2,7 +2,8 @@
 import {
 	IQuestonLevelAndColor
 } from '@/features/converters/button-converters'
-import { useGetAllQuestionsQuery, useGetLevelsQuery } from '@/services/api'
+import { useGetAllQuestionsQuery } from '@/entities/deck'
+import { useGetLevelsQuery } from '@/entities/level'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import {useEffect, useRef, useState} from 'react'

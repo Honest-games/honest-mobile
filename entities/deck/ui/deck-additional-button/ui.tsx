@@ -1,4 +1,4 @@
-import { MoreAboutDeck } from '@shared/assets/svg';
+import { MoreAboutDeck } from '@/assets/svg/MoreAboutDeck';
 import React from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 

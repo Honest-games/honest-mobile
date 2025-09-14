@@ -14,8 +14,8 @@ export const CardTopContent: React.FC<CardTopContentProps> = ({ level }) => {
       {!level ? null : (
         <View style={{ flexDirection: 'row', justifyContent: 'flex-start' }}>
           <Label
-            levelBgColor={getLevelColor(level.ColorButton)}
-            levelTitle={level.Name}
+            levelBgColor={getLevelColor(level.color)}
+            levelTitle={level.name}
           />
         </View>
       )}

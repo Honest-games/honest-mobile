@@ -4,7 +4,7 @@ import {
   Modal, Platform
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Colors from '@/constants/Colors';
+import Colors from '@shared/config/styles/colors';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '@/features/hooks/useRedux';
 import { updateProfile } from '@/entities/profile/model';
@@ -20,7 +20,7 @@ import { Avatar } from '@/features/profile-edit/ui/avatar';
 import { Statistics } from '@/entities/profile/ui/statistics';
 import { AchievementsList } from '@/entities/achievement/ui/achievements-list';
 import { EmojiPicker } from '@/shared/ui/emoji-picker';
-import { changeLanguage } from '@/constants/i18n/i18n.config';
+import { changeLanguage } from '@shared/config/i18n/i18n.config';
 
 const ProfileScreen = () => {
   const { t } = useTranslation();
@@ -120,7 +120,7 @@ const ProfileScreen = () => {
           t={t}
         />
 
-        <View style={styles.languageSection}>
+        {/* <View style={styles.languageSection}>
           <Text style={styles.sectionTitle}>{t('language')}</Text>
           <View style={styles.languageToggle}>
             <Animated.View style={[styles.languageSlider, animatedStyle]} />
@@ -147,7 +147,7 @@ const ProfileScreen = () => {
               </Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </View> */}
 
         <AvatarPickerBottomSheet
           bottomSheetModalRef={avatarPickerRef}

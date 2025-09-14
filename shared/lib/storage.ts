@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { IUserProfile } from '@/services/types/types';
+import { IUserProfile } from '@/entities/profile/model/types';
 
 export const STORAGE_KEYS = {
   PROFILE: 'profile',

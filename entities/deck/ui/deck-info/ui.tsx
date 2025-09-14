@@ -1,27 +1,23 @@
-import { Link } from 'expo-router';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import ContentLoader, { Circle, Rect } from 'react-content-loader/native';
-import { SvgXml } from 'react-native-svg';
-import useFetchDeckSvg from '@/features/hooks/useFetchDeckSvg';
-import { Colors } from '@/shared/config';
+import Colors from "@/shared/config/styles/colors";
+import useFetchDeckSvg from "@/features/hooks/useFetchDeckSvg";
+import { Link } from "expo-router";
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import ContentLoader, { Circle, Rect } from "react-content-loader/native";
+import { SvgXml } from "react-native-svg";
 
 interface DeckInfoProps {
   title: string | undefined;
   id: string | number;
   imageId: string;
+  handleOpenDeckInfo: () => void;
 }
 
-export const DeckInfo: React.FC<DeckInfoProps> = ({ title, id, imageId }) => {
+const DeckInfo: React.FC<DeckInfoProps> = ({ title, id, imageId, handleOpenDeckInfo }) => {
   const { t } = useTranslation();
   const { svgData, isLoadingImage, error: errorSvg } = useFetchDeckSvg(imageId);
-  
-  // Проверка на валидность SVG
-  const isValidSvg = React.useMemo(() => {
-    if (!svgData) return false;
-    return svgData.trim().startsWith('<svg') || svgData.trim().startsWith('<?xml');
-  }, [svgData]);
+  const isValidSvg = typeof svgData === "string" && svgData.trim().toLowerCase().startsWith("<svg");
 
   return (
     <View style={styles.commonInformaion}>
@@ -48,9 +44,10 @@ export const DeckInfo: React.FC<DeckInfoProps> = ({ title, id, imageId }) => {
         <>
           <View style={{ width: "100%", position: "absolute", bottom: 30 }}>
             <Text numberOfLines={1} style={styles.text}>
-              {title?.toLowerCase()}
+              {title}
             </Text>
           </View>
+    
         </>
       )}
     </View>
@@ -62,8 +59,10 @@ const styles = StyleSheet.create({
     flex: 1,
     zIndex: 100,
     height: "100%",
+
     flexDirection: "column",
     justifyContent: "center",
+
     alignItems: "center",
   },
   text: {
@@ -86,4 +85,6 @@ const styles = StyleSheet.create({
   skeletonContainer: {
     width: "100%",
   },
-}); 
+});
+
+export default DeckInfo;

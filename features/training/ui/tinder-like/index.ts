@@ -1,1 +1,0 @@
-export { TinderLike } from './tinder-like'; 

@@ -1,4 +1,4 @@
-import Colors from '@/constants/Colors'
+import Colors from '@shared/config/styles/colors'
 
 export interface IQuestonLevelAndColor {
 	levelTitle: string

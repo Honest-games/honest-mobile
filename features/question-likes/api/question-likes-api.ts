@@ -6,7 +6,7 @@ export const questionLikesApi = api.injectEndpoints({
     likeQuestion: builder.mutation<FetchArgs | any, any>({
       query: ({ questionId, userId }) => {
         return {
-          url: `haur/api/v1/question/${questionId}/like?userId=${userId}`,
+          url: `https://logotipiwe.ru/haur/api/v1/question/${questionId}/like?userId=${userId}`,
           method: "POST",
           body: { questionId, userId },
         };
@@ -15,7 +15,7 @@ export const questionLikesApi = api.injectEndpoints({
     dislikeQuestion: builder.mutation<FetchArgs | any, any>({
       query: ({ questionId, userId }) => {
         return {
-          url: `haur/api/v1/question/${questionId}/dislike?userId=${userId}`,
+          url: `https://logotipiwe.ru/haur/api/v1/question/${questionId}/dislike?userId=${userId}`,
           method: "POST",
           body: { questionId, userId },
         };

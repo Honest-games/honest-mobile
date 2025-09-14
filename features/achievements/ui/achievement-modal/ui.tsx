@@ -1,8 +1,8 @@
 import React from 'react';
 import { Modal, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import Colors from '@/constants/Colors';
-import { IAchievement } from '@/services/types/types';
+import Colors from '@shared/config/styles/colors';
+import { IAchievement } from '@/entities/achievement';
 import { useTranslation } from 'react-i18next';
 import { Fireworks } from '@/shared/ui/animations';
 

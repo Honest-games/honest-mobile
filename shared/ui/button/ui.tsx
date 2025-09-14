@@ -1,4 +1,4 @@
-import { getLevelColor } from '@features/converters'
+import { getLevelColor } from '@/features/converters'
 import React from 'react'
 import { Text, TouchableOpacity } from 'react-native'
 import { createButtonStyles } from './styles'

@@ -1,4 +1,4 @@
-import Colors from '@/constants/Colors'
+import Colors from '@shared/config/styles/colors'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { Tabs } from 'expo-router'
 import React from 'react'

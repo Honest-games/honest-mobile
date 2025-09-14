@@ -1,4 +1,5 @@
-import { useGetDecksQuery, useGetLevelsQuery } from '@/services/api'
+import { useGetDecksQuery } from '@/entities/deck'
+import { useGetLevelsQuery } from '@/entities/level'
 import { IDeck } from '@/services/types/types'
 import { useCallback, useEffect, useState } from 'react'
 

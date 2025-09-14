@@ -3,8 +3,12 @@ import { SwipableCard } from "@/entities/card/ui";
 import { getPanResponder } from "@/features/animations/model";
 import { useDeck, useDeckId, useUserId } from "@/features/hooks";
 import { LevelButtons } from "@/widgets/level-list";
-import { useGetLevelsQuery, useGetQuestionQuery, useShuffleDeckMutation, useShuffleLevelMutation } from "@/services/api";
-import { IDeck, ILevelData, IQuestion, IAchievement } from "@/services/types/types";
+import { useGetLevelsQuery, useShuffleLevelMutation } from "@/entities/level";
+import { useGetQuestionQuery } from "@/entities/question";
+import { useShuffleDeckMutation } from "@/entities/deck";
+import { IDeck, IQuestion } from "@/services/types/types";
+import { ILevelData } from "@/entities/level";
+import { IAchievement } from "@/entities/achievement";
 import { useLocalSearchParams } from "expo-router";
 import React, { ReactNode, memo, useEffect, useRef, useState, useCallback } from "react";
 import { Animated, Dimensions, StyleSheet, View } from "react-native";
@@ -93,7 +97,7 @@ const DeckId: React.FC = () => {
 
 const OpenedDeck = ({ deck, userId }: { deck: IDeck; userId: string }) => {
   const time = useRef(Date.now()).current;
-  const { data: levels } = useGetLevelsQuery({ deckId: deck.id, time, clientId: userId });
+  const { data: levels } = useGetLevelsQuery({ deckId: deck.id, clientId: userId });
   if (!levels) {
     return <Loader />;
   } else {
@@ -121,7 +125,7 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
 
   useEffect(() => {
     if (profile.lastUnlockedAchievement) {
-      const achievement = profile.achievements.find((a: any) => a.id === profile.lastUnlockedAchievement);
+      const achievement = profile.achievements.find((a: IAchievement) => a.id === profile.lastUnlockedAchievement);
       if (achievement) {
         setUnlockedAchievement(achievement);
         setShowAchievementModal(true);
@@ -159,8 +163,8 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
     setIsResumeDialogVisible(false);
   };
   const handleCardComplete = useCallback(() => {
-    if (selectedLevel?.ID) {
-      dispatch(incrementStats({ levelId: selectedLevel.ID }));
+    if (selectedLevel?.id) {
+      dispatch(incrementStats({ levelId: selectedLevel.id }));
     }
   }, [selectedLevel, dispatch]);
 
@@ -175,7 +179,7 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
       ]);
       setSelectedLevel(level);
     } else {
-      if (selectedLevel.ID === level.ID) {
+      if (selectedLevel.id === level.id) {
         // Тот же уровень - активируем загрузку вопроса для второй карты
         setDisplayDataStack((prev) => {
           const second = prev[1];
@@ -244,7 +248,7 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
     if (selectedLevel && !isShuffling) {
       try {
         setIsShuffling(true);
-        await shuffleLevel({ levelId: selectedLevel.ID, userId });
+        await shuffleLevel({ levelId: selectedLevel.id, userId });
 
         // Создаем новый стек карточек с сообщением о перемешивании
         const newStack = [
@@ -311,7 +315,7 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
   };
 
   const handleCardSwipe = () => {
-    dispatch(incrementStats({ levelId: selectedLevel?.ID }));
+    dispatch(incrementStats({ levelId: selectedLevel?.id }));
     // остальная логика обработки свайпа
   };
 
@@ -359,7 +363,7 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
       <Fireworks visible={showFireworks} onAnimationFinish={handleFireworksFinish} />
 
       <AchievementModal
-        achievement={unlockedAchievement}
+        achievement={unlockedAchievement as any}
         visible={showAchievementModal}
         onClose={handleAchievementModalClose}
         showFireworks={showFireworks}
@@ -382,17 +386,17 @@ function WithLoadingQuestion({
   const [question, setQuestion] = useState<IQuestion>();
   const [questionId, setQuestionId] = useState<string>();
 
-  const { data: fetchedQuestion, isFetching: isFetchingQuestion } = useGetQuestionQuery(displayData.level?.ID ? {
-    levelId: displayData.level.ID,
+  const { data: fetchedQuestion, isFetching: isFetchingQuestion } = useGetQuestionQuery(displayData.level?.id ? {
+    levelId: displayData.level.id,
     clientId: userId,
     timestamp: time,
-  } : { levelId: '', clientId: userId, timestamp: time }, { skip: !displayData.level?.ID });
+  } : { levelId: '', clientId: userId, timestamp: time }, { skip: !displayData.level?.id });
 
-  const { data: fetchedQuestion2, isFetching: isFetchingQuestion2 } = useGetQuestionQuery(displayData.level?.ID ? {
-    levelId: displayData.level.ID,
+  const { data: fetchedQuestion2, isFetching: isFetchingQuestion2 } = useGetQuestionQuery(displayData.level?.id ? {
+    levelId: displayData.level.id,
     clientId: userId,
     timestamp: time,
-  } : { levelId: '', clientId: userId, timestamp: time }, { skip: !displayData.level?.ID });
+  } : { levelId: '', clientId: userId, timestamp: time }, { skip: !displayData.level?.id });
 
   useEffect(() => {
     // Используем первый успешно загруженный вопрос

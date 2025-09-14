@@ -1,5 +1,5 @@
-import { Button } from "@/UI";
-import { ILevelData } from "@/services/types/types";
+import { Button } from "@/shared/ui/button";
+import { ILevelData } from "@/entities/level";
 import { StyleSheet, View } from "react-native";
 import React from "react";
 import { LevelInfo } from "@/entities/level/ui";
@@ -31,11 +31,11 @@ export const LevelButtons: React.FC<LevelButtonsProps> = ({ levels, onButtonPres
       {levels.map((level) => (
         <Button
           isButtonPressed={isButtonPressed}
-          key={level.ID}
-          title={level.Name}
+          key={level.id}
+          title={level.name}
           onPress={onButtonPress && (() => onButtonPress(level))}
           color={"#919F67"}
-          bgColor={level.ColorButton}
+          bgColor={level.color}
           size={size}
         />
       ))}

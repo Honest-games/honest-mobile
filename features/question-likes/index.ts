@@ -1,5 +1,6 @@
 // Модель
 export type { QuestionLike } from './model/types';
+export * from './model';
 
 // API
 export { 

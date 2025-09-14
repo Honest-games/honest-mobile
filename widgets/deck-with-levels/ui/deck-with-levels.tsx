@@ -1,6 +1,6 @@
 import React from "react";
 import { View } from "react-native";
-import { ILevelData } from "@/services/types/types";
+import { ILevelData } from "@/entities/level";
 import styles from "./styles";
 import { TooltipButton } from "@/widgets/deck-list/ui/tooltip-button";
 
@@ -27,13 +27,13 @@ export const DeckWithLevels: React.FC<DeckWithLevelsProps> = ({
     <View style={styles.sectionButtons}>
       {levels.map((level) => (
         <TooltipButton
-          key={level.ID}
-          label={level.Name}
-          bgColor={level.ColorButton}
+          key={level.id}
+          label={level.name}
+          bgColor={level.color}
           tooltipContent={level.description || ''}
           onPress={() => onButtonPress && onButtonPress(level)}
           size={size}
-          isSelected={tooltipVisible && selectedLevelId === level.ID}
+          isSelected={tooltipVisible && selectedLevelId === level.id}
         />
       ))}
     </View>

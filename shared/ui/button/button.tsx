@@ -43,7 +43,7 @@ export const Button: React.FC<ButtonProps> = (props) => {
       onPress={onPress}
       style={[styles.button]}
     >
-      <Text style={styles.text}>{title.toLowerCase()}</Text>
+      <Text style={styles.text}>{title}</Text>
     </TouchableOpacity>
   );
 }; 

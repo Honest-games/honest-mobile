@@ -1,10 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { IDeck } from './types';
+import { IDeck } from '@/services/types/types';
 
 interface CardsOfDeckState {
   deckSize: number;
   count: number;
-  decks: IDeck[] | null;
+  decks: IDeck[] | null; // Добавляем состояние для хранения decks
 }
 
 const initialState: CardsOfDeckState = {
@@ -13,8 +13,8 @@ const initialState: CardsOfDeckState = {
   decks: null,
 };
 
-const deckSlice = createSlice({
-  name: 'deck',
+const cardsOfDeckSlice = createSlice({
+  name: 'CardsOfDeckSlice',
   initialState,
   reducers: {
     incrementDeletedCards: (state) => {
@@ -29,10 +29,11 @@ const deckSlice = createSlice({
       }
     },
     setDecks: (state, action: PayloadAction<IDeck[]>) => {
+      // Новый reducer для обновления decks в состоянии
       state.decks = action.payload;
     },
   },
 });
 
-export const { incrementDeletedCards, setDeckSize, setDecks } = deckSlice.actions;
-export default deckSlice.reducer; 
+export const { incrementDeletedCards, setDeckSize, setDecks } = cardsOfDeckSlice.actions;
+export default cardsOfDeckSlice.reducer;

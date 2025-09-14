@@ -1,1 +1,1 @@
-export { DeckInfo } from './ui'; 
+export { default as DeckInfo } from './ui'; 
