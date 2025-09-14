@@ -1,19 +1,25 @@
 import React, { memo } from 'react'
-import { Animated, Dimensions, StyleSheet, View } from 'react-native'
+import { Dimensions, StyleSheet } from 'react-native'
+import Animated, {
+	useAnimatedStyle,
+	interpolate,
+	SharedValue,
+} from 'react-native-reanimated'
 
-const { height } = Dimensions.get('screen')
 const screenWidth = Dimensions.get('screen').width
 export const tinderCardWidth = screenWidth * 0.8
 
 interface ICard {
 	allowDrag: boolean
-	swipe?: any
+	swipeX?: SharedValue<number>
+	swipeY?: SharedValue<number>
 	children: React.ReactNode
 }
 
 export const SwipableCard = memo((props: ICard) => {
 	const {
-		swipe,
+		swipeX,
+		swipeY,
 		allowDrag,
 		children,
 		...rest
@@ -28,18 +34,31 @@ export const SwipableCard = memo((props: ICard) => {
 		},
 	})
 
-	const rotate = swipe.x.interpolate({
-		inputRange: [-100, 0, 100],
-		outputRange: ['8deg', '0deg', '-8deg']
-	})
+	const animatedStyle = useAnimatedStyle(() => {
+		if (!swipeX || !swipeY || !allowDrag) {
+			return {};
+		}
+
+		const rotate = interpolate(
+			swipeX.value,
+			[-100, 0, 100],
+			[8, 0, -8]
+		);
+
+		return {
+			transform: [
+				{ translateX: swipeX.value },
+				{ translateY: swipeY.value },
+				{ rotate: `${rotate}deg` },
+			],
+		};
+	}, [allowDrag]);
 
 	return (
 		<Animated.View
 			style={[
 				styles.card,
-				allowDrag && {
-					transform: [...swipe.getTranslateTransform(), { rotate: rotate }]
-				}
+				animatedStyle
 			]}
 			{...rest}
 		>

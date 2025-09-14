@@ -6,17 +6,19 @@ import { LevelButtons } from "@/widgets/level-list";
 import { useGetLevelsQuery, useShuffleLevelMutation } from "@/entities/level";
 import { useGetQuestionQuery } from "@/entities/question";
 import { useShuffleDeckMutation } from "@/entities/deck";
-import { IDeck, IQuestion } from "@/services/types/types";
-import { ILevelData } from "@/entities/level";
-import { IAchievement } from "@/entities/achievement";
+import { IDeck, ILevelData, IQuestion, IAchievement } from "@/services/types/types";
 import { useLocalSearchParams } from "expo-router";
-import React, { ReactNode, memo, useEffect, useRef, useState, useCallback } from "react";
-import { Animated, Dimensions, StyleSheet, View } from "react-native";
+import React, { ReactNode, useEffect, useState, useCallback } from "react";
+import { Dimensions, StyleSheet, View } from "react-native";
+import {
+  useSharedValue,
+  withTiming,
+  SharedValue,
+} from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector } from "@/features/hooks/useRedux";
-import { Fireworks } from "@/shared/ui/animations";
 import { AchievementModal } from "@/features/achievements/ui";
 import { ShuffleDialog } from "@/features/deck-shuffle";
 import { clearLastUnlockedAchievement, incrementStats } from "@/entities/profile/model";
@@ -26,7 +28,6 @@ import { Loader } from "@/shared/ui/loader";
 
 const { width } = Dimensions.get("window");
 
-const CardMemo = memo(SwipableCard);
 
 export class DisplayedCardItem {
   id: number;
@@ -96,7 +97,6 @@ const DeckId: React.FC = () => {
 };
 
 const OpenedDeck = ({ deck, userId }: { deck: IDeck; userId: string }) => {
-  const time = useRef(Date.now()).current;
   const { data: levels } = useGetLevelsQuery({ deckId: deck.id, clientId: userId });
   if (!levels) {
     return <Loader />;
@@ -110,7 +110,6 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
   const [selectedLevel, setSelectedLevel] = useState<ILevelData>();
   const [displayDataStack, setDisplayDataStack] = useState<DisplayedCardItem[]>([]);
   const { goBack } = useDeckId();
-  const time = useRef(Date.now()).current;
   const [isShuffleDialogVisible, setShuffleDialogVisible] = useState(false);
   const [isResumeDialogVisible, setIsResumeDialogVisible] = useState(false);
 
@@ -125,9 +124,9 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
 
   useEffect(() => {
     if (profile.lastUnlockedAchievement) {
-      const achievement = profile.achievements.find((a: IAchievement) => a.id === profile.lastUnlockedAchievement);
+      const achievement = profile.achievements.find((a: any) => a.id === profile.lastUnlockedAchievement);
       if (achievement) {
-        setUnlockedAchievement(achievement);
+        setUnlockedAchievement(achievement as IAchievement);
         setShowAchievementModal(true);
         setShowFireworks(true);
       }
@@ -213,32 +212,73 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
   };
 
   /*ANIMATION*/
-  const swipe = useRef(new Animated.ValueXY()).current;
-  const [swipeDirection, setSwipeDirection] = useState(-1); //s Начинаем с направления влево (-1)
+  const swipeX = useSharedValue(0);
+  const swipeY = useSharedValue(0);
+  const [swipeDirection, setSwipeDirection] = useState(-1);
   const [isAnimationGoing, setIsAnimationGoing] = useState<boolean>(false);
+  const [pendingActionAfterAnimation, setPendingActionAfterAnimation] = useState<(() => void) | null>(null);
+  const [userSwiped, setUserSwiped] = useState(false);
+
+  // Watch for animation completion using a simple effect
+  useEffect(() => {
+    if (!isAnimationGoing && pendingActionAfterAnimation) {
+      const action = pendingActionAfterAnimation;
+      setPendingActionAfterAnimation(null);
+
+      // Execute after a small delay
+      setTimeout(() => {
+        try {
+          action();
+        } catch (error) {
+          console.error('Pending action error:', error);
+        }
+      }, 100);
+    }
+  }, [isAnimationGoing, pendingActionAfterAnimation]);
+
+  // Watch for user swipe completion
+  useEffect(() => {
+    if (userSwiped && selectedLevel) {
+      setUserSwiped(false);
+
+      // Reset animation values
+      setTimeout(() => {
+        swipeX.value = 0;
+        swipeY.value = 0;
+
+        // Move to next card
+        try {
+          moveToNextCard(selectedLevel);
+        } catch (error) {
+          console.error('Move to next card error:', error);
+        }
+      }, 100);
+    }
+  }, [userSwiped, selectedLevel, moveToNextCard]);
 
   const triggerSwipeAnimation = (onEnd: () => void) => {
-    Animated.timing(swipe, {
-      toValue: { x: swipeDirection * 500, y: 0 },
-      useNativeDriver: true,
-      duration: 500,
-    }).start(() => {
-      onAnimationEnd(onEnd);
-    });
+    if (isAnimationGoing) return;
+
     setIsAnimationGoing(true);
+    setPendingActionAfterAnimation(() => onEnd);
+
+    // Start animation WITHOUT any callbacks
+    swipeX.value = withTiming(swipeDirection * 500, { duration: 500 });
+    swipeY.value = withTiming(0, { duration: 500 });
+
+    // Reset after animation duration + small buffer
+    setTimeout(() => {
+      swipeX.value = 0;
+      swipeY.value = 0;
+      setSwipeDirection((prevDirection) => -prevDirection);
+      setIsAnimationGoing(false);
+
+      // Если была карта с сообщением о перемешивании, сбрасываем флаг
+      if (displayDataStack[0]?.customText === t("levelCardsShuffled")) {
+        setIsShuffling(false);
+      }
+    }, 600); // 500ms animation + 100ms buffer
   };
-  const onAnimationEnd = useCallback((onComplete: () => void) => {
-    swipe.setValue({ x: 0, y: 0 });
-    setSwipeDirection((prevDirection) => -prevDirection);
-    setIsAnimationGoing(false);
-
-    // Если была карта с сообщением о перемешивании, сбрасываем флаг
-    if (displayDataStack[0]?.customText === t("levelCardsShuffled")) {
-      setIsShuffling(false);
-    }
-
-    onComplete();
-  }, []);
 
   const handleShufflePress = () => {
     setShuffleDialogVisible(true);
@@ -314,10 +354,6 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
     setShuffleDialogVisible(false);
   };
 
-  const handleCardSwipe = () => {
-    dispatch(incrementStats({ levelId: selectedLevel?.id }));
-    // остальная логика обработки свайпа
-  };
 
   return (
     //TODO block buttons when animation
@@ -337,8 +373,9 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
                 <CardsStack
                   userId={userId}
                   displayDataStack={displayDataStack}
-                  swipe={swipe}
-                  onAnimationEnd={onAnimationEnd.bind(null, moveToNextCard.bind(null, selectedLevel))}
+                  swipeX={swipeX}
+                  swipeY={swipeY}
+                  setUserSwiped={setUserSwiped}
                   selectedLevel={selectedLevel}
                 />
               ) : (
@@ -360,10 +397,9 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
         isSingleLevel={levels.length === 1}
       />
       <ResumeDeckDialog visible={isResumeDialogVisible} onClose={handleResumeDialogClose} onStartOver={handleStartOver} />
-      <Fireworks visible={showFireworks} onAnimationFinish={handleFireworksFinish} />
-
+      
       <AchievementModal
-        achievement={unlockedAchievement as any}
+        achievement={unlockedAchievement}
         visible={showAchievementModal}
         onClose={handleAchievementModalClose}
         showFireworks={showFireworks}
@@ -414,18 +450,21 @@ function WithLoadingQuestion({
 
 const CardsStack = ({
   displayDataStack,
-  swipe,
-  onAnimationEnd,
+  swipeX,
+  swipeY,
+  setUserSwiped,
   selectedLevel,
   userId,
 }: {
   displayDataStack: DisplayedCardItem[];
-  swipe: Animated.ValueXY;
-  onAnimationEnd: () => void;
+  swipeX: SharedValue<number>;
+  swipeY: SharedValue<number>;
+  setUserSwiped: (swiped: boolean) => void;
   selectedLevel: ILevelData;
   userId: string;
 }) => {
-  const panResponder = selectedLevel && getPanResponder(swipe, onAnimationEnd);
+
+  const panResponder = selectedLevel && getPanResponder(swipeX, swipeY, setUserSwiped);
 
   return displayDataStack
     .map((displayData, i) => {
@@ -433,7 +472,7 @@ const CardsStack = ({
       const actualHandlers = isFirst && panResponder ? panResponder.panHandlers : {};
 
       return (
-        <SwipableCard key={displayData.id} swipe={swipe} allowDrag={isFirst} {...actualHandlers}>
+        <SwipableCard key={displayData.id} swipeX={swipeX} swipeY={swipeY} allowDrag={isFirst} {...actualHandlers}>
           {displayData.shouldLoadQuestion ? (
             <WithLoadingQuestion displayData={displayData} userId={userId}>
               {(question, isFetchingQuestion, questionId) => (

@@ -44,8 +44,8 @@ const ProfileScreen = () => {
   const [selectedBackgroundColor, setSelectedBackgroundColor] = useState(Colors.beige);
   const [isEmojiInputVisible, setIsEmojiInputVisible] = useState(false);
   
-  const avatarPickerRef = useRef<BottomSheetModal>(null);
-  const translateX = useSharedValue(profile.language === 'en' ? 1 : 0);
+  const avatarPickerRef = useRef<BottomSheetModal | null>(null);
+  const translateX = useSharedValue(0);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: withTiming(translateX.value * 100) }]

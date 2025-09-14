@@ -9,7 +9,7 @@ import { updateProfile } from '@/entities/profile/model';
 import { Colors } from '@/shared/config';
 
 interface AvatarPickerBottomSheetProps {
-  bottomSheetModalRef: React.RefObject<BottomSheetModal>;
+  bottomSheetModalRef: React.RefObject<BottomSheetModal | null>;
   onSelectAvatar: (type: string, value?: string) => void;
   profile: {
     name: string;
@@ -100,6 +100,9 @@ export const AvatarPickerBottomSheet = React.memo<AvatarPickerBottomSheetProps>(
       backdropComponent={renderBackdrop}
       backgroundStyle={styles.bottomSheet}
       keyboardBehavior="extend"
+      enablePanDownToClose={true}
+      enableDismissOnClose={true}
+      enableDynamicSizing={false}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <KeyboardAvoidingView 

@@ -1,9 +1,19 @@
-import { Animated, PanResponder } from "react-native";
+import { PanResponder } from "react-native";
+import {
+  withTiming,
+  withSpring,
+  SharedValue,
+} from "react-native-reanimated";
 
-export const getPanResponder = (swipe: Animated.ValueXY, onAnimationEnd: ()=>void) => PanResponder.create({
+export const getPanResponder = (
+  swipeX: SharedValue<number>,
+  swipeY: SharedValue<number>,
+  setUserSwipeState: (swiped: boolean) => void
+) => PanResponder.create({
     onMoveShouldSetPanResponder: () => true,
     onPanResponderMove: (_, { dx, dy }) => {
-        swipe.setValue({ x: dx, y: dy });
+        swipeX.value = dx;
+        swipeY.value = dy;
     },
 
     onPanResponderRelease: (_, gestureState) => {
@@ -13,19 +23,20 @@ export const getPanResponder = (swipe: Animated.ValueXY, onAnimationEnd: ()=>voi
             // Определяем, в какую сторону должен улетать элемент
             const direction = dx < 0 ? -1 : 1;
             const velocityX = Math.max(Math.abs(vx), 1) * direction; // Убедимся, что скорость не равна 0
+            const duration = Math.abs(velocityX) * 100; // регулируем длительность анимации на основе скорости
 
-            Animated.timing(swipe, {
-                toValue: { x: velocityX * 500, y: dy }, // используем скорость и направление
-                useNativeDriver: true,
-                duration: Math.abs(velocityX) * 100 // регулируем длительность анимации на основе скорости
-            }).start(onAnimationEnd);
+            // Start animation WITHOUT callbacks
+            swipeX.value = withTiming(velocityX * 500, { duration });
+            swipeY.value = withTiming(dy, { duration });
+
+            // Notify about swipe completion via state change (safer than callback)
+            setTimeout(() => {
+                setUserSwipeState(true);
+            }, duration + 50); // Small buffer after animation
         } else {
             // Если свайп не достиг активационной точки, плавно возвращаем карточку на место
-            Animated.spring(swipe, {
-                toValue: { x: 0, y: 0 },
-                useNativeDriver: true,
-                friction: 5 // Можно отрегулировать фрикцию для более плавного возврата
-            }).start();
+            swipeX.value = withSpring(0, { stiffness: 100, damping: 10 });
+            swipeY.value = withSpring(0, { stiffness: 100, damping: 10 });
         }
     }
 }); 
