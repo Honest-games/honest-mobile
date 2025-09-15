@@ -1,3 +1,4 @@
 export * from './swipable-card';
 export * from './card-top-content';
-export * from './card-text'; 
+export * from './card-text';
+export * from '../model'; 

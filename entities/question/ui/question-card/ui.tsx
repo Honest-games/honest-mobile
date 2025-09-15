@@ -1,4 +1,4 @@
-import { DisplayedCardItem } from '@/app/decks/[id]'
+import { IDisplayedCard } from '@/entities/card/ui'
 import Colors from '@/shared/config/styles/colors'
 import { getLevelColor } from '@/features/converters/button-converters'
 import { useAppDispatch, useAppSelector } from '@/features/hooks/useRedux'
@@ -22,7 +22,7 @@ import { CardTopContent } from '@/entities/card/ui';
 import { CardLikeButton } from '@/features/card-likes/ui/card-like-button';
 
 interface QuestionCardProps {
-	displayData: DisplayedCardItem
+	displayData: IDisplayedCard
 	question?: IQuestion
 	isFetchingQuestion?: boolean
 	questionId?: string
