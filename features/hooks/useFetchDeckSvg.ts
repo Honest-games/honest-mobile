@@ -49,11 +49,7 @@ const useFetchDeckSvg = (imageId: string | undefined) => {
     }
     const rawText = await response.text();
     const svgText = sanitizeSvg(rawText);
-    if (!svgText) {
-      console.warn("Fetched vector is not valid SVG or empty for imageId:", imageId);
-    } else {
-      console.log("SVG data fetched for imageId:", imageId, "length:", svgText.length);
-    }
+
     return svgText;
   };
 

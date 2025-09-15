@@ -28,7 +28,7 @@ export const useSwipeAnimation = (
   const swipeY = useSharedValue(0);
   const isAnimating = useSharedValue(false);
 
-  const currentDirection = useRef(-1);
+  const currentDirection = useSharedValue(-1);
   const pendingCallback = useRef<(() => void) | null>(null);
 
   const executeCallback = useCallback(() => {
@@ -53,7 +53,7 @@ export const useSwipeAnimation = (
     swipeY.value = 0;
 
     // Toggle direction for next animation
-    currentDirection.current = -currentDirection.current;
+    currentDirection.value = -currentDirection.value;
 
     // Mark animation as complete
     isAnimating.value = false;
@@ -65,7 +65,7 @@ export const useSwipeAnimation = (
   }, [swipeX, swipeY, isAnimating, executeCallback]);
 
   const triggerSwipeAnimation = useCallback((
-    direction: number = currentDirection.current,
+    direction: number = currentDirection.value,
     onComplete?: () => void
   ) => {
     'worklet';

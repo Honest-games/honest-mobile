@@ -60,11 +60,8 @@ export const DeckBottomSheetModal = forwardRef<Ref, CustomBottomSheetModalProps>
 
 const DeckInfoSheet = ({ deck, userId, onDismiss }: { deck: IDeck; userId: string; onDismiss: () => void }) => {
   const { data: levels, isLoading } = useGetLevelsQuery({ deckId: deck.id, clientId: userId });
-  console.log("levels123", levels)
   const levelInfo = getLevelsInfo(levels?.length ?? 0);
-  console.log("levelInfo", levelInfo)
   const dispatch = useAppDispatch();
-  console.log("deck", deck);
   const [selectedLevelId, setSelectedLevelId] = useState<string | null>(null);
   const [tooltipContent, setTooltipContent] = useState<string>("");
   const [tooltipVisible, setTooltipVisible] = useState(false);

@@ -47,7 +47,7 @@ export const OptimizedQuestionLoader: React.FC<OptimizedQuestionLoaderProps> = R
       refetchOnMountOrArgChange: false, // Use cache when possible
     }
   );
-
+  console.log('fetchedQuestion', fetchedQuestion);
   // Update cached question only when we have new successful data
   useEffect(() => {
     if (isSuccess && fetchedQuestion) {

@@ -19,7 +19,7 @@ export const saveProfile = async (profile: IUserProfile) => {
 export const loadProfile = async (): Promise<IUserProfile | null> => {
   try {
     const profileJson = await AsyncStorage.getItem(STORAGE_KEYS.PROFILE);
-    console.log('Loaded profile from storage:', profileJson); // Для отладки
+    // console.log('Loaded profile from storage:', profileJson); // Для отладки
     if (!profileJson) return null;
     
     const profile = JSON.parse(profileJson);

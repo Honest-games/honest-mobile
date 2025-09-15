@@ -61,14 +61,14 @@ function AppContent() {
           const id = uuid.v4();
           dispatch(setUserId(id.toString()));
           await AsyncStorage.setItem("user_id", id.toString());
-          console.log("UUID успешно сохранен:", id);
+          // console.log("UUID успешно сохранен:", id);
           
           dispatch(updateProfile({ id: id.toString() }));
         } catch (error) {
           console.error("Ошибка при сохранении UUID в AsyncStorage:", error);
         }
       } else {
-        console.log("UUID успешно получен:", user);
+        // console.log("UUID успешно получен:", user);
         dispatch(setUserId(user));
         dispatch(updateProfile({ id: user }));
       }

@@ -39,7 +39,7 @@ const CardItem: React.FC<CardItemProps> = React.memo(({
   );
 
   const shouldLoadQuestion = displayData.shouldLoadQuestion;
-
+  console.log('displayData', displayData);
   return (
     <SwipableCard
       key={cardKey}

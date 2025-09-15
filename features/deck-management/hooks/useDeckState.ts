@@ -77,6 +77,7 @@ function deckReducer(state: DeckState, action: DeckAction): DeckState {
       return { ...state, displayDataStack: [] };
 
     case 'UPDATE_SECOND_CARD_QUESTION_LOADING': {
+      console.log('UPDATE_SECOND_CARD_QUESTION_LOADING', state.displayDataStack);
       if (state.displayDataStack.length < 2) return state;
 
       const updatedStack = [...state.displayDataStack];

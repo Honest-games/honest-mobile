@@ -22,6 +22,7 @@ import { clearLastUnlockedAchievement, incrementStats } from "@/entities/profile
 import { ResumeDeckDialog } from "@/features/deck-resume";
 import { DeckTopContent } from "@/entities/deck/ui/deck-top-content";
 import { Loader } from "@/shared/ui/loader";
+import { usePerformanceMonitor } from "@shared/hooks";
 
 const { width } = Dimensions.get("window");
 
@@ -56,6 +57,7 @@ const OpenedDeck = React.memo<{ deck: IDeck; userId: string }>(({ deck, userId }
 });
 
 const OpenedDeckWithLevels = React.memo<{ deck: IDeck; levels: ILevelData[]; userId: string }>(({ deck: selectedDeck, levels, userId }) => {
+  usePerformanceMonitor('DeckDetailScreen');
   const { t } = useTranslation();
   const isSeveralLevels = levels.length > 1;
   const { goBack } = useDeckId();
@@ -88,12 +90,17 @@ const OpenedDeckWithLevels = React.memo<{ deck: IDeck; levels: ILevelData[]; use
     }
   }, [deckState.selectedLevel, dispatch]);
 
-  const moveToNextCard = useCallback((level: ILevelData) => {
-    if (deckState.displayDataStack.length > 0) {
-      handleCardComplete();
-      deckState.moveToNextCard(level);
-    }
-  }, [deckState, handleCardComplete]);
+  const moveToNextCard = useCallback(
+    (level: ILevelData) => {
+      console.log('deckState.displayDataStack', deckState.displayDataStack);
+      if (deckState.displayDataStack.length > 0) {
+        console.log("moveToNextCard", level);
+        handleCardComplete();
+        deckState.moveToNextCard(level);
+      }
+    },
+    [deckState, handleCardComplete],
+  );
 
   const moveToNextCardAfterShuffle = useCallback(() => {
     if (deckState.displayDataStack.length > 1) {
@@ -124,24 +131,12 @@ const OpenedDeckWithLevels = React.memo<{ deck: IDeck; levels: ILevelData[]; use
       await shuffleDeck({ deckId: selectedDeck.id, userId });
 
       if (deckState.displayDataStack.length === 0 || !deckState.selectedLevel) {
-        const shuffleCard = createDisplayedCard(
-          null,
-          false,
-          false,
-          false,
-          t("allLevelsShuffled")
-        );
+        const shuffleCard = createDisplayedCard(null, false, false, false, t("allLevelsShuffled"));
         deckState.setDisplayStack([shuffleCard]);
       } else {
         const newStack: IDisplayedCard[] = [
           deckState.displayDataStack[0],
-          createDisplayedCard(
-            null,
-            false,
-            false,
-            deckState.selectedLevel !== undefined,
-            t("allLevelsShuffled")
-          ),
+          createDisplayedCard(null, false, false, deckState.selectedLevel !== undefined, t("allLevelsShuffled")),
           ...(deckState.selectedLevel ? [createDisplayedCard(deckState.selectedLevel, true, isSeveralLevels)] : []),
         ];
         deckState.setDisplayStack(newStack);
@@ -162,11 +157,7 @@ const OpenedDeckWithLevels = React.memo<{ deck: IDeck; levels: ILevelData[]; use
         deckState.setIsShuffling(true);
         await shuffleLevel({ levelId: deckState.selectedLevel.id, userId });
 
-        deckState.createShuffleCards(
-          deckState.selectedLevel,
-          t("levelCardsShuffled"),
-          isSeveralLevels
-        );
+        deckState.createShuffleCards(deckState.selectedLevel, t("levelCardsShuffled"), isSeveralLevels);
 
         swipeAnimation.triggerSwipeAnimation(-1, () => {
           moveToNextCardAfterShuffle();
@@ -190,27 +181,29 @@ const OpenedDeckWithLevels = React.memo<{ deck: IDeck; levels: ILevelData[]; use
     dialogState.hideResumeDialog();
   }, [handleShuffleDeck, levels, isSeveralLevels, deckState, dialogState]);
 
-  const onButtonPress = useCallback(async (level: ILevelData) => {
-    if (swipeAnimation.isAnimating.value) return;
+  const onButtonPress = useCallback(
+    async (level: ILevelData) => {
+      if (swipeAnimation.isAnimating.value) return;
 
-    if (!deckState.selectedLevel) {
-      deckState.createInitialCards(level, isSeveralLevels);
-    } else {
-      if (deckState.selectedLevel.id === level.id) {
-        deckState.updateSecondCardQuestionLoading();
+      if (!deckState.selectedLevel) {
+        deckState.createInitialCards(level, isSeveralLevels);
       } else {
-        const newCard = createDisplayedCard(level, true, isSeveralLevels);
-        const updatedStack: IDisplayedCard[] = [
-          deckState.displayDataStack[0],
-          newCard,
-        ];
-        deckState.setDisplayStack(updatedStack);
-        deckState.setSelectedLevel(level);
+        if (deckState.selectedLevel.id === level.id) {
+          deckState.updateSecondCardQuestionLoading();
+          console.log(123)
+        } else {
+          console.log(456)
+          const newCard = createDisplayedCard(level, true, isSeveralLevels);
+          const updatedStack: IDisplayedCard[] = [deckState.displayDataStack[0], newCard];
+          deckState.setDisplayStack(updatedStack);
+          deckState.setSelectedLevel(level);
+        }
+        swipeAnimation.triggerSwipeAnimation(-1, () => moveToNextCard(level));
       }
-      swipeAnimation.triggerSwipeAnimation(-1, () => moveToNextCard(level));
-    }
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  }, [swipeAnimation, deckState, isSeveralLevels, moveToNextCard]);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    },
+    [swipeAnimation, deckState, isSeveralLevels, moveToNextCard],
+  );
 
   // Watch for user swipe completion
   useEffect(() => {
@@ -219,7 +212,7 @@ const OpenedDeckWithLevels = React.memo<{ deck: IDeck; levels: ILevelData[]; use
       try {
         moveToNextCard(deckState.selectedLevel);
       } catch (error) {
-        console.error('Move to next card error:', error);
+        console.error("Move to next card error:", error);
       }
     }
   }, [deckState.userSwiped, deckState.selectedLevel, moveToNextCard, deckState]);
@@ -264,11 +257,7 @@ const OpenedDeckWithLevels = React.memo<{ deck: IDeck; levels: ILevelData[]; use
         isShuffleLevelDisabled={!deckState.selectedLevel || deckState.isShuffling}
         isSingleLevel={levels.length === 1}
       />
-      <ResumeDeckDialog
-        visible={dialogState.isResumeDialogVisible}
-        onClose={handleResumeDialogClose}
-        onStartOver={handleStartOver}
-      />
+      <ResumeDeckDialog visible={dialogState.isResumeDialogVisible} onClose={handleResumeDialogClose} onStartOver={handleStartOver} />
 
       <AchievementModal
         achievement={dialogState.unlockedAchievement}

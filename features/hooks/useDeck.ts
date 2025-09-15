@@ -13,7 +13,6 @@ const useDeck = (userId: string, options?: { skip?: boolean }) => {
 		refetch,
 		error
 	} = useGetDecksQuery({ clientId: userId }, { skip: options?.skip })
-	console.log("decks", decks)
 	return {
 		decks,
 		isLoadingDecks,

@@ -7,10 +7,11 @@ import { useSendPromoMutation } from "@/entities/user";
 import { useGetAllLikesQuery } from "@/features/deck-likes";
 import { IDeck } from "@/entities/deck/model/types";
 import { setDecksLikesSet } from "@/features/deck-likes/model/slice";
+import { usePerformanceMonitor } from "@shared/hooks";
 
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Platform, StyleSheet, View } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 import Animated, {
   Easing,
   useAnimatedRef,
@@ -20,6 +21,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
+
 
 const WithUserId = ({ children }: { children: (userId: string) => React.ReactNode }) => {
   const userId = useUserId();
@@ -52,6 +54,7 @@ const filterDecks = (decks: IDeck[], search: string) => {
 //   });
 
 const PageWithUserId = ({ userId }: { userId: string }) => {
+  usePerformanceMonitor('MainTabsScreen');
   const dispatch = useAppDispatch();
   const { decks, isLoadingDecks, isFetchingDecks, refetch: refetchDecks } = useDeck(userId, { skip: !userId });
   const bottomSheetRef = useRef<BottomSheetModal>(null);
@@ -133,19 +136,6 @@ const PageWithUserId = ({ userId }: { userId: string }) => {
     scrollToTop(scrollRef);
   };
 
-  const scrollHandler = useAnimatedScrollHandler({
-    onScroll: (event) => {
-      scrollY.value = event.contentOffset.y;
-    },
-  });
-  const contentStyle = useAnimatedStyle(() => ({
-    opacity: fadeAnimation.value,
-    // transform: [
-    //   {
-    //     translateY: interpolate(fadeAnimation.value, [0, 1], [20, 0], Extrapolate.CLAMP),
-    //   },
-    // ],
-  }));
 
   const animatedOpacity = useAnimatedStyle(() => {
     return {
@@ -187,7 +177,7 @@ const PageWithUserId = ({ userId }: { userId: string }) => {
         />
       </Animated.View>
 
-      <DeckBottomSheetModal deck={selectedDeck} ref={bottomSheetRef} userId={userId} />
+      {selectedDeck && <DeckBottomSheetModal deck={selectedDeck} ref={bottomSheetRef} userId={userId} />}
     </SafeAreaView>
   );
 };
