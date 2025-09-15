@@ -39,8 +39,8 @@ function AppContent() {
   const [appReady, setAppReady] = useState(false);
   const router = useRouter();
   let [locale, setLocale] = useState<string>(Localization.getLocales()[0].languageCode || "ru");
-  const { decks, isLoadingDecks, isFetchingDecks, refetch: refetchDecks } = useDeck(userId || "");
-  const { data: likes, isFetching: isFetchingLikes } = useGetAllLikesQuery(userId);
+  const { decks, isLoadingDecks, isFetchingDecks, refetch: refetchDecks } = useDeck(userId || "", { skip: !userId });
+  const { data: likes, isFetching: isFetchingLikes } = useGetAllLikesQuery(userId, { skip: !userId });
 
   useEffect(() => {
     dispatch(initializeProfile());
@@ -69,6 +69,7 @@ function AppContent() {
         }
       } else {
         console.log("UUID успешно получен:", user);
+        dispatch(setUserId(user));
         dispatch(updateProfile({ id: user }));
       }
 
@@ -76,7 +77,7 @@ function AppContent() {
     };
 
     loadInitialData();
-  }, [locale]);
+  }, [locale, dispatch]);
   
   useEffect(() => {
     if (!isLoadingDecks && !isFetchingDecks && !isFetchingLikes) {

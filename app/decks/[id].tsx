@@ -80,7 +80,7 @@ const DeckId: React.FC = () => {
   const { id: deckId } = useLocalSearchParams();
 
   const userId = useUserId();
-  const { decks } = useDeck(userId);
+  const { decks } = useDeck(userId, { skip: !userId });
 
   const [selectedDeck, setSelectedDeck] = useState<IDeck>();
 

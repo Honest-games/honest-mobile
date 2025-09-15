@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors } from '@/shared/config';
@@ -7,6 +7,15 @@ import { IAchievement } from '@/entities/achievement/model/types';
 import { useTranslation } from 'react-i18next';
 import { Fireworks } from '@/shared/ui/animations';
 import * as Haptics from 'expo-haptics';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  runOnJS,
+  interpolate,
+  Extrapolate,
+} from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
 
@@ -27,43 +36,35 @@ export const AchievementModal: React.FC<AchievementNotificationProps> = ({
 }) => {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const slideAnim = useRef(new Animated.Value(-200)).current;
-  const opacityAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.8)).current;
-  const progressAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useSharedValue(-200);
+  const opacityAnim = useSharedValue(0);
+  const scaleAnim = useSharedValue(0.8);
+  const progressAnim = useSharedValue(0);
 
   useEffect(() => {
     if (visible && achievement) {
       // Тактильная обратная связь при появлении
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      
-      // Анимация появления
-      Animated.parallel([
-        Animated.spring(slideAnim, {
-          toValue: 0,
-          tension: 100,
-          friction: 8,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacityAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.spring(scaleAnim, {
-          toValue: 1,
-          tension: 100,
-          friction: 8,
-          useNativeDriver: true,
-        }),
-      ]).start();
+
+      // Анимация появления с react-native-reanimated
+      slideAnim.value = withSpring(0, {
+        damping: 15,
+        stiffness: 150,
+      });
+
+      opacityAnim.value = withTiming(1, {
+        duration: 300,
+      });
+
+      scaleAnim.value = withSpring(1, {
+        damping: 15,
+        stiffness: 150,
+      });
 
       // Анимация прогресс-бара
-      Animated.timing(progressAnim, {
-        toValue: 1,
+      progressAnim.value = withTiming(1, {
         duration: 4000,
-        useNativeDriver: false,
-      }).start();
+      });
 
       // Автоматическое скрытие через 4 секунды
       const timer = setTimeout(() => {
@@ -73,50 +74,63 @@ export const AchievementModal: React.FC<AchievementNotificationProps> = ({
       return () => clearTimeout(timer);
     } else {
       // Сброс анимации прогресс-бара
-      progressAnim.setValue(0);
-      
+      progressAnim.value = 0;
+
       // Анимация скрытия
-      Animated.parallel([
-        Animated.timing(slideAnim, {
-          toValue: -200,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacityAnim, {
-          toValue: 0,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-        Animated.timing(scaleAnim, {
-          toValue: 0.8,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-      ]).start();
+      slideAnim.value = withTiming(-200, {
+        duration: 250,
+      });
+
+      opacityAnim.value = withTiming(0, {
+        duration: 250,
+      });
+
+      scaleAnim.value = withTiming(0.8, {
+        duration: 250,
+      });
     }
   }, [visible, achievement]);
 
   const handleClose = () => {
-    Animated.parallel([
-      Animated.timing(slideAnim, {
-        toValue: -200,
-        duration: 250,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacityAnim, {
-        toValue: 0,
-        duration: 250,
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 0.8,
-        duration: 250,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      onClose();
+    slideAnim.value = withTiming(-200, {
+      duration: 250,
+    }, (finished) => {
+      if (finished) {
+        runOnJS(onClose)();
+      }
+    });
+
+    opacityAnim.value = withTiming(0, {
+      duration: 250,
+    });
+
+    scaleAnim.value = withTiming(0.8, {
+      duration: 250,
     });
   };
+
+  // Animated styles using react-native-reanimated
+  const animatedNotificationStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { translateY: slideAnim.value },
+        { scale: scaleAnim.value }
+      ],
+      opacity: opacityAnim.value,
+    };
+  });
+
+  const animatedProgressStyle = useAnimatedStyle(() => {
+    const progressWidth = interpolate(
+      progressAnim.value,
+      [0, 1],
+      [0, 100],
+      Extrapolate.CLAMP
+    );
+    return {
+      width: `${progressWidth}%`,
+    };
+  });
 
   if (!achievement || !visible) return null;
 
@@ -126,17 +140,11 @@ export const AchievementModal: React.FC<AchievementNotificationProps> = ({
         visible={showFireworks}
         onAnimationFinish={onFireworksFinish}
       />
-      
+
       <Animated.View
         style={[
           styles.notification,
-          {
-            transform: [
-              { translateY: slideAnim },
-              { scale: scaleAnim }
-            ],
-            opacity: opacityAnim,
-          },
+          animatedNotificationStyle,
         ]}
       >
         <View style={styles.content}>
@@ -169,16 +177,11 @@ export const AchievementModal: React.FC<AchievementNotificationProps> = ({
         </View>
         
         <View style={styles.progressBar}>
-          <Animated.View 
+          <Animated.View
             style={[
               styles.progressFill,
-              {
-                width: progressAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: ['0%', '100%'],
-                }),
-              }
-            ]} 
+              animatedProgressStyle,
+            ]}
           />
         </View>
       </Animated.View>

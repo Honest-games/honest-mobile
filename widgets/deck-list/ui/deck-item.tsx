@@ -27,11 +27,7 @@ export const DeckItem: React.FC<DeckItemProps> = ({ deck, onInfoClick }) => {
 
     return (
       <TouchableOpacity style={styles.deckWithSvg} key={deck.id} onPress={onInfoClick}>
-        <Svg
-          width={cardWidth}
-          height={cardHeight}
-          style={StyleSheet.absoluteFillObject}
-        >
+        <Svg width={cardWidth} height={cardHeight} style={StyleSheet.absoluteFillObject}>
           <Defs>
             <ClipPath id="foldedCorner">
               <Path
@@ -48,29 +44,17 @@ export const DeckItem: React.FC<DeckItemProps> = ({ deck, onInfoClick }) => {
             </ClipPath>
           </Defs>
 
-          <Rect
-            width={cardWidth}
-            height={cardHeight}
-            fill="white"
-            clipPath="url(#foldedCorner)"
-          />
+          <Rect width={cardWidth} height={cardHeight} fill="white" clipPath="url(#foldedCorner)" />
 
           {isValidSvg && svgData && (
             <SvgXml
               xml={svgData}
+              height={cardHeight - 25}
               width={cardWidth}
-              height={cardHeight}
+              preserveAspectRatio="xMidYMid slice"
               clipPath="url(#foldedCorner)"
             />
           )}
-
-          <Path
-            d={`M ${cardWidth - foldSize},0
-               L ${cardWidth},0
-               L ${cardWidth},${foldSize}
-               Z`}
-            fill="#e0e0e0"
-          />
         </Svg>
       </TouchableOpacity>
     );
@@ -124,7 +108,7 @@ const styles = StyleSheet.create({
   deckWithSvg: {
     flex: 1,
     position: "relative",
-    height: 221,
+    height: 195,
     width: "100%",
     backgroundColor: "white",
     overflow: "hidden",

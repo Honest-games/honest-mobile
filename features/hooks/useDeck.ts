@@ -4,7 +4,7 @@ import { IDeck } from '@/services/types/types'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAppSelector } from './useRedux'
 
-const useDeck = (userId: string) => {
+const useDeck = (userId: string, options?: { skip?: boolean }) => {
 	const language = useAppSelector(state => state.language.language)
 	const {
 		data: decks,
@@ -12,7 +12,7 @@ const useDeck = (userId: string) => {
 		isFetching: isFetchingDecks,
 		refetch,
 		error
-	} = useGetDecksQuery({ clientId: userId })
+	} = useGetDecksQuery({ clientId: userId }, { skip: options?.skip })
 	console.log("decks", decks)
 	return {
 		decks,

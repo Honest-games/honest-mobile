@@ -36,7 +36,7 @@ const Page = () => {
 
 const filterDecks = (decks: IDeck[], search: string) => {
   return decks.filter((d) => {
-    return d.name.toLowerCase().includes(search.toLowerCase()) || (d.promo?.toLowerCase() || '').includes(search.toLowerCase());
+    return d.name.toLowerCase().includes(search.toLowerCase()) || (d.promo?.toLowerCase() || "").includes(search.toLowerCase());
   });
 };
 
@@ -53,7 +53,7 @@ const filterDecks = (decks: IDeck[], search: string) => {
 
 const PageWithUserId = ({ userId }: { userId: string }) => {
   const dispatch = useAppDispatch();
-  const { decks, isLoadingDecks, isFetchingDecks, refetch: refetchDecks } = useDeck(userId);
+  const { decks, isLoadingDecks, isFetchingDecks, refetch: refetchDecks } = useDeck(userId, { skip: !userId });
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const scrollY = useSharedValue(0);
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
@@ -64,7 +64,7 @@ const PageWithUserId = ({ userId }: { userId: string }) => {
   const [tapOnDeck, setTapOnDeck] = useState<boolean>();
   const [filteredDecks, setFilteredDecks] = useState<IDeck[]>([]);
   const [sendPromo] = useSendPromoMutation();
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const searchTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (decks) {
@@ -187,7 +187,7 @@ const PageWithUserId = ({ userId }: { userId: string }) => {
         />
       </Animated.View>
 
-      {selectedDeck && <DeckBottomSheetModal deck={selectedDeck} ref={bottomSheetRef} userId={userId} />}
+      <DeckBottomSheetModal deck={selectedDeck} ref={bottomSheetRef} userId={userId} />
     </SafeAreaView>
   );
 };
@@ -211,4 +211,4 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 25,
   },
-}); 
+});

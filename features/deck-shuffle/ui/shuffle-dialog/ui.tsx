@@ -104,8 +104,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   deckButtonText: {
-    marginLeft: 12,
-    fontSize: 20,
+    marginLeft: 8,
+    fontSize: 16,
     color: '#5B5B5B',
     fontWeight: '500',
   },
@@ -121,8 +121,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   levelButtonText: {
-    marginLeft: 12,
-    fontSize: 18,
+    marginLeft: 8,
+    fontSize: 16,
     color: '#5B5B5B',
     fontWeight: '500',
   },

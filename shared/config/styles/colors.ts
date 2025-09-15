@@ -38,7 +38,7 @@ export default {
 	lightGrey: '#AAAAAA',
 	buttonGrey: '#737380',
 	deepGreen: '#6FAAA9',
-	lightRed: '#FFE6E6',
+	lightRed: '#FF8C8C',
 	text: '#000000',
 	shadow: '#000000',
 }

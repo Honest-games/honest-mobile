@@ -17,8 +17,8 @@ interface UseInitializeDataProps {
 const useInitializeData = ({ onDataReady, locale }: UseInitializeDataProps) => {
   const userId = useUserId();
   const dispatch = useAppDispatch();
-  const { decks, isLoadingDecks, isFetchingDecks } = useDeck(userId);
-  const { data: likes, isFetching: isFetchingLikes } = useGetAllLikesQuery(userId);
+  const { decks, isLoadingDecks, isFetchingDecks } = useDeck(userId, { skip: !userId });
+  const { data: likes, isFetching: isFetchingLikes } = useGetAllLikesQuery(userId, { skip: !userId });
 
   useEffect(() => {
     const initialize = async () => {

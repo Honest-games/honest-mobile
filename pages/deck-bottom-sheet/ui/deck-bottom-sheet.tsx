@@ -3,7 +3,9 @@ import { useAppDispatch } from "@/features/hooks/useRedux";
 import { useGetLevelsQuery, ILevelData } from "@/entities/level";
 import { IDeck } from "@/services/types/types";
 import React, { forwardRef, useCallback, useRef, useState } from "react";
-import { Text, TouchableOpacity, View, ViewStyle } from "react-native";
+import { Text, TouchableOpacity, View, ViewStyle, Dimensions, StyleSheet } from "react-native";
+import useFetchDeckSvg from "@/features/hooks/useFetchDeckSvg";
+import Svg, { SvgXml } from "react-native-svg";
 
 import { getLevelsInfo } from "@/features/converters";
 import { useTranslation } from "react-i18next";
@@ -57,8 +59,8 @@ export const DeckBottomSheetModal = forwardRef<Ref, CustomBottomSheetModalProps>
 });
 
 const DeckInfoSheet = ({ deck, userId, onDismiss }: { deck: IDeck; userId: string; onDismiss: () => void }) => {
-  const { data: levels, isLoading, isError } = useGetLevelsQuery({ deckId: deck.id, clientId: userId });
-  console.log("levels", levels)
+  const { data: levels, isLoading } = useGetLevelsQuery({ deckId: deck.id, clientId: userId });
+  console.log("levels123", levels)
   const levelInfo = getLevelsInfo(levels?.length ?? 0);
   console.log("levelInfo", levelInfo)
   const dispatch = useAppDispatch();
@@ -67,6 +69,10 @@ const DeckInfoSheet = ({ deck, userId, onDismiss }: { deck: IDeck; userId: strin
   const [tooltipContent, setTooltipContent] = useState<string>("");
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const { svgData, isLoadingImage } = useFetchDeckSvg(deck.modalImageId || "");
+  const isValidSvg = typeof svgData === "string" && svgData.trim().toLowerCase().startsWith("<svg");
+  const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
   const handleButtonPress = useCallback(
     (level: ILevelData) => {
@@ -99,20 +105,40 @@ const DeckInfoSheet = ({ deck, userId, onDismiss }: { deck: IDeck; userId: strin
 
   return (
     <TouchableWithoutFeedback onPress={handleCloseTooltip}>
-      <View style={{ gap: 20, marginBottom: 20 }}>
-        <DeckInfoTopContent levels={levels} deck={deck} />
-        <DeckDescription deck={deck} />
-        <LevelInfo levelInfo={levelInfo} />
-        <DeckWithLevels
-          levels={levels}
-          onButtonPress={handleButtonPress}
-          size="small"
-          selectedLevelId={selectedLevelId}
-          tooltipContent={tooltipContent}
-          tooltipVisible={tooltipVisible}
-          onCloseTooltip={handleCloseTooltip}
-        />
-        <DeckOpenButton id={deck.id} onDismiss={onDismiss} />
+      <View style={{ position: 'relative', gap: 20, marginBottom: 20 }}>
+        
+        <View style={deck.modalImageId && isValidSvg && svgData && !isLoadingImage ? styles.contentOverlay : { gap: 20 }}>
+        {deck.modalImageId && isValidSvg && svgData && !isLoadingImage && (
+          <View style={styles.backgroundImageContainer}>
+            <Svg
+              width={screenWidth}
+              height={screenHeight * 0.8}
+              style={StyleSheet.absoluteFillObject}
+            >
+              <SvgXml
+                xml={svgData}
+                width={screenWidth}
+                height={screenHeight*0.5}
+                preserveAspectRatio="xMidYMid slice"
+                opacity={0.2}
+              />
+            </Svg>
+          </View>
+        )}
+          <DeckInfoTopContent levels={levels} deck={deck} />
+          <DeckDescription deck={deck} />
+          <LevelInfo levelInfo={levelInfo} />
+          <DeckWithLevels
+            levels={levels}
+            onButtonPress={handleButtonPress}
+            size="small"
+            selectedLevelId={selectedLevelId}
+            tooltipContent={tooltipContent}
+            tooltipVisible={tooltipVisible}
+            onCloseTooltip={handleCloseTooltip}
+          />
+          <DeckOpenButton id={deck.id} onDismiss={onDismiss} />
+        </View>
       </View>
     </TouchableWithoutFeedback>
   );
