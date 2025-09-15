@@ -50,6 +50,8 @@ export class DisplayedCardItem {
   }
 
   static create(level: ILevelData, shouldLoadQuestion: boolean = false, shouldShowLevelOnCard: boolean = true) {
+    // Force new ID every time to prevent content reuse
+    DisplayedCardItem._currentDisplayDataIndex += Math.floor(Math.random() * 1000);
     return new DisplayedCardItem(
       level,
       shouldLoadQuestion,
@@ -199,17 +201,21 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
-  const moveToNextCard = (level: ILevelData) => {
+  const moveToNextCard = useCallback((level: ILevelData) => {
     if (displayDataStack.length > 0) {
       // Вызываем handleCardComplete при переходе к следующей карте
       handleCardComplete();
 
+      // Force immediate update with completely new cards
       setDisplayDataStack((prevState) => {
-        const second = prevState[1];
-        return [second, DisplayedCardItem.create(level, true, isSeveralLevels)];
+        const newCard = DisplayedCardItem.create(level, true, isSeveralLevels);
+        const secondCard = prevState[1] || newCard;
+
+        // Ensure we have completely fresh cards
+        return [secondCard, newCard];
       });
     }
-  };
+  }, [handleCardComplete, isSeveralLevels, displayDataStack.length]);
 
   /*ANIMATION*/
   const swipeX = useSharedValue(0);
@@ -241,18 +247,12 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
     if (userSwiped && selectedLevel) {
       setUserSwiped(false);
 
-      // Reset animation values
-      setTimeout(() => {
-        swipeX.value = 0;
-        swipeY.value = 0;
-
-        // Move to next card
-        try {
-          moveToNextCard(selectedLevel);
-        } catch (error) {
-          console.error('Move to next card error:', error);
-        }
-      }, 100);
+      // Move to next card IMMEDIATELY (animation values already reset in getPanResponder)
+      try {
+        moveToNextCard(selectedLevel);
+      } catch (error) {
+        console.error('Move to next card error:', error);
+      }
     }
   }, [userSwiped, selectedLevel, moveToNextCard]);
 
@@ -418,34 +418,52 @@ function WithLoadingQuestion({
   userId: string;
   children: (question?: IQuestion, isFetchingQuestion?: boolean, questionId?: string) => ReactNode;
 }) {
-  const [time] = useState(Date.now());
+  // Generate unique timestamp for each card to force fresh question
+  const [time] = useState(() => Date.now() + displayData.id * 1000);
   const [question, setQuestion] = useState<IQuestion>();
   const [questionId, setQuestionId] = useState<string>();
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  // Reset question when displayData changes
+  useEffect(() => {
+    setIsTransitioning(true);
+    setQuestion(undefined);
+    setQuestionId(undefined);
+
+    // Short delay to prevent flickering
+    const timer = setTimeout(() => {
+      setIsTransitioning(false);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [displayData.id]);
 
   const { data: fetchedQuestion, isFetching: isFetchingQuestion } = useGetQuestionQuery(displayData.level?.id ? {
     levelId: displayData.level.id,
     clientId: userId,
     timestamp: time,
-  } : { levelId: '', clientId: userId, timestamp: time }, { skip: !displayData.level?.id });
-
-  const { data: fetchedQuestion2, isFetching: isFetchingQuestion2 } = useGetQuestionQuery(displayData.level?.id ? {
-    levelId: displayData.level.id,
-    clientId: userId,
-    timestamp: time,
-  } : { levelId: '', clientId: userId, timestamp: time }, { skip: !displayData.level?.id });
+  } : { levelId: '', clientId: userId, timestamp: time }, {
+    skip: !displayData.level?.id,
+    refetchOnMountOrArgChange: true,
+  });
 
   useEffect(() => {
-    // Используем первый успешно загруженный вопрос
+    // Only update question when we have a new one AND it's not loading
     if (fetchedQuestion && !isFetchingQuestion) {
       setQuestion(fetchedQuestion);
       setQuestionId(fetchedQuestion.id);
-    } else if (fetchedQuestion2 && !isFetchingQuestion2) {
-      setQuestion(fetchedQuestion2);
-      setQuestionId(fetchedQuestion2.id);
     }
-  }, [fetchedQuestion, fetchedQuestion2, isFetchingQuestion, isFetchingQuestion2]);
+  }, [fetchedQuestion, isFetchingQuestion]);
 
-  return children(question, isFetchingQuestion && isFetchingQuestion2, questionId);
+  // Complete content isolation - never show old content
+  const isLoading = isFetchingQuestion || isTransitioning;
+
+  // Only show question if we have it AND we're not transitioning AND not fetching
+  const shouldShowContent = !isTransitioning && !isFetchingQuestion && question;
+  const questionToShow = shouldShowContent ? question : undefined;
+  const shouldShowLoading = isLoading || (!shouldShowContent && displayData.shouldLoadQuestion);
+
+  return children(questionToShow, shouldShowLoading, shouldShowContent ? questionId : undefined);
 }
 
 const CardsStack = ({
@@ -472,11 +490,22 @@ const CardsStack = ({
       const actualHandlers = isFirst && panResponder ? panResponder.panHandlers : {};
 
       return (
-        <SwipableCard key={displayData.id} swipeX={swipeX} swipeY={swipeY} allowDrag={isFirst} {...actualHandlers}>
+        <SwipableCard
+          key={`card-${displayData.id}-${displayData.level?.id || 'no-level'}`}
+          swipeX={isFirst ? swipeX : undefined}
+          swipeY={isFirst ? swipeY : undefined}
+          allowDrag={isFirst}
+          {...actualHandlers}
+        >
           {displayData.shouldLoadQuestion ? (
-            <WithLoadingQuestion displayData={displayData} userId={userId}>
+            <WithLoadingQuestion
+              key={`question-${displayData.id}-${displayData.level?.id || 'no-level'}`}
+              displayData={displayData}
+              userId={userId}
+            >
               {(question, isFetchingQuestion, questionId) => (
                 <QuestionCard
+                  key={`content-${displayData.id}-${questionId || 'loading'}`}
                   questionId={questionId}
                   displayData={displayData}
                   question={question}
@@ -485,7 +514,10 @@ const CardsStack = ({
               )}
             </WithLoadingQuestion>
           ) : (
-            <QuestionCard displayData={displayData} />
+            <QuestionCard
+              key={`static-${displayData.id}`}
+              displayData={displayData}
+            />
           )}
         </SwipableCard>
       );

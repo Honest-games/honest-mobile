@@ -4,7 +4,7 @@ import { IDeck } from "@/services/types/types";
 import { DeckInfo } from "@/entities/deck/ui/deck-info";
 import { DeckLabelList } from "@/entities/deck/ui/deck-label-list";
 import useFetchDeckSvg from "@/features/hooks/useFetchDeckSvg";
-import Svg, { Circle, Defs, Mask, Rect, SvgXml } from "react-native-svg";
+import Svg, { Defs, SvgXml, ClipPath, Path, Rect } from "react-native-svg";
 
 export interface DeckItemProps {
   deck: IDeck;
@@ -17,22 +17,61 @@ export const DeckItem: React.FC<DeckItemProps> = ({ deck, onInfoClick }) => {
   const labels = deck.labels || [];
   const { svgData, isLoadingImage, error } = useFetchDeckSvg(deck.backgroundImageId || "");
   const isValidSvg = typeof svgData === "string" && svgData.trim().toLowerCase().startsWith("<svg");
+  const { width: screenWidth } = Dimensions.get("window");
+  const cardWidth = screenWidth - 32; // учитываем отступы
+  const cardHeight = 221;
+  const cornerRadius = 20;
+  const cutoutRadius = 20;
   if (deck.backgroundImageId && deck.backgroundImageId !== null) {
+    const foldSize = 40;
+
     return (
       <TouchableOpacity style={styles.deckWithSvg} key={deck.id} onPress={onInfoClick}>
-        <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
+        <Svg
+          width={cardWidth}
+          height={cardHeight}
+          style={StyleSheet.absoluteFillObject}
+        >
           <Defs>
-            <Mask id="cutoutMask">
-              <Rect width="100%" height="100%" fill="white" />
-              <Circle r="20" cx="95%" cy="5%" fill="white" />
-            </Mask>
+            <ClipPath id="foldedCorner">
+              <Path
+                d={`M 0,${cornerRadius}
+                   Q 0,0 ${cornerRadius},0
+                   L ${cardWidth - foldSize},0
+                   L ${cardWidth},${foldSize}
+                   L ${cardWidth},${cardHeight - cornerRadius}
+                   Q ${cardWidth},${cardHeight} ${cardWidth - cornerRadius},${cardHeight}
+                   L ${cornerRadius},${cardHeight}
+                   Q 0,${cardHeight} 0,${cardHeight - cornerRadius}
+                   Z`}
+              />
+            </ClipPath>
           </Defs>
-          <Rect width="100%" height="100%" fill="white" mask="url(#cutoutMask)" />
-          {isValidSvg ? (
-            <SvgXml xml={svgData} width="100%" height="100%" preserveAspectRatio="xMidYMid slice" />
-          ) : null}
+
+          <Rect
+            width={cardWidth}
+            height={cardHeight}
+            fill="white"
+            clipPath="url(#foldedCorner)"
+          />
+
+          {isValidSvg && svgData && (
+            <SvgXml
+              xml={svgData}
+              width={cardWidth}
+              height={cardHeight}
+              clipPath="url(#foldedCorner)"
+            />
+          )}
+
+          <Path
+            d={`M ${cardWidth - foldSize},0
+               L ${cardWidth},0
+               L ${cardWidth},${foldSize}
+               Z`}
+            fill="#e0e0e0"
+          />
         </Svg>
-        
       </TouchableOpacity>
     );
   }
@@ -86,11 +125,11 @@ const styles = StyleSheet.create({
     flex: 1,
     position: "relative",
     height: 221,
-    borderRadius: 20,
     width: "100%",
     backgroundColor: "white",
     overflow: "hidden",
     marginTop: 20,
+    borderRadius: 20,
   },
   contentOverlay: {
     position: "absolute",
@@ -98,7 +137,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-   
+    zIndex: 1,
   },
   topContent: {
     justifyContent: "space-between",

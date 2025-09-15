@@ -58,10 +58,10 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 	return (
 		<View style={styles.searchBar}>
 			<View style={styles.iconContainer}>
-				<TouchableOpacity onPress={onSearchSubmit} style={[styles.iconLeft, styles.absoluteIcon]} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+				<TouchableOpacity onPress={onSearchSubmit} style={styles.absoluteIcon} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
 					<AnimatedFeather name='search' size={24} color={Colors.grey1} style={searchIconStyle} />
 				</TouchableOpacity>
-				<TouchableOpacity onPress={handleClear} style={[styles.iconLeft, styles.absoluteIcon]} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+				<TouchableOpacity onPress={handleClear} style={styles.absoluteIcon} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
 					<AnimatedAntDesign name='close' size={24} color={Colors.grey1} style={clearIconStyle} />
 				</TouchableOpacity>
 			</View>
@@ -92,9 +92,6 @@ const styles = StyleSheet.create({
 		width: 24,
 		height: 24,
 		position: 'relative',
-		marginRight: 12,
-	},
-	iconLeft: {
 		marginRight: 12,
 	},
 	absoluteIcon: {

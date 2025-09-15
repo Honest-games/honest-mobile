@@ -29,10 +29,14 @@ export const getPanResponder = (
             swipeX.value = withTiming(velocityX * 500, { duration });
             swipeY.value = withTiming(dy, { duration });
 
-            // Notify about swipe completion via state change (safer than callback)
+            // Notify immediately but reset values first to prevent applying to new card
             setTimeout(() => {
+                // Reset animation values BEFORE updating cards
+                swipeX.value = 0;
+                swipeY.value = 0;
+                // Then notify about completion
                 setUserSwipeState(true);
-            }, duration + 50); // Small buffer after animation
+            }, Math.min(duration * 0.7, 200)); // Complete early but not too early
         } else {
             // Если свайп не достиг активационной точки, плавно возвращаем карточку на место
             swipeX.value = withSpring(0, { stiffness: 100, damping: 10 });
