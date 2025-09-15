@@ -1,12 +1,12 @@
-
-import { IDeck } from '@entities/deck/model/types';
-import { AntDesign, MaterialIcons } from '@expo/vector-icons';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { SvgXml } from 'react-native-svg';
-import React from 'react';
-import ContentLoader, { Circle } from 'react-content-loader/native';
-import { Colors } from '@/shared/config';
-import useFetchDeckSvg from '@/features/hooks/useFetchDeckSvg';
+import { IDeck } from "@entities/deck/model/types";
+import { AntDesign, MaterialIcons } from "@expo/vector-icons";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { SvgXml } from "react-native-svg";
+import React from "react";
+import ContentLoader, { Circle } from "react-content-loader/native";
+import { Colors } from "@/shared/config";
+import useFetchDeckSvg from "@/features/hooks/useFetchDeckSvg";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 interface DeckTopContentProps {
   goBack: () => void;
@@ -14,17 +14,13 @@ interface DeckTopContentProps {
   onShufflePress: () => void;
 }
 
-export const DeckTopContent: React.FC<DeckTopContentProps> = ({ 
-  goBack, 
-  selectedDeck, 
-  onShufflePress 
-}) => {
+export const DeckTopContent: React.FC<DeckTopContentProps> = ({ goBack, selectedDeck, onShufflePress }) => {
   const { svgData, isLoadingImage, error: errorSvg } = useFetchDeckSvg(selectedDeck.imageId);
-  
+
   // Проверка на валидность SVG
   const isValidSvg = React.useMemo(() => {
     if (!svgData) return false;
-    return svgData.trim().startsWith('<svg') || svgData.trim().startsWith('<?xml');
+    return svgData.trim().startsWith("<svg") || svgData.trim().startsWith("<?xml");
   }, [svgData]);
 
   return (
@@ -36,7 +32,9 @@ export const DeckTopContent: React.FC<DeckTopContentProps> = ({
           </ContentLoader>
         ) : isValidSvg ? (
           <View>
-            <SvgXml xml={svgData} width={24} height={24} />
+            <TouchableOpacity onPress={onShufflePress} style={styles.iconButton}>
+              <Ionicons name="shuffle" size={28} color={Colors.primary} />
+            </TouchableOpacity>{" "}
           </View>
         ) : null}
       </View>
@@ -44,14 +42,8 @@ export const DeckTopContent: React.FC<DeckTopContentProps> = ({
         <>
           <Text style={styles.text}>{selectedDeck.name.toLowerCase()}</Text>
           <View style={styles.rightButtons}>
-            <TouchableOpacity 
-              onPress={onShufflePress}
-              style={styles.iconButton}
-            >
-              <MaterialIcons name="shuffle" size={24} color={Colors.primary} />
-            </TouchableOpacity>
             <TouchableOpacity onPress={goBack}>
-              <AntDesign name="close" size={30} color={Colors.primary} />
+              <Ionicons name="close" size={30} color={Colors.primary} />
             </TouchableOpacity>
           </View>
         </>
@@ -62,19 +54,19 @@ export const DeckTopContent: React.FC<DeckTopContentProps> = ({
 
 const styles = StyleSheet.create({
   topContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   deckProgress: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
   },
   text: {
     color: Colors.deepGray,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   img: {
     height: 32,
@@ -84,11 +76,11 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   rightButtons: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 15,
   },
   iconButton: {
     padding: 5,
   },
-}); 
+});

@@ -24,11 +24,12 @@ export const LevelInfo: React.FC<LevelInfoProps> = ({ levelInfo, style }) => {
 const styles = StyleSheet.create({
   levelsInfo: {
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    marginTop: 16,
   },
   levelsInfoText: {
     color: Colors.lightGrey,
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: '400'
   }
 }); 

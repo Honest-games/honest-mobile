@@ -37,9 +37,9 @@ export default StyleSheet.create({
       justifyContent: "center",
       alignItems: "center",
       height: 46,
-      width: 178,
+      paddingHorizontal: 84,
       backgroundColor: Colors.deepGreen,
-      borderRadius: 12,
+      borderRadius: 16,
     },
     backgroundImageContainer: {
       position: "absolute",

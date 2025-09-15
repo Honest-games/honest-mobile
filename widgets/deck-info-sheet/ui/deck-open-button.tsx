@@ -14,7 +14,8 @@ export const DeckOpenButton: React.FC<DeckOpenButtonProps> = ({ id, style, onDis
   const { t } = useTranslation();
 
   return (
-    <View style={{ justifyContent: "center", alignItems: "center" }}>
+    <View style={{ justifyContent: "center", alignItems: "center", marginTop: 30
+    }}>
       <Link href={`/decks/${id}`} asChild>
         <TouchableOpacity style={styles.button} onPress={onDismiss}>
           <Text style={{ color: "white", fontSize: 24, marginBottom: 5 }}>{t("play")}</Text>

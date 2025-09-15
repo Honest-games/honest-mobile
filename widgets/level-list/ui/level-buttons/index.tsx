@@ -17,7 +17,9 @@ export const LevelButtons: React.FC<LevelButtonsProps> = ({ levels, onButtonPres
       alignItems: "center",
       flexDirection: "column",
       width: "100%",
-      gap: 12,
+      gap: 10,
+      paddingBottom: 16,
+      paddingHorizontal: 16,
       borderRadius: 20,
       backgroundColor: "rgba(243, 236, 224, 0.3)",
     },
@@ -25,7 +27,7 @@ export const LevelButtons: React.FC<LevelButtonsProps> = ({ levels, onButtonPres
 
   return (
     <View style={styles.sectionButtons}>
-      <View style={{ marginTop: 12 }}>
+      <View >
         <LevelInfo levelInfo={"chooseLevel"} />
       </View>
       {levels.map((level) => (
