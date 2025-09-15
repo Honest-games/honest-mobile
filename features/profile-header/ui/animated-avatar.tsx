@@ -1,14 +1,6 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSequence,
-  withTiming,
-  withSpring,
-  runOnJS
-} from 'react-native-reanimated';
 import { Colors } from '@/shared/config';
 
 interface AnimatedAvatarProps {
@@ -22,45 +14,13 @@ interface AnimatedAvatarProps {
 }
 
 export const AnimatedAvatar = React.memo(({ profile, onPress }: AnimatedAvatarProps) => {
-  const scale = useSharedValue(1);
-  const editButtonOpacity = useSharedValue(0.8);
-  const avatarKey = `${profile.avatarUri}-${profile.emoji}-${profile.backgroundColor}`;
-
-  // Animate avatar changes
-  useEffect(() => {
-    scale.value = withSequence(
-      withTiming(0.9, { duration: 150 }),
-      withSpring(1, { damping: 8, stiffness: 120 })
-    );
-  }, [avatarKey]);
-
   const handlePress = () => {
-    // Immediate visual feedback with animation
-    scale.value = withSequence(
-      withTiming(0.95, { duration: 100 }),
-      withTiming(1, { duration: 150 })
-    );
-
-    editButtonOpacity.value = withSequence(
-      withTiming(1, { duration: 100 }),
-      withTiming(0.8, { duration: 150 })
-    );
-
-    // Run onPress on JS thread
-    runOnJS(onPress)();
+    onPress();
   };
 
-  const avatarAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }]
-  }));
-
-  const editButtonAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: editButtonOpacity.value
-  }));
-
   return (
-    <TouchableOpacity style={styles.avatarContainer} onPress={handlePress}>
-      <Animated.View style={avatarAnimatedStyle}>
+    <TouchableOpacity style={styles.avatarContainer} onPress={handlePress} activeOpacity={0.8}>
+      <View>
         {profile.avatarUri ? (
           <Image source={{ uri: profile.avatarUri }} style={styles.avatarImage} />
         ) : profile.emoji ? (
@@ -72,11 +32,11 @@ export const AnimatedAvatar = React.memo(({ profile, onPress }: AnimatedAvatarPr
             <Text style={styles.avatarEmoji}>😊</Text>
           </View>
         )}
-      </Animated.View>
+      </View>
 
-      <Animated.View style={[styles.editAvatarButton, editButtonAnimatedStyle]}>
+      <View style={styles.editAvatarButton}>
         <MaterialCommunityIcons name="pencil" size={20} color={Colors.white} />
-      </Animated.View>
+      </View>
     </TouchableOpacity>
   );
 });

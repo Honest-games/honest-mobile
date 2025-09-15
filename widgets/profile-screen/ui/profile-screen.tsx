@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useMemo } from 'react';
 import {
   View, StyleSheet, ScrollView, Platform
 } from 'react-native';
@@ -14,6 +14,7 @@ import { Statistics } from '@/entities/profile/ui/statistics';
 import { AchievementsList } from '@/entities/achievement/ui/achievements-list';
 import { AnimatedEmojiPicker } from '@shared/ui/emoji-picker';
 import { useAppSelector } from '@/features/hooks/useRedux';
+import { saveProfile } from '@shared/lib';
 import { usePerformanceMonitor } from '@shared/hooks';
 
 // Import the ProfileHeader feature
@@ -22,8 +23,6 @@ import { ProfileHeader } from '@/features/profile-header';
 const ProfileScreen = React.memo(() => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
-
-  // Performance monitoring for this component
   usePerformanceMonitor('ProfileScreen');
 
   // Use memoized selector for optimized performance
@@ -34,37 +33,54 @@ const ProfileScreen = React.memo(() => {
   const [selectedBackgroundColor, setSelectedBackgroundColor] = useState(Colors.beige);
   const [isEmojiInputVisible, setIsEmojiInputVisible] = useState(false);
 
+  // Simplified profile memoization
+  const memoizedProfile = useMemo(() => profile, [profile.id, profile.name, profile.emoji, profile.avatarUri, profile.backgroundColor]);
+
   const avatarPickerRef = useRef<BottomSheetModal | null>(null);
 
   const handleAvatarPress = useCallback(() => {
     avatarPickerRef.current?.present();
   }, []);
 
-  const handleSelectAvatar = useCallback((type: string, value?: string) => {
+  const handleSelectAvatar = useCallback(async (type: string, value?: string) => {
     if (type === 'photo' && value) {
-      dispatch(updateProfile({
+      const updatedProfile = {
+        ...profile,
         avatarUri: value,
         emoji: undefined,
         backgroundColor: undefined
-      }));
+      };
+      dispatch(updateProfile(updatedProfile));
+      // Persist to AsyncStorage immediately for better UX
+      await saveProfile(updatedProfile);
     } else if (type === 'emoji') {
       setIsEmojiInputVisible(true);
     }
-  }, [dispatch]);
+  }, [dispatch, profile]);
 
-  const handleEmojiSelect = useCallback((emoji: string) => {
-    dispatch(updateProfile({
+  const handleEmojiSelect = useCallback(async (emoji: string) => {
+    const updatedProfile = {
+      ...profile,
       avatarUri: undefined,
-      avatarId: undefined,
       emoji: emoji,
       backgroundColor: selectedBackgroundColor
-    }));
+    };
+    dispatch(updateProfile(updatedProfile));
+    // Persist to AsyncStorage immediately
+    await saveProfile(updatedProfile);
     setIsEmojiInputVisible(false);
-  }, [dispatch, selectedBackgroundColor]);
+  }, [dispatch, selectedBackgroundColor, profile]);
 
   const handleColorSelect = useCallback((color: string) => {
     setSelectedBackgroundColor(color);
   }, []);
+
+  // Persist profile name changes
+  const handleNameChange = useCallback(async (name: string) => {
+    const updatedProfile = { ...profile, name };
+    dispatch(updateProfile(updatedProfile));
+    await saveProfile(updatedProfile);
+  }, [dispatch, profile]);
 
   const toggleShowAllAchievements = useCallback(() => {
     setShowAllAchievements(prev => !prev);
@@ -75,28 +91,29 @@ const ProfileScreen = React.memo(() => {
       <ScrollView style={styles.scrollView}>
         <View style={styles.profileSection}>
           <ProfileHeader
-            profile={profile}
+            profile={memoizedProfile}
             onAvatarPress={handleAvatarPress}
+            onNameChange={handleNameChange}
           />
         </View>
 
         <AchievementsList
-          achievements={profile.achievements}
+          achievements={memoizedProfile.achievements}
           showAllAchievements={showAllAchievements}
           onToggleShow={toggleShowAllAchievements}
           t={t}
         />
 
         <Statistics
-          totalRounds={profile.stats.totalRounds}
-          totalQuestions={profile.stats.totalQuestions}
+          totalRounds={memoizedProfile.stats.totalRounds}
+          totalQuestions={memoizedProfile.stats.totalQuestions}
           t={t}
         />
 
         <AvatarPickerBottomSheet
           bottomSheetModalRef={avatarPickerRef}
           onSelectAvatar={handleSelectAvatar}
-          profile={profile}
+          profile={memoizedProfile}
         />
 
         <AnimatedEmojiPicker
@@ -105,6 +122,7 @@ const ProfileScreen = React.memo(() => {
           onColorSelect={handleColorSelect}
           onEmojiSelect={handleEmojiSelect}
           onClose={() => setIsEmojiInputVisible(false)}
+          useVirtualizedList={true}
         />
       </ScrollView>
     </SafeAreaView>

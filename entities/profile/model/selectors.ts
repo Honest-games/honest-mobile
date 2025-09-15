@@ -24,10 +24,32 @@ const defaultProfile: IUserProfile = {
 // Base selector for profile state
 const selectProfileState = (state: RootState) => state.profile;
 
-// Memoized profile selector with fallback
+// Memoized profile selector with fallback - ensures proper transformation
 export const selectProfile = createSelector(
   [selectProfileState],
-  (profile): IUserProfile => profile || defaultProfile
+  (profile): IUserProfile => {
+    // Always return a new object to ensure proper memoization
+    // This prevents the "returning input without modification" warning
+    if (!profile) {
+      return { ...defaultProfile };
+    }
+
+    // Ensure all required fields are present with fallbacks
+    return {
+      ...defaultProfile,
+      ...profile,
+      // Guarantee required fields are never undefined/null
+      id: profile.id || '',
+      name: profile.name || '',
+      bio: profile.bio || '',
+      interests: profile.interests || [],
+      mood: profile.mood || '',
+      avatarId: profile.avatarId || 1,
+      achievements: profile.achievements || [],
+      stats: profile.stats || defaultProfile.stats,
+      lastUnlockedAchievement: profile.lastUnlockedAchievement
+    };
+  }
 );
 
 // Memoized profile basic info selector
@@ -43,16 +65,22 @@ export const selectProfileBasicInfo = createSelector(
   })
 );
 
-// Memoized profile statistics selector
+// Memoized profile statistics selector with transformation
 export const selectProfileStats = createSelector(
   [selectProfile],
-  (profile) => profile.stats
+  (profile) => ({
+    ...profile.stats,
+    // Ensure computed totals are properly calculated
+    totalGames: profile.stats.totalRounds || 0,
+    totalAnswers: profile.stats.totalQuestions || 0,
+    uniqueLevelsPlayed: Object.keys(profile.stats.levelStats || {}).length
+  })
 );
 
-// Memoized achievements selector
+// Memoized achievements selector with transformation
 export const selectProfileAchievements = createSelector(
   [selectProfile],
-  (profile) => profile.achievements
+  (profile) => [...(profile.achievements || [])]
 );
 
 // Memoized unlocked achievements selector
@@ -76,10 +104,13 @@ export const selectAchievementsCount = createSelector(
   })
 );
 
-// Memoized last unlocked achievement selector
+// Memoized last unlocked achievement selector with transformation
 export const selectLastUnlockedAchievement = createSelector(
   [selectProfile],
-  (profile) => profile.lastUnlockedAchievement
+  (profile) => ({
+    achievementId: profile.lastUnlockedAchievement,
+    hasUnlocked: profile.lastUnlockedAchievement !== null
+  })
 );
 
 // Memoized profile completion status

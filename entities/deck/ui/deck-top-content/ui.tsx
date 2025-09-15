@@ -34,7 +34,7 @@ export const DeckTopContent: React.FC<DeckTopContentProps> = ({ goBack, selected
           <View>
             <TouchableOpacity onPress={onShufflePress} style={styles.iconButton}>
               <Ionicons name="shuffle" size={28} color={Colors.primary} />
-            </TouchableOpacity>{" "}
+            </TouchableOpacity>
           </View>
         ) : null}
       </View>
