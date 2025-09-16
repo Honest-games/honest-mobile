@@ -82,10 +82,10 @@ export const profileSlice = createSlice({
     },
     clearLastUnlockedAchievement(state) {
       state.lastUnlockedAchievement = null;
+      saveProfile(state);
     },
     incrementStats(state, action: PayloadAction<{ levelId?: string; questionsInRound?: number }>) {
       state.stats.totalQuestions++;
-      state.stats.totalRounds++;
       
       if (action.payload.levelId) {
         if (!state.stats.levelStats[action.payload.levelId]) {
@@ -95,7 +95,6 @@ export const profileSlice = createSlice({
           };
         }
         state.stats.levelStats[action.payload.levelId].questionsAnswered++;
-        state.stats.levelStats[action.payload.levelId].roundsPlayed++;
 
         // Проверяем достижение "Душа компании"
         const uniqueLevels = new Set(Object.keys(state.stats.levelStats)).size;
@@ -121,13 +120,21 @@ export const profileSlice = createSlice({
         }
       }
 
-      // 10 раундов
+      // Опытный игрок - ответить на 50 вопросов (разблокируется раньше "Любознательного")
       const tenRounds = achievements.find(a => a.id === 'ten_rounds');
       if (tenRounds && !tenRounds.isUnlocked && tenRounds.progress) {
-        tenRounds.progress.current = state.stats.totalRounds;
+        tenRounds.progress.current = state.stats.totalQuestions;
+        console.log('Ten rounds achievement check:', {
+          totalQuestions: state.stats.totalQuestions,
+          currentProgress: tenRounds.progress.current,
+          required: tenRounds.progress.required,
+          isUnlocked: tenRounds.isUnlocked
+        });
+        
         if (tenRounds.progress.current >= tenRounds.progress.required) {
           tenRounds.isUnlocked = true;
           state.lastUnlockedAchievement = tenRounds.id;
+          console.log('Ten rounds achievement unlocked!');
         }
       }
 

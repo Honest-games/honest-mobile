@@ -29,7 +29,7 @@ export const Button: React.FC<ButtonProps> = (props) => {
 			color: 'white',
 			borderRadius: 8,
 			backgroundColor: outline ? 'transparent' : levelBgColor || Colors.deepBlue,
-			borderWidth: outline ? 2 : 0,
+			borderWidth: outline ? 1 : 0,
 			borderColor: outline ? levelBgColor || Colors.deepBlue : 'transparent',
 			height: height,
 			width: size === 'large' ? '100%' : 196

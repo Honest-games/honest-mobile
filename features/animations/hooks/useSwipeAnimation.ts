@@ -2,7 +2,6 @@ import { useCallback, useRef } from 'react';
 import {
   useSharedValue,
   withTiming,
-  runOnJS,
   SharedValue
 } from 'react-native-reanimated';
 
@@ -15,7 +14,8 @@ export interface UseSwipeAnimationReturn {
   swipeX: SharedValue<number>;
   swipeY: SharedValue<number>;
   isAnimating: SharedValue<boolean>;
-  triggerSwipeAnimation: (direction: number, onComplete?: () => void) => void;
+  triggerSwipeAnimation: (direction?: number, onComplete?: () => void) => void;
+  getNextDirection: () => number;
   resetAnimation: () => void;
 }
 
@@ -64,8 +64,12 @@ export const useSwipeAnimation = (
     }
   }, [swipeX, swipeY, isAnimating, executeCallback]);
 
+  const getNextDirection = useCallback(() => {
+    return currentDirection.value;
+  }, [currentDirection]);
+
   const triggerSwipeAnimation = useCallback((
-    direction: number = currentDirection.value,
+    direction?: number,
     onComplete?: () => void
   ) => {
     'worklet';
@@ -74,6 +78,9 @@ export const useSwipeAnimation = (
     if (isAnimating.value) {
       return;
     }
+
+    // Use provided direction or current alternating direction
+    const animationDirection = direction !== undefined ? direction : currentDirection.value;
 
     // Store callback
     if (onComplete) {
@@ -85,7 +92,7 @@ export const useSwipeAnimation = (
 
     // Start animation
     swipeX.value = withTiming(
-      direction * swipeDistance,
+      animationDirection * swipeDistance,
       { duration },
       (finished) => {
         'worklet';
@@ -96,13 +103,14 @@ export const useSwipeAnimation = (
     );
 
     swipeY.value = withTiming(0, { duration });
-  }, [duration, swipeDistance, isAnimating, swipeX, swipeY, onAnimationComplete]);
+  }, [duration, swipeDistance, isAnimating, swipeX, swipeY, onAnimationComplete, currentDirection]);
 
   return {
     swipeX,
     swipeY,
     isAnimating,
     triggerSwipeAnimation,
+    getNextDirection,
     resetAnimation,
   };
 };

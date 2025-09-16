@@ -45,6 +45,7 @@ const CardItem: React.FC<CardItemProps> = React.memo(({
       swipeX={isFirst ? swipeX : undefined}
       swipeY={isFirst ? swipeY : undefined}
       allowDrag={isFirst}
+      isVisible={displayData.isVisible}
       {...(panHandlers || {})}
     >
       {shouldLoadQuestion ? (
@@ -89,10 +90,10 @@ export const CardStackManager: React.FC<CardStackManagerProps> = React.memo(({
       .map((displayData, i) => {
         const isFirst = i === 0;
         const actualHandlers = isFirst && panResponder ? panResponder.panHandlers : {};
-
+        console.log('displayData', displayData);
         return (
           <CardItem
-            key={`${displayData.id}-${i}`}
+            key={displayData.id}
             displayData={displayData}
             userId={userId}
             isFirst={isFirst}

@@ -32,8 +32,12 @@ const cardsOfDeckSlice = createSlice({
       // Новый reducer для обновления decks в состоянии
       state.decks = action.payload;
     },
+    resetDeckProgress: (state) => {
+      state.count = 0;
+      state.deckSize = 0;
+    },
   },
 });
 
-export const { incrementDeletedCards, setDeckSize, setDecks } = cardsOfDeckSlice.actions;
+export const { incrementDeletedCards, setDeckSize, setDecks, resetDeckProgress } = cardsOfDeckSlice.actions;
 export default cardsOfDeckSlice.reducer;

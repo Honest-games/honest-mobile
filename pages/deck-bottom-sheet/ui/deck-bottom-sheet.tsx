@@ -1,4 +1,3 @@
-
 import { useAppDispatch } from "@/features/hooks/useRedux";
 import { useGetLevelsQuery, ILevelData } from "@/entities/level";
 import { IDeck } from "@/services/types/types";
@@ -15,7 +14,7 @@ import { Easing } from "react-native-reanimated";
 import { hideTooltip, showTooltip } from "@/entities/level/model/slice";
 import { LevelInfo } from "@/entities/level/ui";
 import { DeckWithLevels } from "@/widgets/deck-with-levels";
-import styles from './styles'
+import styles from "./styles";
 import { Loader } from "@/shared/ui/loader";
 import { DeckInfoTopContent } from "@/widgets/deck-content";
 import { DynamicSizeBottomSheet } from "@/shared/ui/bottom-sheet";
@@ -100,29 +99,17 @@ const DeckInfoSheet = ({ deck, userId, onDismiss }: { deck: IDeck; userId: strin
   if (isLoading || !levels) {
     return <Loader />;
   }
-
   return (
     <TouchableWithoutFeedback onPress={handleCloseTooltip}>
-      <View style={{ position: 'relative', gap: 20, marginBottom: 20 }}>
-        
+      <View style={{ position: "relative", gap: 20, marginBottom: 20 }}>
         <View style={deck.modalImageId && isValidSvg && svgData && !isLoadingImage ? styles.contentOverlay : { gap: 20 }}>
-        {deck.modalImageId && isValidSvg && svgData && !isLoadingImage && (
-          <View style={styles.backgroundImageContainer}>
-            <Svg
-              width={screenWidth}
-              height={screenHeight * 0.8}
-              style={StyleSheet.absoluteFillObject}
-            >
-              <SvgXml
-                xml={svgData}
-                width={screenWidth}
-                height={screenHeight*0.5}
-                preserveAspectRatio="xMidYMid slice"
-                opacity={0.2}
-              />
-            </Svg>
-          </View>
-        )}
+          {deck.modalImageId && isValidSvg && svgData && !isLoadingImage && (
+            <View style={styles.backgroundImageContainer}>
+              <Svg width={screenWidth} height={screenHeight * 0.8} style={StyleSheet.absoluteFillObject}>
+                <SvgXml xml={svgData} width={screenWidth} height={screenHeight * 0.5} preserveAspectRatio="xMidYMid slice" opacity={0.2} />
+              </Svg>
+            </View>
+          )}
           <DeckInfoTopContent levels={levels} deck={deck} />
           <DeckDescription deck={deck} />
           <LevelInfo levelInfo={levelInfo} />
@@ -145,7 +132,17 @@ const DeckInfoSheet = ({ deck, userId, onDismiss }: { deck: IDeck; userId: strin
 const DeckDescription = ({ deck, style }: { deck: IDeck; style?: ViewStyle }) => {
   return (
     <View style={[styles.commonInformation, style]}>
-      <Text style={styles.deckTitle}>{deck?.name || "Название колоды"}</Text>
+      <Text
+        style={{
+          fontFamily: "MakanHatiCyrillic",
+          color: deck.color || Colors.deepGreen,
+          fontSize: 50,
+          marginTop: 17,
+          textAlign: "center",
+        }}
+      >
+        {deck?.name || "Название колоды"}
+      </Text>
       <Text style={styles.deckDescription}>{deck?.description || "описание колоды"}</Text>
     </View>
   );
@@ -153,11 +150,20 @@ const DeckDescription = ({ deck, style }: { deck: IDeck; style?: ViewStyle }) =>
 
 const DeckOpenButton = ({ deck, style, onDismiss }: { deck: IDeck; style?: ViewStyle; onDismiss: () => void }) => {
   const { t } = useTranslation();
-
   return (
     <View style={{ justifyContent: "center", alignItems: "center" }}>
       <Link href={`/decks/${deck.id}`} asChild>
-        <TouchableOpacity style={[styles.button, {backgroundColor: deck?.color || Colors.deepGreen}]} onPress={onDismiss}>
+        <TouchableOpacity
+          style={{
+            justifyContent: "center",
+            alignItems: "center",
+            height: 46,
+            paddingHorizontal: 84,
+            borderRadius: 16,
+            backgroundColor: deck.color,
+          }}
+          onPress={onDismiss}
+        >
           <Text style={{ color: "white", fontSize: 24, marginBottom: 5 }}>{t("play")}</Text>
         </TouchableOpacity>
       </Link>

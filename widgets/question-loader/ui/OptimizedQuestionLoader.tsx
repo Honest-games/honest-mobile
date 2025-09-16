@@ -17,12 +17,14 @@ export const OptimizedQuestionLoader: React.FC<OptimizedQuestionLoaderProps> = R
   const [cachedQuestion, setCachedQuestion] = useState<IQuestion>();
   const [questionId, setQuestionId] = useState<string>();
 
-  // Generate stable timestamp based on card id to ensure consistent caching
+  // Generate stable timestamp based on level ID for better caching
   const timestamp = useMemo(() => {
-    const base = Date.now();
-    const cardHash = displayData.id.split('-').reduce((acc, part) => acc + part.charCodeAt(0), 0);
-    return base + cardHash;
-  }, [displayData.id]);
+    if (!displayData.level?.id) return Date.now();
+
+    // Создаем стабильный timestamp на основе levelId
+    const levelIdHash = displayData.level.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return Math.floor(Date.now() / (1000 * 60)) * 1000 + levelIdHash; // Обновляется каждую минуту
+  }, [displayData.level?.id]);
 
   // Only fetch if we should load question and have level data
   const shouldFetch = Boolean(displayData.shouldLoadQuestion && displayData.level?.id);
@@ -56,11 +58,11 @@ export const OptimizedQuestionLoader: React.FC<OptimizedQuestionLoaderProps> = R
     }
   }, [isSuccess, fetchedQuestion]);
 
-  // Reset cached data when card changes
+  // Reset cached data only when level changes, not card ID
   useEffect(() => {
     setCachedQuestion(undefined);
     setQuestionId(undefined);
-  }, [displayData.id]);
+  }, [displayData.level?.id]); // Изменено: сбрасываем кэш только при смене уровня
 
   // Optimistic rendering logic
   const shouldShowContent = useMemo(() => {

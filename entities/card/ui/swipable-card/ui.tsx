@@ -4,6 +4,7 @@ import Animated, {
 	useAnimatedStyle,
 	interpolate,
 	SharedValue,
+	withTiming,
 } from 'react-native-reanimated'
 
 const screenWidth = Dimensions.get('screen').width
@@ -13,6 +14,7 @@ interface ICard {
 	allowDrag: boolean
 	swipeX?: SharedValue<number>
 	swipeY?: SharedValue<number>
+	isVisible?: boolean
 	children: React.ReactNode
 }
 
@@ -21,6 +23,7 @@ export const SwipableCard = memo((props: ICard) => {
 		swipeX,
 		swipeY,
 		allowDrag,
+		isVisible = true,
 		children,
 		...rest
 	} = props
@@ -35,8 +38,12 @@ export const SwipableCard = memo((props: ICard) => {
 	})
 
 	const animatedStyle = useAnimatedStyle(() => {
+		const baseStyle: any = {
+			opacity: withTiming(isVisible ? 1 : 0, { duration: 200 }),
+		};
+
 		if (!swipeX || !swipeY || !allowDrag) {
-			return {};
+			return baseStyle;
 		}
 
 		const rotate = interpolate(
@@ -46,13 +53,14 @@ export const SwipableCard = memo((props: ICard) => {
 		);
 
 		return {
+			...baseStyle,
 			transform: [
 				{ translateX: swipeX.value },
 				{ translateY: swipeY.value },
 				{ rotate: `${rotate}deg` },
 			],
 		};
-	}, [allowDrag]);
+	}, [allowDrag, isVisible]);
 
 	return (
 		<Animated.View

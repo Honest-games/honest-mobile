@@ -54,8 +54,9 @@ const filterDecks = (decks: IDeck[], search: string) => {
 //   });
 
 const PageWithUserId = ({ userId }: { userId: string }) => {
-  usePerformanceMonitor('MainTabsScreen');
+  // usePerformanceMonitor('MainTabsScreen');
   const dispatch = useAppDispatch();
+  // const  useBottomTabInsets = useBottomTabInsets()
   const { decks, isLoadingDecks, isFetchingDecks, refetch: refetchDecks } = useDeck(userId, { skip: !userId });
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const scrollY = useSharedValue(0);
@@ -149,7 +150,6 @@ const PageWithUserId = ({ userId }: { userId: string }) => {
     setSelectedDeck(deck);
   };
 
-  console.log('selectedDeck', selectedDeck);
   useEffect(() => {
     if (selectedDeck || tapOnDeck) {
       bottomSheetRef?.current?.present();
@@ -178,7 +178,7 @@ const PageWithUserId = ({ userId }: { userId: string }) => {
         />
       </Animated.View>
 
-      <DeckBottomSheetModal deck={selectedDeck} ref={bottomSheetRef} userId={userId} />
+      {selectedDeck && <DeckBottomSheetModal deck={selectedDeck} ref={bottomSheetRef} userId={userId} />}
     </SafeAreaView>
   );
 };

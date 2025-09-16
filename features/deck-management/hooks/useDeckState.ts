@@ -21,7 +21,9 @@ export type DeckAction =
   | { type: 'SET_USER_SWIPED'; payload: boolean }
   | { type: 'MOVE_TO_NEXT_CARD'; payload: ILevelData }
   | { type: 'RESET_STACK' }
-  | { type: 'UPDATE_SECOND_CARD_QUESTION_LOADING' };
+  | { type: 'UPDATE_SECOND_CARD_QUESTION_LOADING' }
+  | { type: 'HIDE_CARDS_FOR_LEVEL_CHANGE' }
+  | { type: 'SET_CARD_VISIBILITY'; payload: { index: number; isVisible: boolean } };
 
 const initialState: DeckState = {
   selectedDeck: null,
@@ -64,12 +66,13 @@ function deckReducer(state: DeckState, action: DeckAction): DeckState {
       if (state.displayDataStack.length === 0) return state;
 
       const isSeveralLevels = true; // This should come from props/context
+      const existingSecondCard = state.displayDataStack[1];
       const newCard = createDisplayedCard(action.payload, true, isSeveralLevels);
-      const secondCard = state.displayDataStack[1] || newCard;
 
+      // Переиспользуем существующую вторую карточку если она есть
       return {
         ...state,
-        displayDataStack: [secondCard, newCard]
+        displayDataStack: existingSecondCard ? [existingSecondCard, newCard] : [newCard]
       };
     }
 
@@ -82,6 +85,24 @@ function deckReducer(state: DeckState, action: DeckAction): DeckState {
 
       const updatedStack = [...state.displayDataStack];
       updatedStack[1] = { ...updatedStack[1], shouldLoadQuestion: true };
+
+      return { ...state, displayDataStack: updatedStack };
+    }
+
+    case 'HIDE_CARDS_FOR_LEVEL_CHANGE': {
+      const updatedStack = state.displayDataStack.map(card => ({
+        ...card,
+        isVisible: false
+      }));
+      return { ...state, displayDataStack: updatedStack };
+    }
+
+    case 'SET_CARD_VISIBILITY': {
+      const { index, isVisible } = action.payload;
+      if (index >= state.displayDataStack.length || index < 0) return state;
+
+      const updatedStack = [...state.displayDataStack];
+      updatedStack[index] = { ...updatedStack[index], isVisible };
 
       return { ...state, displayDataStack: updatedStack };
     }
@@ -134,6 +155,14 @@ export const useDeckState = () => {
     dispatch({ type: 'UPDATE_SECOND_CARD_QUESTION_LOADING' });
   }, []);
 
+  const hideCardsForLevelChange = useCallback(() => {
+    dispatch({ type: 'HIDE_CARDS_FOR_LEVEL_CHANGE' });
+  }, []);
+
+  const setCardVisibility = useCallback((index: number, isVisible: boolean) => {
+    dispatch({ type: 'SET_CARD_VISIBILITY', payload: { index, isVisible } });
+  }, []);
+
   const createInitialCards = useCallback((level: ILevelData, isSeveralLevels: boolean) => {
     const cards = [
       createDisplayedCard(level, true, isSeveralLevels),
@@ -171,6 +200,8 @@ export const useDeckState = () => {
     moveToNextCard,
     resetStack,
     updateSecondCardQuestionLoading,
+    hideCardsForLevelChange,
+    setCardVisibility,
 
     // Compound actions
     createInitialCards,
@@ -187,6 +218,8 @@ export const useDeckState = () => {
     moveToNextCard,
     resetStack,
     updateSecondCardQuestionLoading,
+    hideCardsForLevelChange,
+    setCardVisibility,
     createInitialCards,
     createShuffleCards,
   ]);

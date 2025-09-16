@@ -14,6 +14,7 @@ import { Provider } from "react-redux";
 import "../shared/config/i18n/i18n.config";
 import store from "../shared/config/_providers/store";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ProfileProvider } from "@shared/config/_providers/ProfileProvider";
 import { useAppDispatch, useAppSelector } from "@/features/hooks/useRedux";
 import { setUserId } from "@/entities/user/model/slice";
 import { useDeck } from "@/features/hooks";
@@ -135,7 +136,9 @@ export default function RootLayout() {
   return (
     <Provider store={store}>
       <QueryClientProvider client={query}>
-        <AppContent />
+        <ProfileProvider>
+          <AppContent />
+        </ProfileProvider>
       </QueryClientProvider>
     </Provider>
   );
