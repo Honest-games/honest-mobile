@@ -92,9 +92,7 @@ const OpenedDeckWithLevels = React.memo<{ deck: IDeck; levels: ILevelData[]; use
 
   const moveToNextCard = useCallback(
     (level: ILevelData) => {
-      console.log('deckState.displayDataStack', deckState.displayDataStack);
       if (deckState.displayDataStack.length > 0) {
-        console.log("moveToNextCard", level);
         handleCardComplete();
         deckState.moveToNextCard(level);
       }
@@ -190,9 +188,7 @@ const OpenedDeckWithLevels = React.memo<{ deck: IDeck; levels: ILevelData[]; use
       } else {
         if (deckState.selectedLevel.id === level.id) {
           deckState.updateSecondCardQuestionLoading();
-          console.log(123)
         } else {
-          console.log(456)
           const newCard = createDisplayedCard(level, true, isSeveralLevels);
           const updatedStack: IDisplayedCard[] = [deckState.displayDataStack[0], newCard];
           deckState.setDisplayStack(updatedStack);

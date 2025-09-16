@@ -149,6 +149,7 @@ const PageWithUserId = ({ userId }: { userId: string }) => {
     setSelectedDeck(deck);
   };
 
+  console.log('selectedDeck', selectedDeck);
   useEffect(() => {
     if (selectedDeck || tapOnDeck) {
       bottomSheetRef?.current?.present();
@@ -177,7 +178,7 @@ const PageWithUserId = ({ userId }: { userId: string }) => {
         />
       </Animated.View>
 
-      {selectedDeck && <DeckBottomSheetModal deck={selectedDeck} ref={bottomSheetRef} userId={userId} />}
+      <DeckBottomSheetModal deck={selectedDeck} ref={bottomSheetRef} userId={userId} />
     </SafeAreaView>
   );
 };

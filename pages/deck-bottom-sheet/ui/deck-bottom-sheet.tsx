@@ -19,6 +19,7 @@ import styles from './styles'
 import { Loader } from "@/shared/ui/loader";
 import { DeckInfoTopContent } from "@/widgets/deck-content";
 import { DynamicSizeBottomSheet } from "@/shared/ui/bottom-sheet";
+import { Colors } from "@/shared/config";
 
 interface CustomBottomSheetModalProps {
   deck: IDeck;
@@ -134,7 +135,7 @@ const DeckInfoSheet = ({ deck, userId, onDismiss }: { deck: IDeck; userId: strin
             tooltipVisible={tooltipVisible}
             onCloseTooltip={handleCloseTooltip}
           />
-          <DeckOpenButton id={deck.id} onDismiss={onDismiss} />
+          <DeckOpenButton deck={deck} onDismiss={onDismiss} />
         </View>
       </View>
     </TouchableWithoutFeedback>
@@ -150,13 +151,13 @@ const DeckDescription = ({ deck, style }: { deck: IDeck; style?: ViewStyle }) =>
   );
 };
 
-const DeckOpenButton = ({ id, style, onDismiss }: { id: string | number; style?: ViewStyle; onDismiss: () => void }) => {
+const DeckOpenButton = ({ deck, style, onDismiss }: { deck: IDeck; style?: ViewStyle; onDismiss: () => void }) => {
   const { t } = useTranslation();
 
   return (
     <View style={{ justifyContent: "center", alignItems: "center" }}>
-      <Link href={`/decks/${id}`} asChild>
-        <TouchableOpacity style={styles.button} onPress={onDismiss}>
+      <Link href={`/decks/${deck.id}`} asChild>
+        <TouchableOpacity style={[styles.button, {backgroundColor: deck?.color || Colors.deepGreen}]} onPress={onDismiss}>
           <Text style={{ color: "white", fontSize: 24, marginBottom: 5 }}>{t("play")}</Text>
         </TouchableOpacity>
       </Link>

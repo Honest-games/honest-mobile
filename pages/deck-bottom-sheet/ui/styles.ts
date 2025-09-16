@@ -38,7 +38,6 @@ export default StyleSheet.create({
       alignItems: "center",
       height: 46,
       paddingHorizontal: 84,
-      backgroundColor: Colors.deepGreen,
       borderRadius: 16,
     },
     backgroundImageContainer: {

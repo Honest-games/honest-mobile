@@ -21,7 +21,6 @@ interface DeckInfoSheetProps {
 
 export const DeckInfoSheet: React.FC<DeckInfoSheetProps> = ({ deck, userId, onDismiss }) => {
   const { data: levels, isLoading } = useGetLevelsQuery({ deckId: deck.id, clientId: userId });
-  console.log("levels", levels)
   const levelInfo = getLevelsInfo(levels?.length ?? 0);
   const dispatch = useAppDispatch();
   

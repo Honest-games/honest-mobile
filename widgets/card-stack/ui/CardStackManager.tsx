@@ -39,7 +39,6 @@ const CardItem: React.FC<CardItemProps> = React.memo(({
   );
 
   const shouldLoadQuestion = displayData.shouldLoadQuestion;
-  console.log('displayData', displayData);
   return (
     <SwipableCard
       key={cardKey}
@@ -85,7 +84,6 @@ export const CardStackManager: React.FC<CardStackManagerProps> = React.memo(({
   const panResponder = useMemo(() => {
     return selectedLevel ? getPanResponder(swipeX, swipeY, setUserSwiped) : null;
   }, [selectedLevel, swipeX, swipeY, setUserSwiped]);
-
   const renderedCards = useMemo(() => {
     return displayDataStack
       .map((displayData, i) => {
