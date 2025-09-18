@@ -3,7 +3,7 @@ import Colors from '@/shared/config/styles/colors'
 export interface ILabelColor {
 	labelColor: string
 }
-export function getLabelColor(inputText: string) {
+export function getLabelColor(inputText: string, hasBackgroundImage: boolean = false) {
 	let labelColor
 
 	switch (inputText) {
@@ -23,7 +23,7 @@ export function getLabelColor(inputText: string) {
 			labelColor = Colors.dimBrown
 			break
 		default:
-			labelColor = Colors.lightGreen
+			labelColor = hasBackgroundImage ? Colors.lightGreen1 : Colors.lightGreen
 	}
 
 	return labelColor

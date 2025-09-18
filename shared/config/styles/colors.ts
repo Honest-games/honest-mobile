@@ -41,4 +41,5 @@ export default {
 	lightRed: '#FF8C8C',
 	text: '#000000',
 	shadow: '#000000',
+	grey2: '#696969',
 }

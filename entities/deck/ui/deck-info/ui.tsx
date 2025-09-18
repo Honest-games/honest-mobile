@@ -35,7 +35,7 @@ const DeckInfo: React.FC<DeckInfoProps> = ({ title, id, imageId, handleOpenDeckI
           <Rect x="37%" y="155" rx="18" ry="24.5" width="25%" height="32" />
         </ContentLoader>
       ) : isValidSvg ? (
-        <View style={{ position: "absolute", bottom: 95 }}>
+        <View style={{ position: "absolute", bottom: 70 }}>
           <SvgXml xml={svgData} width={83} height={70} />
         </View>
       ) : null}

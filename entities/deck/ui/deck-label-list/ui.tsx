@@ -5,13 +5,14 @@ import { CustomLabel } from '@shared/ui';
 
 interface DeckLabelListProps {
   labels: string[];
+  hasBackgroundImage?: boolean;
 }
 
-export const DeckLabelList: React.FC<DeckLabelListProps> = ({ labels }) => {
+export const DeckLabelList: React.FC<DeckLabelListProps> = ({ labels, hasBackgroundImage = false }) => {
   return (
     <View style={styles.deckLabels}>
       {labels.map((label: string, index: number) => (
-        <CustomLabel labelColor={getLabelColor(label)} key={index}>
+        <CustomLabel labelColor={getLabelColor(label, hasBackgroundImage)} key={index}>
           {label}
         </CustomLabel>
       ))}

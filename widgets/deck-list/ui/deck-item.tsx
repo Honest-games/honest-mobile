@@ -3,8 +3,9 @@ import { StyleSheet, TouchableOpacity, View, Dimensions } from "react-native";
 import { IDeck } from "@/services/types/types";
 import { DeckInfo } from "@/entities/deck/ui/deck-info";
 import { DeckLabelList } from "@/entities/deck/ui/deck-label-list";
+import { DeckLikeButton } from "@/features/deck-likes/ui/deck-like-button";
 import useFetchDeckSvg from "@/features/hooks/useFetchDeckSvg";
-import Svg, { Defs, SvgXml, ClipPath, Path, Rect } from "react-native-svg";
+import Svg, { SvgXml } from "react-native-svg";
 
 export interface DeckItemProps {
   deck: IDeck;
@@ -18,55 +19,38 @@ export const DeckItem: React.FC<DeckItemProps> = ({ deck, onInfoClick }) => {
   const { svgData, isLoadingImage, error } = useFetchDeckSvg(deck.backgroundImageId || "");
   const isValidSvg = typeof svgData === "string" && svgData.trim().toLowerCase().startsWith("<svg");
   const { width: screenWidth } = Dimensions.get("window");
-  const cardWidth = screenWidth - 32; // учитываем отступы
+  const cardWidth = screenWidth - 32;
   const cardHeight = 221;
-  const cornerRadius = 20;
-  const cutoutRadius = 20;
   if (deck.backgroundImageId && deck.backgroundImageId !== null) {
-    const foldSize = 40;
-
     return (
       <TouchableOpacity style={styles.deckWithSvg} key={deck.id} onPress={onInfoClick}>
         <Svg width={cardWidth} height={cardHeight} style={StyleSheet.absoluteFillObject}>
-          <Defs>
-            <ClipPath id="foldedCorner">
-              <Path
-                d={`M 0,${cornerRadius}
-                   Q 0,0 ${cornerRadius},0
-                   L ${cardWidth - foldSize},0
-                   L ${cardWidth},${foldSize}
-                   L ${cardWidth},${cardHeight - cornerRadius}
-                   Q ${cardWidth},${cardHeight} ${cardWidth - cornerRadius},${cardHeight}
-                   L ${cornerRadius},${cardHeight}
-                   Q 0,${cardHeight} 0,${cardHeight - cornerRadius}
-                   Z`}
-              />
-            </ClipPath>
-          </Defs>
-
-          <Rect width={cardWidth} height={cardHeight} fill="white" clipPath="url(#foldedCorner)" />
-
           {isValidSvg && svgData && (
             <SvgXml
               xml={svgData}
               height={cardHeight - 25}
               width={cardWidth}
               preserveAspectRatio="xMidYMid slice"
-              clipPath="url(#foldedCorner)"
+              clipPath="url(#cardWithCutout)"
             />
           )}
         </Svg>
+        <View style={styles.contentOverlay}>
+          <View style={{ flexDirection: "column", margin: 12, flex: 1 }}>
+            <View style={styles.topContent}>
+              <DeckLabelList labels={labels} hasBackgroundImage={true} />
+            </View>
+          </View>
+        </View>
+        <View style={styles.likeButtonContainer}>
+          <DeckLikeButton deckId={deck.id} />
+        </View>
       </TouchableOpacity>
     );
   }
 
   return (
     <TouchableOpacity style={styles.deck} key={deck.id} onPress={onInfoClick}>
-      {/* {isLoadingImage && (
-        <View style={styles.backgroundImageContainer}>
-          <SvgXml xml={svgData} width="100%" height="100%" />
-        </View>
-      )} */}
       <View style={{ flexDirection: "column", margin: 12, flex: 1 }}>
         <View
           style={{
@@ -75,8 +59,8 @@ export const DeckItem: React.FC<DeckItemProps> = ({ deck, onInfoClick }) => {
             width: "100%",
           }}
         >
-          <DeckLabelList labels={labels} />
-          {/* <DeckLikeButton deckId={deck.id} /> */}
+          <DeckLabelList labels={labels} hasBackgroundImage={false} />
+          <DeckLikeButton deckId={deck.id} />
         </View>
         <DeckInfo imageId={deck.imageId} title={deck.name} id={deck.id} handleOpenDeckInfo={onInfoClick} />
       </View>
@@ -91,7 +75,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     backgroundColor: "white",
     borderRadius: 20,
-    height: 221,
+    height: 195,
     justifyContent: "flex-start",
     alignItems: "flex-start",
     flexDirection: "row",
@@ -127,5 +111,12 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     flexDirection: "row",
     width: "100%",
+  },
+  likeButtonContainer: {
+    position: "absolute",
+    top: 5,
+    right: 5,
+    zIndex: 2,
+    elevation: 2,
   },
 });

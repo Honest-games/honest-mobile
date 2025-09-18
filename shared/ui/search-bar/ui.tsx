@@ -25,7 +25,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 	const animationProgress = useSharedValue(0);
 
 	useEffect(() => {
-		animationProgress.value = withTiming(value ? 1 : 0, { duration: 300 });
+		const shouldShow = value.length > 0;
+		animationProgress.value = withTiming(shouldShow ? 1 : 0, { duration: 300 });
 	}, [value]);
 
 	const searchIconStyle = useAnimatedStyle(() => {
@@ -59,11 +60,17 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 		<View style={styles.searchBar}>
 			<View style={styles.iconContainer}>
 				<TouchableOpacity onPress={onSearchSubmit} style={styles.absoluteIcon} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-					<AnimatedFeather name='search' size={24} color={Colors.grey1} style={searchIconStyle} />
+					<AnimatedFeather name='search' size={22} color={Colors.grey1} style={searchIconStyle} />
 				</TouchableOpacity>
-				<TouchableOpacity onPress={handleClear} style={styles.absoluteIcon} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-					<AnimatedAntDesign name='close' size={24} color={Colors.grey1} style={clearIconStyle} />
-				</TouchableOpacity>
+				<View style={styles.absoluteIcon} pointerEvents={value.length > 0 ? 'auto' : 'none'}>
+					<TouchableOpacity 
+						onPress={handleClear} 
+						hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+						style={{ width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}
+					>
+						<AnimatedAntDesign name='close' size={20} color={Colors.grey1} style={clearIconStyle} />
+					</TouchableOpacity>
+				</View>
 			</View>
 			<TextInput
 				ref={inputRef}
