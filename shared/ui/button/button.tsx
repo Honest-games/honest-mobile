@@ -19,7 +19,7 @@ export const Button: React.FC<ButtonProps> = (props) => {
 
   const levelBgColor = getLevelColor(bgColor);
   const backgroundColor = levelBgColor || Colors.deepBlue
-	const textColor = Color(backgroundColor).darken(0.3).toString()
+	const textColor = Color(backgroundColor).darken(0.45).toString()
   
   let height = size === 'large' ? 54 : 33;
   const styles = StyleSheet.create({
@@ -27,7 +27,7 @@ export const Button: React.FC<ButtonProps> = (props) => {
 			justifyContent: 'center',
 			alignItems: 'center',
 			color: 'white',
-			borderRadius: 8,
+			borderRadius: 20,
 			backgroundColor: outline ? 'transparent' : levelBgColor || Colors.deepBlue,
 			borderWidth: outline ? 1 : 0,
 			borderColor: outline ? levelBgColor || Colors.deepBlue : 'transparent',

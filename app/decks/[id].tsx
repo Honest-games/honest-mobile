@@ -10,11 +10,7 @@ import { IDeck, ILevelData, IQuestion, IAchievement } from "@/services/types/typ
 import { useLocalSearchParams } from "expo-router";
 import React, { ReactNode, useEffect, useState, useCallback } from "react";
 import { Dimensions, StyleSheet, View } from "react-native";
-import {
-  useSharedValue,
-  withTiming,
-  SharedValue,
-} from "react-native-reanimated";
+import { useSharedValue, withTiming, SharedValue } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { useTranslation } from "react-i18next";
@@ -27,7 +23,6 @@ import { DeckTopContent } from "@/entities/deck/ui/deck-top-content";
 import { Loader } from "@/shared/ui/loader";
 
 const { width } = Dimensions.get("window");
-
 
 export class DisplayedCardItem {
   id: string;
@@ -184,7 +179,7 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
         DisplayedCardItem.create(level, true, isSeveralLevels), // Вторая карта с загруженным вопросом
       ]);
       setSelectedLevel(level);
-      
+
       // Засчитываем первую карточку сразу
       dispatch(incrementStats({ levelId: level.id }));
     } else {
@@ -214,23 +209,26 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
-  const moveToNextCard = useCallback((level: ILevelData, skipStatsIncrement = false) => {
-    if (displayDataStack.length > 0) {
-      // Вызываем handleCardComplete только если не пропускаем (для случаев когда уже вызвали)
-      if (!skipStatsIncrement) {
-        handleCardComplete();
+  const moveToNextCard = useCallback(
+    (level: ILevelData, skipStatsIncrement = false) => {
+      if (displayDataStack.length > 0) {
+        // Вызываем handleCardComplete только если не пропускаем (для случаев когда уже вызвали)
+        if (!skipStatsIncrement) {
+          handleCardComplete();
+        }
+
+        // Force immediate update with completely new cards
+        setDisplayDataStack((prevState) => {
+          const newCard = DisplayedCardItem.create(level, true, isSeveralLevels);
+          const secondCard = prevState[1] || newCard;
+
+          // Ensure we have completely fresh cards
+          return [secondCard, newCard];
+        });
       }
-
-      // Force immediate update with completely new cards
-      setDisplayDataStack((prevState) => {
-        const newCard = DisplayedCardItem.create(level, true, isSeveralLevels);
-        const secondCard = prevState[1] || newCard;
-
-        // Ensure we have completely fresh cards
-        return [secondCard, newCard];
-      });
-    }
-  }, [handleCardComplete, isSeveralLevels, displayDataStack.length]);
+    },
+    [handleCardComplete, isSeveralLevels, displayDataStack.length],
+  );
 
   /*ANIMATION*/
   const swipeX = useSharedValue(0);
@@ -251,7 +249,7 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
         try {
           action();
         } catch (error) {
-          console.error('Pending action error:', error);
+          console.error("Pending action error:", error);
         }
       }, 100);
     }
@@ -266,7 +264,7 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
       try {
         moveToNextCard(selectedLevel, false); // Не пропускаем подсчет при смахивании пользователем
       } catch (error) {
-        console.error('Move to next card error:', error);
+        console.error("Move to next card error:", error);
       }
     }
   }, [userSwiped, selectedLevel, moveToNextCard]);
@@ -369,7 +367,6 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
     setShuffleDialogVisible(false);
   };
 
-
   return (
     //TODO block buttons when animation
     <SafeAreaView style={styles.container}>
@@ -412,7 +409,7 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
         isSingleLevel={levels.length === 1}
       />
       <ResumeDeckDialog visible={isResumeDialogVisible} onClose={handleResumeDialogClose} onStartOver={handleStartOver} />
-      
+
       <AchievementModal
         achievement={unlockedAchievement}
         visible={showAchievementModal}
@@ -453,14 +450,19 @@ function WithLoadingQuestion({
     return () => clearTimeout(timer);
   }, [displayData.id]);
 
-  const { data: fetchedQuestion, isFetching: isFetchingQuestion } = useGetQuestionQuery(displayData.level?.id ? {
-    levelId: displayData.level.id,
-    clientId: userId,
-    timestamp: time,
-  } : { levelId: '', clientId: userId, timestamp: time }, {
-    skip: !displayData.level?.id,
-    refetchOnMountOrArgChange: true,
-  });
+  const { data: fetchedQuestion, isFetching: isFetchingQuestion } = useGetQuestionQuery(
+    displayData.level?.id
+      ? {
+          levelId: displayData.level.id,
+          clientId: userId,
+          timestamp: time,
+        }
+      : { levelId: "", clientId: userId, timestamp: time },
+    {
+      skip: !displayData.level?.id,
+      refetchOnMountOrArgChange: true,
+    },
+  );
 
   useEffect(() => {
     // Only update question when we have a new one AND it's not loading
@@ -496,7 +498,6 @@ const CardsStack = ({
   selectedLevel: ILevelData;
   userId: string;
 }) => {
-
   const panResponder = selectedLevel && getPanResponder(swipeX, swipeY, setUserSwiped);
 
   return displayDataStack
@@ -506,21 +507,17 @@ const CardsStack = ({
 
       return (
         <SwipableCard
-          key={`card-${displayData.id}-${displayData.level?.id || 'no-level'}`}
+          key={`card-${displayData.id}`}
           swipeX={isFirst ? swipeX : undefined}
           swipeY={isFirst ? swipeY : undefined}
           allowDrag={isFirst}
           {...actualHandlers}
         >
           {displayData.shouldLoadQuestion ? (
-            <WithLoadingQuestion
-              key={`question-${displayData.id}-${displayData.level?.id || 'no-level'}`}
-              displayData={displayData}
-              userId={userId}
-            >
+            <WithLoadingQuestion key={`question-${displayData.id}`} displayData={displayData} userId={userId}>
               {(question, isFetchingQuestion, questionId) => (
                 <QuestionCard
-                  key={`content-${displayData.id}-${questionId || 'loading'}`}
+                  key={`content-${displayData.id}`}
                   questionId={questionId}
                   displayData={displayData}
                   question={question}
@@ -529,10 +526,7 @@ const CardsStack = ({
               )}
             </WithLoadingQuestion>
           ) : (
-            <QuestionCard
-              key={`static-${displayData.id}`}
-              displayData={displayData}
-            />
+            <QuestionCard key={`static-${displayData.id}`} displayData={displayData} />
           )}
         </SwipableCard>
       );

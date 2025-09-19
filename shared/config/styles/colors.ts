@@ -42,4 +42,5 @@ export default {
 	text: '#000000',
 	shadow: '#000000',
 	grey2: '#696969',
+	lightBeige: "#FDF5EB",
 }

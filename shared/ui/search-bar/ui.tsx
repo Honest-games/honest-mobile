@@ -26,15 +26,20 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
 	useEffect(() => {
 		const shouldShow = value.length > 0;
-		animationProgress.value = withTiming(shouldShow ? 1 : 0, { duration: 300 });
+		animationProgress.value = withTiming(shouldShow ? 1 : 0, { 
+			duration: 250,
+		});
 	}, [value]);
 
 	const searchIconStyle = useAnimatedStyle(() => {
 		return {
-			opacity: interpolate(animationProgress.value, [0, 1], [1, 0]),
+			opacity: interpolate(animationProgress.value, [0, 0.3, 1], [1, 0.3, 0]),
 			transform: [
 				{
-					scale: interpolate(animationProgress.value, [0, 1], [1, 0.8]),
+					scale: interpolate(animationProgress.value, [0, 1], [1, 0.3]),
+				},
+				{
+					rotate: `${interpolate(animationProgress.value, [0, 1], [0, -90])}deg`,
 				},
 			],
 		};
@@ -42,10 +47,13 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
 	const clearIconStyle = useAnimatedStyle(() => {
 		return {
-			opacity: interpolate(animationProgress.value, [0, 1], [0, 1]),
+			opacity: interpolate(animationProgress.value, [0, 0.7, 1], [0, 0.3, 1]),
 			transform: [
 				{
-					scale: interpolate(animationProgress.value, [0, 1], [0.8, 1]),
+					scale: interpolate(animationProgress.value, [0, 1], [0.3, 1]),
+				},
+				{
+					rotate: `${interpolate(animationProgress.value, [0, 1], [90, 0])}deg`,
 				},
 			],
 		};

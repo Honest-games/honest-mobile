@@ -1,0 +1,1 @@
+export { OutlineLabel } from './ui';

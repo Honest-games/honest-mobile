@@ -1,6 +1,12 @@
 import React, { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { View, StyleSheet, ScrollView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Animated, { 
+  useSharedValue, 
+  useAnimatedStyle, 
+  withTiming,
+  Easing
+} from "react-native-reanimated";
 import Colors from "@shared/config/styles/colors";
 import { useTranslation } from "react-i18next";
 import { useAppDispatch } from "@/features/hooks/useRedux";
@@ -25,6 +31,9 @@ const ProfileScreen = () => {
   const dispatch = useAppDispatch();
   // usePerformanceMonitor('ProfileScreen');
 
+  // Animation values
+  const animationOpacity = useSharedValue(0);
+
   // Use Redux selector for profile updates - force re-render on stats changes
   const profile = useAppSelector(selectProfile);
   const stats = useAppSelector((state) => state.profile.stats);
@@ -44,6 +53,19 @@ const ProfileScreen = () => {
   const profileData = profile;
 
   const avatarPickerRef = useRef<BottomSheetModal | null>(null);
+
+  // Animation effect like in index.tsx
+  useEffect(() => {
+    animationOpacity.value = withTiming(1, {
+      duration: 200,
+    });
+  }, []);
+
+  const animatedOpacity = useAnimatedStyle(() => {
+    return {
+      opacity: animationOpacity.value,
+    };
+  });
 
   const handleAvatarPress = useCallback(() => {
     avatarPickerRef.current?.present();
@@ -109,44 +131,46 @@ const ProfileScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.profileSection}>
-          <ProfileHeader profile={profileData} onAvatarPress={handleAvatarPress} onNameChange={handleNameChange} />
-        </View>
-
-        <AchievementsList
-          achievements={profileData.achievements}
-          showAllAchievements={showAllAchievements}
-          onToggleShow={toggleShowAllAchievements}
-          t={t}
-        />
-
-        <Statistics totalRounds={stats.totalRounds} totalQuestions={stats.totalQuestions} t={t} />
-
-        {__DEV__ && (
-          <View style={styles.testSection}>
-            <Button
-              title="🔄 Сбросить достижения (тест)"
-              onPress={handleResetAchievements}
-              size="large"
-              color={Colors.white}
-              bgColor="255,75,75"
-              outline={false}
-            />
+      <Animated.View style={[animatedOpacity, { flex: 1 }]}>
+        <ScrollView style={styles.scrollView}>
+          <View style={styles.profileSection}>
+            <ProfileHeader profile={profileData} onAvatarPress={handleAvatarPress} onNameChange={handleNameChange} />
           </View>
-        )}
 
-        <AvatarPickerBottomSheet bottomSheetModalRef={avatarPickerRef} onSelectAvatar={handleSelectAvatar} profile={profileData} />
+          <AchievementsList
+            achievements={profileData.achievements}
+            showAllAchievements={showAllAchievements}
+            onToggleShow={toggleShowAllAchievements}
+            t={t}
+          />
 
-        <AnimatedEmojiPicker
-          visible={isEmojiInputVisible}
-          selectedColor={selectedBackgroundColor}
-          onColorSelect={handleColorSelect}
-          onEmojiSelect={handleEmojiSelect}
-          onClose={() => setIsEmojiInputVisible(false)}
-          useVirtualizedList={true}
-        />
-      </ScrollView>
+          <Statistics totalRounds={stats.totalRounds} totalQuestions={stats.totalQuestions} t={t} />
+
+          {__DEV__ && (
+            <View style={styles.testSection}>
+              <Button
+                title="🔄 Сбросить достижения (тест)"
+                onPress={handleResetAchievements}
+                size="large"
+                color={Colors.white}
+                bgColor="255,75,75"
+                outline={false}
+              />
+            </View>
+          )}
+
+          <AvatarPickerBottomSheet bottomSheetModalRef={avatarPickerRef} onSelectAvatar={handleSelectAvatar} profile={profileData} />
+
+          <AnimatedEmojiPicker
+            visible={isEmojiInputVisible}
+            selectedColor={selectedBackgroundColor}
+            onColorSelect={handleColorSelect}
+            onEmojiSelect={handleEmojiSelect}
+            onClose={() => setIsEmojiInputVisible(false)}
+            useVirtualizedList={true}
+          />
+        </ScrollView>
+      </Animated.View>
     </SafeAreaView>
   );
 };
