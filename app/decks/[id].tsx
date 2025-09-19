@@ -219,11 +219,8 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
 
         // Force immediate update with completely new cards
         setDisplayDataStack((prevState) => {
-          const newCard = DisplayedCardItem.create(level, true, isSeveralLevels);
-          const secondCard = prevState[1] || newCard;
-
-          // Ensure we have completely fresh cards
-          return [secondCard, newCard];
+          // Удаляем первую карточку, которая уже свайпнута
+          return prevState.slice(1);
         });
       }
     },

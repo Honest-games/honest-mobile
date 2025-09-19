@@ -4,3 +4,4 @@ export { Label } from './label';
 export { OutlineLabel } from './outline-label';
 export { SearchBar } from './search-bar';
 export { CustomLabel } from './custom-label';
+export { ResponsiveText } from './responsive-text';

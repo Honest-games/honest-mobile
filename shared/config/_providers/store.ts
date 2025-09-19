@@ -8,10 +8,11 @@ import deckLikeReducer from '@/features/deck-likes/model/slice'
 import cardsOfDeckReducer from '@/entities/deck/model/slice'
 import languageReducer from '@/features/language/model/slice'
 import { questionLikesReducer } from '@/features/question-likes/model'
-import { levelsReducer } from '@/entities/level/model' 
+import { levelsReducer } from '@/entities/level/model'
 import userReducer from '@/entities/user/model/slice'
 import { splashReducer } from '@/features/animation/model/slice'
 import { profileReducer } from '@/entities/profile/model'
+import onboardingReducer from '@/features/onboarding/model/slice'
 import { ThunkAction, Action } from '@reduxjs/toolkit'
 import appReducer from '../app-slice'
 
@@ -25,7 +26,8 @@ const rootReducer = combineReducers({
 	user: userReducer,
 	splash: splashReducer,
 	app: appReducer,
-	profile: profileReducer
+	profile: profileReducer,
+	onboarding: onboardingReducer
 })
 
 enableMapSet()

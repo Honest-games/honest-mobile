@@ -71,5 +71,33 @@
 		"emoji": "Emoji",
 		"save": "Save",
 		"cancel": "Cancel"
+	},
+	"onboarding": {
+		"welcome": {
+			"title": "Welcome!",
+			"description": "Ready for an engaging conversation? This app will help you get to know each other better in any company."
+		},
+		"themes": {
+			"title": "Different Themes",
+			"description": "Choose from various conversation topics: relationships, philosophy, entertainment, and much more."
+		},
+		"levels": {
+			"title": "Difficulty Levels",
+			"description": "Each deck has 3 difficulty levels: from light acquaintance to deep personal questions."
+		},
+		"gameplay": {
+			"title": "How to Play",
+			"description": "Choose a deck, select difficulty level, and take turns drawing cards with questions. Simple and fun!"
+		},
+		"achievements": {
+			"title": "Achievements & Progress",
+			"description": "Track your progress, unlock achievements, and discover new ways to connect with people."
+		},
+		"buttons": {
+			"next": "Next",
+			"back": "Back",
+			"skip": "Skip",
+			"start": "Get Started"
+		}
 	}
 } 

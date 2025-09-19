@@ -114,8 +114,8 @@ const styles = StyleSheet.create({
   },
   likeButtonContainer: {
     position: "absolute",
-    top: 5,
-    right: 5,
+    top: 12,
+    right: 12,
     zIndex: 2,
     elevation: 2,
   },

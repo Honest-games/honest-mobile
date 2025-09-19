@@ -43,4 +43,5 @@ export default {
 	shadow: '#000000',
 	grey2: '#696969',
 	lightBeige: "#FDF5EB",
+	lightBeige1: "#FFF5E4",
 }

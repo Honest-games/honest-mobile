@@ -24,6 +24,8 @@ import { initializeProfile, updateProfile } from "@/entities/profile/model";
 import { setSplashAnimationFinished } from "@/features/animation/model/slice";
 import { setContentReady } from "@shared/config/app-slice";
 import { AnimateSplashScreen } from "@/shared/ui/animations";
+import { DevOnboardingControls, resetOnboarding } from "@/features/onboarding";
+import { DEV_ONBOARDING_CONFIG } from "@/features/onboarding/config/dev-config";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -35,6 +37,9 @@ function AppContent() {
   const isContentReady = useAppSelector((state) => state.app.isContentReady);
   const splashAnimationFinished = useAppSelector((state) => state.splash.splashAnimationFinished);
   const userId = useAppSelector((state) => state.user.userId); // Из Redux
+  const hasCompletedOnboarding = useAppSelector((state) => state.onboarding?.hasCompletedOnboarding ?? false);
+  const hasSkippedOnboarding = useAppSelector((state) => state.onboarding?.hasSkippedOnboarding ?? false);
+  const shouldShowOnboarding = !hasCompletedOnboarding && !hasSkippedOnboarding;
 
   const dispatch = useAppDispatch();
   const [appReady, setAppReady] = useState(false);
@@ -45,6 +50,12 @@ function AppContent() {
 
   useEffect(() => {
     dispatch(initializeProfile());
+
+    // Auto-reset onboarding in development mode on app reload
+    if (__DEV__ && DEV_ONBOARDING_CONFIG.AUTO_RESET_ON_RELOAD) {
+      console.log('🔄 Auto-resetting onboarding for development...');
+      dispatch(resetOnboarding());
+    }
   }, [dispatch]);
 
   useEffect(() => {
@@ -63,7 +74,7 @@ function AppContent() {
           dispatch(setUserId(id.toString()));
           await AsyncStorage.setItem("user_id", id.toString());
           // console.log("UUID успешно сохранен:", id);
-          
+
           dispatch(updateProfile({ id: id.toString() }));
         } catch (error) {
           console.error("Ошибка при сохранении UUID в AsyncStorage:", error);
@@ -79,7 +90,7 @@ function AppContent() {
 
     loadInitialData();
   }, [locale, dispatch]);
-  
+
   useEffect(() => {
     if (!isLoadingDecks && !isFetchingDecks && !isFetchingLikes) {
       dispatch(setContentReady(true));
@@ -91,6 +102,14 @@ function AppContent() {
       dispatch(setDecks(decks));
     }
   }, [decks, dispatch]);
+
+  // Redirect to onboarding if needed after splash screen
+  useEffect(() => {
+    if (appReady && splashAnimationFinished && shouldShowOnboarding) {
+      router.replace('/onboarding');
+    }
+  }, [appReady, splashAnimationFinished, shouldShowOnboarding, router]);
+
   const showAnimatedSplash = !appReady || !splashAnimationFinished
 
   if (showAnimatedSplash) {
@@ -111,7 +130,9 @@ function AppContent() {
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="decks/[id]" options={{ headerShown: false }} />
+          <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         </Stack>
+        {/* {__DEV__ && DEV_ONBOARDING_CONFIG.SHOW_DEV_CONTROLS && <DevOnboardingControls />} */}
       </BottomSheetModalProvider>
     </GestureHandlerRootView>
   );

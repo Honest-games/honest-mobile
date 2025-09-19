@@ -2,7 +2,7 @@
   "expo": {
     "name": "Честно",
     "slug": "haur",
-    "version": "1.3.1",
+    "version": "1.3.2",
     "orientation": "portrait",
     "icon": "./assets/images/appstore.png",
     "scheme": "myapp",
@@ -19,7 +19,7 @@
       "icon": "./assets/images/appstore.png",
       "supportsTablet": true,
       "bundleIdentifier": "com.tige21.haur",
-      "buildNumber": "9",
+      "buildNumber": "10",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
