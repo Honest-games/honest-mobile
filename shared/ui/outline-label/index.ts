@@ -1,3 +1,1 @@
-export { OutlineLabel } from './ui';
-
-
+export { OutlineLabel } from "./ui";

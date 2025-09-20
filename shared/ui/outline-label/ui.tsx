@@ -10,9 +10,9 @@ export const OutlineLabel = ({ levelBgColor, levelTitle }: OutlineLabelProps) =>
     label: {
       justifyContent: "flex-start",
       borderRadius: 12,
-    //   borderWidth: 1,
+      //   borderWidth: 1,
 
-    //   borderColor: levelBgColor,
+      //   borderColor: levelBgColor,
       alignItems: "center",
     },
     labelText: {
@@ -31,5 +31,3 @@ export const OutlineLabel = ({ levelBgColor, levelTitle }: OutlineLabelProps) =>
     </View>
   );
 };
-
-
