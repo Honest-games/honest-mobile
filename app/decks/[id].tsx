@@ -21,6 +21,15 @@ import { clearLastUnlockedAchievement, incrementStats } from "@/entities/profile
 import { ResumeDeckDialog } from "@/features/deck-resume";
 import { DeckTopContent } from "@/entities/deck/ui/deck-top-content";
 import { Loader } from "@/shared/ui/loader";
+import {
+  incrementSwipeCount,
+  selectShouldShowPaywall,
+  selectIsDeckPurchased,
+  selectSwipeCount,
+  selectRemainingSwipes
+} from "@/entities/monetization";
+import { useMonetizationCheck } from "@/entities/monetization/lib";
+import { router } from "expo-router";
 
 const { width } = Dimensions.get("window");
 
@@ -115,6 +124,15 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
   const [isShuffleDialogVisible, setShuffleDialogVisible] = useState(false);
   const [isResumeDialogVisible, setIsResumeDialogVisible] = useState(false);
 
+  // Monetization state
+  const shouldShowPaywall = useAppSelector((state) => selectShouldShowPaywall(state, selectedDeck.id));
+  const isDeckPurchased = useAppSelector((state) => selectIsDeckPurchased(state, selectedDeck.id));
+  const currentSwipeCount = useAppSelector((state) => selectSwipeCount(state, selectedDeck.id));
+  const remainingSwipes = useAppSelector((state) => selectRemainingSwipes(state, selectedDeck.id));
+
+  // Новый централизованный хук для проверки монетизации
+  const { checkLimitOnInit, checkLimitAndNavigate, canPerformAction } = useMonetizationCheck(selectedDeck.id);
+
   const [shuffleDeck] = useShuffleDeckMutation();
   const [shuffleLevel] = useShuffleLevelMutation();
   const [isShuffling, setIsShuffling] = useState(false);
@@ -123,6 +141,12 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
   const [showAchievementModal, setShowAchievementModal] = useState(false);
   const profile = useAppSelector((state) => state.profile);
   const [unlockedAchievement, setUnlockedAchievement] = useState<IAchievement | null>(null);
+
+  // Проверка лимита при инициализации компонента
+  useEffect(() => {
+    // Проверяем лимит сразу при входе в колоду
+    checkLimitOnInit();
+  }, [checkLimitOnInit]);
 
   useEffect(() => {
     if (profile.lastUnlockedAchievement) {
@@ -169,8 +193,28 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
     }
   }, [selectedLevel, dispatch]);
 
+  const handleSwipe = useCallback(() => {
+    // Инкрементируем счетчик свайпов для колоды
+    dispatch(incrementSwipeCount({ deckId: selectedDeck.id }));
+
+    // Проверяем, достигнут ли лимит после инкрементирования
+    const newSwipeCount = currentSwipeCount + 1;
+    if (!isDeckPurchased && newSwipeCount >= 15) {
+      // Показываем paywall через навигацию
+      router.push({
+        pathname: '/(modals)/paywall',
+        params: { deckId: selectedDeck.id },
+      });
+    }
+  }, [dispatch, selectedDeck.id, currentSwipeCount, isDeckPurchased]);
+
   const onButtonPress = async (level: ILevelData) => {
     if (isAnimationGoing) return;
+
+    // Используем централизованную проверку лимита
+    if (!checkLimitAndNavigate()) {
+      return; // Лимит достигнут, пользователь перенаправлен на paywall
+    }
 
     if (!selectedLevel) {
       // Первое нажатие - создаем две карточки с загруженными вопросами
@@ -182,49 +226,66 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
 
       // Засчитываем первую карточку сразу
       dispatch(incrementStats({ levelId: level.id }));
+      // Считаем это как свайп для монетизации
+      handleSwipe();
     } else {
+      // Дополнительная проверка перед продолжением
+      if (!canPerformAction()) {
+        checkLimitAndNavigate();
+        return;
+      }
+
       if (selectedLevel.id === level.id) {
         // Тот же уровень - активируем загрузку вопроса для второй карты
-        setDisplayDataStack((prev) => {
-          const second = prev[1];
-          second.shouldLoadQuestion = true;
-          return [...prev];
+        setDisplayDataStack(prev => {
+          if (prev.length > 1 && prev[1]) {
+            const second = prev[1];
+            second.shouldLoadQuestion = true;
+            return [...prev];
+          }
+          return prev;
         });
-        // triggerSwipeAnimation(() => moveToNextCard(level));
       } else {
         // Новый уровень - заменяем вторую карту с новым уровнем
-        setDisplayDataStack((prev) => [
+        setDisplayDataStack(prev => [
           prev[0],
-          DisplayedCardItem.create(level, true, isSeveralLevels), // Новая карта сразу с загрузкой вопроса
+          DisplayedCardItem.create(level, true, isSeveralLevels) // Новая карта сразу с загрузкой вопроса
         ]);
         setSelectedLevel(level);
       }
-      triggerSwipeAnimation(() => {
-        // Сначала засчитываем предыдущую карточку
-        handleCardComplete();
-        // Затем переходим к следующей (пропускаем повторный подсчет)
-        moveToNextCard(level, true);
-      });
+
+      // Запускаем анимацию свайпа и переход к следующей карте
+      triggerSwipeAnimation(() => moveToNextCard(level));
     }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
   const moveToNextCard = useCallback(
-    (level: ILevelData, skipStatsIncrement = false) => {
+    (level: ILevelData) => {
       if (displayDataStack.length > 0) {
-        // Вызываем handleCardComplete только если не пропускаем (для случаев когда уже вызвали)
-        if (!skipStatsIncrement) {
-          handleCardComplete();
-        }
+        // Засчитываем карточку
+        handleCardComplete();
+        // Отслеживаем свайп для монетизации
+        handleSwipe();
 
-        // Force immediate update with completely new cards
-        setDisplayDataStack((prevState) => {
-          // Удаляем первую карточку, которая уже свайпнута
-          return prevState.slice(1);
+        setDisplayDataStack(prevState => {
+          // Берем вторую карту (если есть) и создаем новую
+          const second = prevState[1];
+          if (second) {
+            return [
+              second,
+              DisplayedCardItem.create(level, true, isSeveralLevels) // Новая карта сразу с загрузкой вопроса
+            ];
+          }
+          // Если второй карты нет, создаем две новые
+          return [
+            DisplayedCardItem.create(level, true, isSeveralLevels),
+            DisplayedCardItem.create(level, true, isSeveralLevels)
+          ];
         });
       }
     },
-    [handleCardComplete, isSeveralLevels, displayDataStack.length],
+    [handleCardComplete, handleSwipe, isSeveralLevels, displayDataStack.length],
   );
 
   /*ANIMATION*/
@@ -257,14 +318,20 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
     if (userSwiped && selectedLevel) {
       setUserSwiped(false);
 
+      // Используем централизованную проверку лимита
+      if (!canPerformAction()) {
+        checkLimitAndNavigate();
+        return;
+      }
+
       // Move to next card IMMEDIATELY (animation values already reset in getPanResponder)
       try {
-        moveToNextCard(selectedLevel, false); // Не пропускаем подсчет при смахивании пользователем
+        moveToNextCard(selectedLevel);
       } catch (error) {
         console.error("Move to next card error:", error);
       }
     }
-  }, [userSwiped, selectedLevel, moveToNextCard]);
+  }, [userSwiped, selectedLevel, moveToNextCard, canPerformAction, checkLimitAndNavigate]);
 
   const triggerSwipeAnimation = (onEnd: () => void) => {
     if (isAnimationGoing) return;
@@ -309,8 +376,6 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
 
         setDisplayDataStack(newStack);
         triggerSwipeAnimation(() => {
-          // После смахивания первой карты isShuffling останется true
-          // Он сбросится только когда пользователь смахнет карту с сообщением
           moveToNextCardAfterShuffle();
         });
       } catch (error) {
@@ -322,10 +387,10 @@ const OpenedDeckWithLevels = ({ deck: selectedDeck, levels, userId }: { deck: ID
   };
 
   const moveToNextCardAfterShuffle = () => {
-    if (displayDataStack.length > 1) {
+    if (displayDataStack.length > 0) {
       setDisplayDataStack((prevState) => {
-        const remainingCards = prevState.slice(1);
-        return remainingCards;
+        // Просто удаляем первую карточку после перемешивания
+        return prevState.slice(1).filter(item => item != null);
       });
     }
   };
@@ -498,6 +563,7 @@ const CardsStack = ({
   const panResponder = selectedLevel && getPanResponder(swipeX, swipeY, setUserSwiped);
 
   return displayDataStack
+    .filter((displayData) => displayData != null) // Фильтруем undefined элементы
     .map((displayData, i) => {
       const isFirst = i === 0;
       const actualHandlers = isFirst && panResponder ? panResponder.panHandlers : {};
