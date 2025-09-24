@@ -78,7 +78,7 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
           return {
             transform: [{ scale }],
             opacity,
-            backgroundColor: isActive ? Colors.primary : Colors.lightGrey
+            backgroundColor: isActive ? Colors.darkGreen : Colors.lightGrey
           };
         });
 

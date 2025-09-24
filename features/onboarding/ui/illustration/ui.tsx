@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import { View, StyleSheet, Dimensions, Image } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -8,7 +8,7 @@ import Animated, {
   withDelay
 } from 'react-native-reanimated';
 import { Colors } from '@shared/config';
-import { Cards, Logo } from '@/assets/images';
+import { Cards, Logo, OnbordingCards, OnbordingLevels, OnbordingPhone, Flower, OnbordingLine, OrangeFlower } from '@/assets/images';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -40,7 +40,7 @@ export const Illustration: React.FC<IllustrationProps> = ({ type }) => {
       case 'welcome':
         return <Logo />;
       case 'themes':
-        return <Cards width={screenWidth+80} height={screenWidth+80} />;
+        return <ThemesIllustration />;
       case 'levels':
         return <LevelsIllustration />;
       case 'gameplay':
@@ -48,7 +48,7 @@ export const Illustration: React.FC<IllustrationProps> = ({ type }) => {
       case 'achievements':
         return <AchievementsIllustration />;
       default:
-        return <WelcomeIllustration />;
+        return <Logo />;
     }
   };
 
@@ -59,190 +59,109 @@ export const Illustration: React.FC<IllustrationProps> = ({ type }) => {
   );
 };
 
+const ThemesIllustration: React.FC = () => (
+  <View style={styles.themesContainer}>
+    <Flower width={screenWidth*0.5} height={screenWidth*0.5} style={styles.backgroundFlower} />
+    <OnbordingCards width={screenWidth * 0.8} height={screenWidth * 0.8} style={styles.foregroundCards} />
+  </View>
+);
+
 const LevelsIllustration: React.FC = () => (
   <View style={styles.levelsContainer}>
-    <View style={[styles.levelCircle, { backgroundColor: Colors.lightGreen, width: 60, height: 60 }]}>
-      <View style={styles.levelNumber} />
-    </View>
-    <View style={[styles.levelCircle, { backgroundColor: Colors.yellow, width: 80, height: 80 }]}>
-      <View style={styles.levelNumber} />
-    </View>
-    <View style={[styles.levelCircle, { backgroundColor: Colors.orange, width: 100, height: 100 }]}>
-      <View style={styles.levelNumber} />
-    </View>
+    <OnbordingLine width={screenWidth} height={screenWidth*0.5} style={styles.backgroundLine} />
+    <OnbordingLevels width={screenWidth} height={screenWidth} style={styles.foregroundLevels} />
   </View>
 );
 
 const GameplayIllustration: React.FC = () => (
   <View style={styles.gameplayContainer}>
-    <View style={[styles.questionCard, { backgroundColor: Colors.primary }]}>
-      <View style={styles.questionLine} />
-      <View style={[styles.questionLine, { width: '70%' }]} />
-    </View>
-    <View style={styles.playersContainer}>
-      <View style={[styles.player, { backgroundColor: Colors.lightGreen }]} />
-      <View style={[styles.player, { backgroundColor: Colors.yellow }]} />
-      <View style={[styles.player, { backgroundColor: Colors.orange }]} />
-    </View>
+    <OrangeFlower width={screenWidth} height={screenWidth*0.5} style={styles.backgroundOrangeFlower} />
+    <Cards width={screenWidth*1.2} height={screenWidth*1.2} style={styles.foregroundCards} />
   </View>
 );
 
 const AchievementsIllustration: React.FC = () => (
   <View style={styles.achievementsContainer}>
-    <View style={[styles.trophy, { backgroundColor: Colors.yellow }]}>
-      <View style={[styles.trophyBase, { backgroundColor: Colors.orange }]} />
-    </View>
-    <View style={styles.stars}>
-      {[0, 1, 2].map((_, index) => (
-        <View
-          key={index}
-          style={[
-            styles.star,
-            {
-              backgroundColor: Colors.yellow,
-              transform: [{ rotate: `${index * 45}deg` }]
-            }
-          ]}
-        />
-      ))}
-    </View>
+    <OnbordingLine width={screenWidth} height={screenWidth*0.5} style={styles.backgroundPurpleLine} />
+    <Image 
+      source={require('@/assets/images/iphone-mockup.png')} 
+      style={styles.foregroundPhone}
+      resizeMode="contain"
+    />
   </View>
 );
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    width: screenWidth ,
-    height: screenWidth ,
+    width: screenWidth,
+    height: screenWidth,
     justifyContent: 'center',
     alignItems: 'center',
     alignSelf: 'center'
   },
-  // Welcome
-  welcomeContainer: {
+  themesContainer: {
     flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    position: 'relative'
-  },
-  circle: {
-    borderRadius: 1000,
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  primaryCircle: {
-    width: 200,
-    height: 200,
-    backgroundColor: Colors.primary
-  },
-  secondaryCircle: {
-    width: 120,
-    height: 120,
-    backgroundColor: Colors.beige,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8
-  },
-  smallCircle: {
-    width: 20,
-    height: 20,
-    borderRadius: 10
-  },
-  floatingElement: {
-    position: 'absolute',
-    width: 30,
-    height: 30,
-    borderRadius: 15
-  },
-  // Topics
-  topicsContainer: {
-    flex: 1,
+    width: screenWidth,
+    height: screenWidth,
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative'
   },
-  topicCard: {
+  backgroundFlower: {
     position: 'absolute',
-    width: 120,
-    height: 80,
-    borderRadius: 16
+    top: 90,
+    right: 0,
   },
-  // Levels
+  foregroundCards: {
+    marginLeft: 20,
+    zIndex: 1
+  },
   levelsContainer: {
     flex: 1,
-    flexDirection: 'row',
+    width: screenWidth,
+    height: screenWidth,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 20
+    position: 'relative'
   },
-  levelCircle: {
-    borderRadius: 1000,
-    justifyContent: 'center',
-    alignItems: 'center'
+  backgroundLine: {
+    position: 'absolute',
+    top: 90,
+    left: 90,
   },
-  levelNumber: {
-    width: 20,
-    height: 20,
-    backgroundColor: Colors.beige,
-    borderRadius: 10
+  foregroundLevels: {
+    zIndex: 1
   },
-  // Gameplay
   gameplayContainer: {
     flex: 1,
+    width: screenWidth,
+    height: screenWidth,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 40
+    position: 'relative'
   },
-  questionCard: {
-    width: 200,
-    height: 120,
-    borderRadius: 20,
-    padding: 20,
-    justifyContent: 'center'
+  backgroundOrangeFlower: {
+    position: 'absolute',
+    top: 90,
   },
-  questionLine: {
-    height: 12,
-    backgroundColor: Colors.beige,
-    borderRadius: 6,
-    marginBottom: 8,
-    width: '100%'
-  },
-  playersContainer: {
-    flexDirection: 'row',
-    gap: 16
-  },
-  player: {
-    width: 40,
-    height: 40,
-    borderRadius: 20
-  },
-  // Achievements
   achievementsContainer: {
     flex: 1,
+    width: screenWidth,
+    height: screenWidth,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 30
+    position: 'relative'
   },
-  trophy: {
-    width: 80,
-    height: 100,
-    borderRadius: 40,
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    paddingBottom: 10
+  backgroundPurpleLine: {
+    position: 'absolute',
+    top: 90,
+    left: 90,
+    tintColor: Colors.dimBlue
   },
-  trophyBase: {
-    width: 60,
-    height: 20,
-    borderRadius: 10
-  },
-  stars: {
-    flexDirection: 'row',
-    gap: 12
-  },
-  star: {
-    width: 20,
-    height: 20,
-    borderRadius: 4
+  foregroundPhone: {
+    width: screenWidth,
+    height: screenWidth * 1.2,
+    zIndex: 1
   }
 });

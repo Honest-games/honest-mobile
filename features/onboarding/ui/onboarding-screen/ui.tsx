@@ -20,20 +20,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ step }) => {
   const { t } = useTranslation();
 
   const getBackgroundColor = () => {
-    switch (step.illustration) {
-      case 'welcome':
-        return Colors.lightBeige;
-      case 'themes':
-        return Colors.lightBeige1;
-      case 'levels':
-        return Colors.dimBlue;
-      case 'gameplay':
-        return Colors.dimOrange;
-      case 'achievements':
-        return Colors.dimBrown;
-      default:
-        return Colors.lightBeige;
-    }
+    return Colors.lightBeige;
   };
 
   return (
@@ -79,7 +66,7 @@ const styles = StyleSheet.create({
     fontSize: 36,
     fontFamily: 'MakanHatiCyrillic',
     fontWeight: '700',
-    color: Colors.deepGray,
+    color: Colors.darkGreen,
     textAlign: 'center',
     marginBottom: 16,
     lineHeight: 36,
@@ -88,7 +75,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Poppins',
     fontWeight: '400',
-    color: Colors.grey2,
+    color: Colors.darkGreen,
     textAlign: 'center',
     lineHeight: 24,
   },

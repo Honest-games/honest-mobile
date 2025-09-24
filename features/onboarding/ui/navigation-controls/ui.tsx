@@ -111,10 +111,10 @@ const styles = StyleSheet.create({
     flex: 2,
   },
   primaryButton: {
-    backgroundColor: Colors.deepBlue,
-    paddingVertical: 24,
+    backgroundColor: Colors.lightGreen2,
+    paddingVertical: 8,
     paddingHorizontal: 12,
-    borderRadius: 20,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
     shadowColor: Colors.shadow,
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   primaryButtonText: {
-    color: Colors.white,
+    color: Colors.darkGreen,
     fontSize: 16,
     fontFamily: "Poppins",
     fontWeight: "bold",
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   secondaryButtonText: {
-    color: Colors.grey2,
+    color: Colors.darkGreen,
     fontSize: 16,
     fontFamily: "Poppins",
     fontWeight: "bold",
